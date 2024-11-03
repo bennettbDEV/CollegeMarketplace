@@ -24,9 +24,6 @@ class DBQuery(ABC):
 
 
 class SQLiteDBQuery(DBQuery):
-    def __init__(self, db_config):
-        super().__init__(SQLiteConnection(db_config))
-
     def get_all_listings(self):
         query = "SELECT * FROM listing"
         self.db_connection.connect()

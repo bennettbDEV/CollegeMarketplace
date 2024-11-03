@@ -1,4 +1,4 @@
-import react from "react"
+import React from "react"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import Login from "./pages/Login"
 import Register from "./pages/Register"
@@ -6,7 +6,6 @@ import Home from "./pages/Home"
 import NotFound from "./pages/NotFound"
 import Profile from "./pages/Profile"
 import ProtectedRoute from "./components/ProtectedRoute"
-//import PostHandling from "./pages/PostHandling"
 
 function Logout() {
   localStorage.clear()
@@ -28,11 +27,7 @@ function App() {
           <Profile />
           </ProtectedRoute>
         } />
-        <Route path="/post_handle" element={
-          <ProtectedRoute>
-          <PostHandling />
-          </ProtectedRoute>
-        } />
+        
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/register" element={<RegisterAndLogout />} />
