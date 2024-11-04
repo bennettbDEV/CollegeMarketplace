@@ -15,9 +15,14 @@ NAME_OF_ENVIROMENT\Scripts\activate
 pip install django
     *this installs
 
-django-admin startproject NAME_OF_APP
+django-admin startproject NAME_OF_PROJECT
     *this must be done within the django enviroment and with it installed. 
 
+python manage.py startapp NAME_OF_APP
+    *creates an app for django
+
+python manage.py migrate
+    *apply any migrations 
 
 
 
