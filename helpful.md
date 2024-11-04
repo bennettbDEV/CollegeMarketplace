@@ -21,6 +21,8 @@ django-admin startproject NAME_OF_PROJECT
 python manage.py startapp NAME_OF_APP
     *creates an app for django
 
+python manage.py migrate
+    *apply any migrations 
 
 
 

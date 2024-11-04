@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISU Marketplace - Home</title>
+</head>
+<body>
+    <header>
+        <h1>Welcome to ISU Marketplace</h1>
+        <p>Your platform to buy, sell, and exchange college supplies</p>
+    </header>
+
+    <section id="featured-products">
+        <h2>Featured Products</h2>
+        <div class="products-list">
+            {% if featured_products %}
+                {% for product in featured_products %}
+                    <div class="product-card">
+                        <h3>{{ product.name }}</h3>
+                        <p>{{ product.description }}</p>
+                        <span>Price: ${{ product.price }}</span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No featured products at this time.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 ISU Marketplace</p>
+    </footer>
+</body>
+</html>
+
