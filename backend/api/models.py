@@ -13,10 +13,11 @@ CLASS: User
 class User:
     # We might need to make our own abstract user
     #Functions
-    def __init__(self, id, username, password=None):
+    def __init__(self, id, username, password=None, location=None):
         self.id = id
         self.username = username
         self.password = password  # Store hashed password directly
+        self.location = location
         
     def __str__(self):
         return self.username   
@@ -49,10 +50,11 @@ class SMSMessage(Message):
 CLASS: Listing
 '''
 class Listing:
-    def __init__(self, id, title, description, created_at, author_id):
+    def __init__(self, id, title, description, price, created_at, author_id):
         self.id = id
         self.title = title
         self.description = description
+        self.price = price
         self.created_at = created_at
         self.author_id = author_id
 
