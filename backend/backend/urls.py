@@ -19,15 +19,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView
+from api.views import CustomTokenObtainPairView
 
 urlpatterns = [
     #CHASE ADDITIONS
     path('', include('home.urls')),  #Central home page
 
     path('admin/', admin.site.urls),
-    path("api/token/", TokenObtainPairView.as_view(), name="get_token"),
+    # Authentication urls
+    path("api/token/", CustomTokenObtainPairView.as_view(), name="get_token"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh"),
     path("api-auth/", include("rest_framework.urls")),
+
+    # Main api urls
     path("api/", include("api.urls")),
 ]

@@ -22,8 +22,13 @@ class DBQuery(ABC):
     def delete_listing(self, listing_id):
         pass
 
+    @abstractmethod
+    def get_user_by_id(self, listing_id):
+        pass
+
 
 class SQLiteDBQuery(DBQuery):
+    # Listings functions
     def get_all_listings(self):
         query = "SELECT * FROM listing"
         self.db_connection.connect()
@@ -52,6 +57,34 @@ class SQLiteDBQuery(DBQuery):
     def delete_listing(self, listing_id):
         query = "DELETE FROM listing WHERE id = ?"
         params = (listing_id,)
+        self.db_connection.connect()
+        self.db_connection.execute_query(query, params)
+        self.db_connection.disconnect()
+
+
+    # User functions
+    def get_user_by_id(self, user_id):
+        query = "SELECT * FROM listing WHERE user_id = ?"
+        params = (user_id,)
+        self.db_connection.connect()
+        user = self.db_connection.execute_query(query, params)
+        self.db_connection.disconnect()
+        return user
+    
+    def get_user_by_username(self, username):
+        query = "SELECT * FROM listing WHERE username = ?"
+        params = (username,)
+        self.db_connection.connect()
+        user = self.db_connection.execute_query(query, params)
+        self.db_connection.disconnect()
+        return user
+
+    def create_user(self, data):
+        query = """
+        INSERT INTO user (username, password, location) 
+        VALUES (?, ?, ?)
+        """
+        params = (data["username"], data["password"], data["location"])
         self.db_connection.connect()
         self.db_connection.execute_query(query, params)
         self.db_connection.disconnect()
