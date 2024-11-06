@@ -30,6 +30,7 @@ class SQLiteConnection(DBConnection):
 
     def execute_query(self, query, params=None):
         try:
+            self.connection.row_factory = sqlite3.Row  # Enables accessing columns by name
             cursor = self.connection.cursor()
             if params:
                 cursor.execute(query, params)
@@ -37,6 +38,7 @@ class SQLiteConnection(DBConnection):
                 cursor.execute(query)
 
             if query.strip().upper().startswith("SELECT"):
+
                 return cursor.fetchall()
             else:
                 # For INSERT, UPDATE, DELETE queries

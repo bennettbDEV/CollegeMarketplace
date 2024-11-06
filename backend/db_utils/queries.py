@@ -63,6 +63,16 @@ class SQLiteDBQuery(DBQuery):
 
 
     # User functions
+    def get_all_users(self):
+        query = "SELECT * FROM user"
+        self.db_connection.connect()
+        rows = self.db_connection.execute_query(query)
+        self.db_connection.disconnect()
+
+        # Need to get data from rows as a dict,
+        # then return response
+        
+        return users
     def get_user_by_id(self, user_id):
         query = "SELECT * FROM listing WHERE user_id = ?"
         params = (user_id,)

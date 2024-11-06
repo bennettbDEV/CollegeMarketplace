@@ -8,7 +8,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         username = attrs['username']
         password = attrs['password']
-        user = validate_user_credentials(username, password)  # Replace with custom logic
+        user = validate_user_credentials(username, password) 
 
         if user is None:
             raise AuthenticationFailed("Invalid credentials.")
@@ -22,8 +22,7 @@ class UserSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)  # Wont be revealed in reads
     location = serializers.CharField(max_length=50, allow_null=True)
 
-    def validate(self, attrs):
-        pass
+
 
 class ListingSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)

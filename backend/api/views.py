@@ -4,11 +4,12 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from db_utils.db_factory import DBFactory, DBType
 from db_utils.queries import SQLiteDBQuery
 from .serializers import UserSerializer, ListingSerializer
-from .models import Listing
+from .models import Listing, User
 from .serializers import CustomTokenObtainPairSerializer
 #added by Chase (will need to edit)
 from .user_handler import UserHandler
@@ -20,6 +21,7 @@ db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
+
 class UserViewSet(viewsets.GenericViewSet):
     serializer_class = UserSerializer
 
@@ -27,20 +29,38 @@ class UserViewSet(viewsets.GenericViewSet):
         # User must be authenticated if performing any action other than create/retrieve/list
         self.permission_classes = ([AllowAny] if (self.action in ["create", "list", "retrieve"]) else [IsAuthenticated])
         return super().get_permissions()
+    def get_queryset(self):
+        # Gets all users
+        users = db_query.get_all_users()
+        # ** operator is used to pass all key value pairs to the calling function
+        return [User(**user) for user in users]
+    
+
 
     def list(self, request):
         users = db_query.get_all_users()
         serializer = self.get_serializer(users, many=True)
         return Response(serializer.data)
 
+    # User registration
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             validated_data = serializer.validated_data
             validated_data["password"] = make_password(validated_data["password"])
+
             db_query.create_user(serializer.validated_data)
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+            # Generate JWT token for the new user
+            refresh = RefreshToken.for_user(user)
+            access = str(refresh.access_token)
+
+            response_data = validated_data
+            response_data['access_token'] = access
+            response_data['refresh_token'] = str(refresh)
+
+            return Response(response_data, status=201)
+        else:
+            return Response(serializer.errors, status=400)
 
 
 
