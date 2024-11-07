@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.hashers import make_password
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -11,7 +11,7 @@ from db_utils.queries import SQLiteDBQuery
 from .serializers import UserSerializer, ListingSerializer
 from .models import Listing, User
 from .serializers import CustomTokenObtainPairSerializer
-#added by Chase (will need to edit)
+# added by Chase (will need to edit)
 from .user_handler import UserHandler
 
 # Initialize specific query object
@@ -34,8 +34,6 @@ class UserViewSet(viewsets.GenericViewSet):
         users = db_query.get_all_users()
         # ** operator is used to pass all key value pairs to the calling function
         return [User(**user) for user in users]
-    
-
 
     def list(self, request):
         users = db_query.get_all_users()
@@ -47,21 +45,35 @@ class UserViewSet(viewsets.GenericViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             validated_data = serializer.validated_data
+
+            # Check if user already exists
+            username = validated_data["username"]
+            if db_query.get_user_by_username(username):
+                return Response(
+                    {"detail": "Username already exists."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+            # Generate password
             validated_data["password"] = make_password(validated_data["password"])
 
+            # Create user
             db_query.create_user(serializer.validated_data)
-            # Generate JWT token for the new user
-            refresh = RefreshToken.for_user(user)
-            access = str(refresh.access_token)
 
-            response_data = validated_data
+            # Get users id
+            user = db_query.get_user_by_username(username)[0]
+            validated_data["id"] = user['id']
+
+            # Generate JWT token for the new user
+            refresh = RefreshToken.for_user(User(**validated_data))
+            access = str(refresh.access_token)
+            
+            # Form response
             response_data['access_token'] = access
             response_data['refresh_token'] = str(refresh)
 
             return Response(response_data, status=201)
         else:
             return Response(serializer.errors, status=400)
-
 
 
 # Listing controller/handler

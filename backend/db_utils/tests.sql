@@ -1,0 +1,3 @@
+SELECT * FROM USER WHERE id = 4
+
+DELETE FROM user

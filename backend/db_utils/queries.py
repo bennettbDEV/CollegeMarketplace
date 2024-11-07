@@ -66,15 +66,16 @@ class SQLiteDBQuery(DBQuery):
     def get_all_users(self):
         query = "SELECT * FROM user"
         self.db_connection.connect()
+
         rows = self.db_connection.execute_query(query)
         self.db_connection.disconnect()
-
-        # Need to get data from rows as a dict,
-        # then return response
+        
+        # Turn data from rows into a list of dicts
+        users = [{column: row[column] for column in row.keys()} for row in rows]
         
         return users
     def get_user_by_id(self, user_id):
-        query = "SELECT * FROM listing WHERE user_id = ?"
+        query = "SELECT * FROM User WHERE id = ?"
         params = (user_id,)
         self.db_connection.connect()
         user = self.db_connection.execute_query(query, params)
@@ -82,7 +83,7 @@ class SQLiteDBQuery(DBQuery):
         return user
     
     def get_user_by_username(self, username):
-        query = "SELECT * FROM listing WHERE username = ?"
+        query = "SELECT * FROM User WHERE username = ?"
         params = (username,)
         self.db_connection.connect()
         user = self.db_connection.execute_query(query, params)
@@ -91,7 +92,7 @@ class SQLiteDBQuery(DBQuery):
 
     def create_user(self, data):
         query = """
-        INSERT INTO user (username, password, location) 
+        INSERT INTO User (username, password, location) 
         VALUES (?, ?, ?)
         """
         params = (data["username"], data["password"], data["location"])
