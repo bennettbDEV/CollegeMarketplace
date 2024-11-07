@@ -28,7 +28,7 @@ class DBQuery(ABC):
 
 
 class SQLiteDBQuery(DBQuery):
-    # Listings functions
+    # Listing functions
     def get_all_listings(self):
         query = "SELECT * FROM listing"
         self.db_connection.connect()
@@ -69,11 +69,12 @@ class SQLiteDBQuery(DBQuery):
 
         rows = self.db_connection.execute_query(query)
         self.db_connection.disconnect()
-        
+
         # Turn data from rows into a list of dicts
         users = [{column: row[column] for column in row.keys()} for row in rows]
-        
+
         return users
+
     def get_user_by_id(self, user_id):
         query = "SELECT * FROM User WHERE id = ?"
         params = (user_id,)
@@ -81,7 +82,7 @@ class SQLiteDBQuery(DBQuery):
         user = self.db_connection.execute_query(query, params)
         self.db_connection.disconnect()
         return user
-    
+
     def get_user_by_username(self, username):
         query = "SELECT * FROM User WHERE username = ?"
         params = (username,)

@@ -51,7 +51,6 @@ SIMPLE_JWT = {
 }
 
 
-
 # Application definition
 
 INSTALLED_APPS = [

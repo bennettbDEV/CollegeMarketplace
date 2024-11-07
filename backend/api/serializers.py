@@ -3,17 +3,18 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
 from api.authentication import validate_user_credentials
 
-# Authentication serializers
+
+# Authentication serializer
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        username = attrs['username']
-        password = attrs['password']
-        user = validate_user_credentials(username, password) 
+        username = attrs["username"]
+        password = attrs["password"]
+
+        user = validate_user_credentials(username, password)
 
         if user is None:
             raise AuthenticationFailed("Invalid credentials.")
-
-        return super().validate(attrs)
+        return attrs
 
 
 class UserSerializer(serializers.Serializer):
@@ -21,7 +22,6 @@ class UserSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     password = serializers.CharField(write_only=True)  # Wont be revealed in reads
     location = serializers.CharField(max_length=50, allow_null=True)
-
 
 
 class ListingSerializer(serializers.Serializer):

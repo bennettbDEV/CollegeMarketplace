@@ -27,10 +27,10 @@ urlpatterns = [
     path('', include('home.urls')),  #Central home page
 
     path('admin/', admin.site.urls),
-    # Authentication urls
+    # Authentication
+    # api/token/ is used for logging in, token/refresh/ is used to refresh access token
     path("api/token/", CustomTokenObtainPairView.as_view(), name="get_token"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh"),
-    path("api-auth/", include("rest_framework.urls")),
 
     # Main api urls
     path("api/", include("api.urls")),

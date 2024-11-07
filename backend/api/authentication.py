@@ -8,20 +8,23 @@ from api.models import User
 # Initialize specific query object
 db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
 
+
 class CustomJWTAuthentication(JWTAuthentication):
     def get_user(self, user_id):
         """
         Override get_user to retrieve user from custom database instead of Django's ORM.
         """
-        user_data = db_query.get_user_by_id(user_id) 
+        user_data = db_query.get_user_by_id(user_id)[0]
+
         if user_data is None:
             raise AuthenticationFailed("User not found.")
-        # Assuming user_data is a dictionary containing 'id' and 'username'
-        return User(id=user_data['id'], username=user_data['username'])
-    
+        return User(**user_data)
+
+
 def validate_user_credentials(username, password):
     # get user from db
-    user_data = db_query.get_user_by_username(username)
+    user_data = db_query.get_user_by_username(username)[0]
+
+    # Check password
     if user_data and check_password(password, user_data["password"]):
-        return User(id=user_data['id'], username=user_data['username'])
-    
+        return User(**user_data)
