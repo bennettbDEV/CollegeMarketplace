@@ -22,6 +22,10 @@ class User:
     def __str__(self):
         return self.username   
     
+    @property
+    def is_authenticated(self):
+        return True
+    
     def check_password(self, password):
         return check_password(password, self.password) 
     

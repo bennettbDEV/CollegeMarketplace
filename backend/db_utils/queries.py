@@ -100,3 +100,10 @@ class SQLiteDBQuery(DBQuery):
         self.db_connection.connect()
         self.db_connection.execute_query(query, params)
         self.db_connection.disconnect()
+
+    def delete_user(self, user_id):
+        query = "DELETE FROM user WHERE id = ?"
+        params = (user_id,)
+        self.db_connection.connect()
+        self.db_connection.execute_query(query, params)
+        self.db_connection.disconnect()

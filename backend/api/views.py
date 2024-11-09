@@ -60,11 +60,7 @@ class UserViewSet(viewsets.GenericViewSet):
 
     def get_permissions(self):
         # User must be authenticated if performing any action other than create/retrieve/list
-        self.permission_classes = (
-            [AllowAny]
-            if (self.action in ["create", "list", "retrieve"])
-            else [IsAuthenticated]
-        )
+        self.permission_classes = ([AllowAny] if (self.action in ["create", "list", "retrieve"]) else [IsAuthenticated])
         return super().get_permissions()
 
     def get_queryset(self):
@@ -118,6 +114,22 @@ class UserViewSet(viewsets.GenericViewSet):
         else:
             return Response(serializer.errors, status=400)
 
+    def retrieve(self, request, pk=None):
+        user = db_query.get_user_by_id(pk)[0]
+        if user:
+            serializer = self.get_serializer(User(**user))
+            return Response(serializer.data)
+        return Response(status=404)
+
+    def update(self, request, pk=None):
+        pass
+
+    def partial_update(self, request, pk=None):
+        pass
+
+    def destroy(self, request, pk=None):
+        db_query.delete_user(pk)
+        return Response(status=204)
 
 # Listing controller/handler
 class ListingViewSet(viewsets.GenericViewSet):
