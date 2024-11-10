@@ -29,7 +29,11 @@ class CustomJWTAuthentication(JWTAuthentication):
 
 def validate_user_credentials(username, password):
     # get user from db
-    user_data = db_query.get_user_by_username(username)[0]
+    try:
+        user_data = db_query.get_user_by_username(username)[0]
+    except IndexError:
+        # User doesn't exist
+        return None
 
     # Check password
     if user_data and check_password(password, user_data["password"]):

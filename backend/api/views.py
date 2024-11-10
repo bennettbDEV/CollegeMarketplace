@@ -121,15 +121,48 @@ class UserViewSet(viewsets.GenericViewSet):
             return Response(serializer.data)
         return Response(status=404)
 
+    # Needs some work still -> needs update_user() to be made in queries.py
     def update(self, request, pk=None):
-        pass
+        try:
+            user = db_query.get_user_by_id(pk)[0]
+            if not user:
+                return Response({"detail": "User not found."}, status=404) # Not found
+            
+            # Ensure user is updating their own account
+            if request.user.id == int(pk):
+                serializer = self.get_serializer(User(**request.user))
+
+                if serializer.is_valid():
+                    # Ensure new username isnt taken
+                    if db_query.get_user_by_username(request.user.username)[0]:
+                        return Response({"detail": "Username taken"}, status=403) # Forbidden
+                
+                #db_query.update_user(pk, new_data)
+                return Response({"detail": "User edited successfully."}, status=204) # No content
+            else:
+                return Response({"detail": "Invalid credentials"}, status=403) # Forbidden
+        
+        except Exception as e:
+            return Response({"detail": str(e)}, status=500)
 
     def partial_update(self, request, pk=None):
         pass
 
     def destroy(self, request, pk=None):
-        db_query.delete_user(pk)
-        return Response(status=204)
+        try:
+            user = db_query.get_user_by_id(pk)[0]
+            if not user:
+                return Response({"detail": "User not found."}, status=404) # Not found
+            
+            # Ensure user is deleting their own account
+            if request.user.id == int(pk):
+                db_query.delete_user(pk)
+                return Response({"detail": "User deleted successfully."}, status=204) # No content
+            else:
+                return Response({"detail": "Invalid credentials"}, status=403) # Forbidden
+        
+        except Exception as e:
+            return Response({"detail": str(e)}, status=500)
 
 # Listing controller/handler
 class ListingViewSet(viewsets.GenericViewSet):
@@ -155,15 +188,20 @@ class ListingViewSet(viewsets.GenericViewSet):
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
+            validated_data = serializer.validated_data
+
+            # Create listing with reference to calling user's id
             user_id = request.user.id
             db_query.create_listing(serializer.validated_data, user_id)
+
             return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+        else:
+            return Response(serializer.errors, status=400)
 
     def retrieve(self, request, pk=None):
-        listing = db_query.get_listing_by_id(pk)
+        listing = db_query.get_listing_by_id(pk)[0]
         if listing:
-            serializer = self.get_serializer(listing)
+            serializer = self.get_serializer(Listing(**listing))
             return Response(serializer.data)
         return Response(status=404)
 
@@ -174,5 +212,20 @@ class ListingViewSet(viewsets.GenericViewSet):
         pass
 
     def destroy(self, request, pk=None):
-        db_query.delete_listing(pk)
-        return Response(status=204)
+        try:
+            listing = db_query.get_listing_by_id(pk)[0]
+            if not listing:
+                return Response({"detail": "Listing not found."}, status=404) # Not found
+            
+            # Ensure user is deleting their own listing
+            if request.user.id == listing.author_id:
+                db_query.delete_listing(pk)
+                return Response({"detail": "Listing deleted successfully."}, status=204) # No content
+            else:
+                return Response({"detail": "Invalid credentials"}, status=403) # Forbidden
+        
+        except Exception as e:
+            return Response({"detail": str(e)}, status=500)
+        
+        serializer = self.get_serializer(data=request.data)
+        
