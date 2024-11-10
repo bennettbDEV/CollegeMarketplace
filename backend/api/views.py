@@ -59,7 +59,7 @@ class UserViewSet(viewsets.GenericViewSet):
     serializer_class = UserSerializer
 
     def get_permissions(self):
-        # User must be authenticated if performing any action other than create/retrieve/list
+        # User must be authenticated if performing any action other than create/list/retrieve
         self.permission_classes = ([AllowAny] if (self.action in ["create", "list", "retrieve"]) else [IsAuthenticated])
         return super().get_permissions()
 
@@ -71,23 +71,28 @@ class UserViewSet(viewsets.GenericViewSet):
 
     # Crud actions
     def list(self, request):
+        # Public info so no checks needed, just retrieve users from db
         users = db_query.get_all_users()
+        # Serialize data for all users -> format data as json
         serializer = self.get_serializer(users, many=True)
         return Response(serializer.data)
 
     # User registration
     def create(self, request):
+        # Serialize/Validate data
         serializer = self.get_serializer(data=request.data)
+
         if serializer.is_valid():
             validated_data = serializer.validated_data
 
             # Check if user already exists
-            username = validated_data["username"]
-            if db_query.get_user_by_username(username):
+            new_username = validated_data["username"]
+            if db_query.get_user_by_username(new_username):
                 return Response(
-                    {"detail": "Username already exists."},
+                    {"error": "Username already exists."},
                     status=status.HTTP_409_CONFLICT,
                 )
+
             # Generate password
             validated_data["password"] = make_password(validated_data["password"])
 
@@ -99,35 +104,35 @@ class UserViewSet(viewsets.GenericViewSet):
             validated_data["id"] = user["id"]
 
             # Generate JWT token for the new user
-            refresh = RefreshToken.for_user(User(**validated_data))
+            refresh = str(RefreshToken.for_user(User(**validated_data)))
             access = str(refresh.access_token)
 
             # Form response
             return Response(
                 {
                     "access": access,
-                    "refresh": str(refresh),
+                    "refresh": refresh,
                 },
-                status=201,
+                status=status.HTTP_201_CREATED,
             )
 
         else:
-            return Response(serializer.errors, status=400)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
         user = db_query.get_user_by_id(pk)[0]
         if user:
             serializer = self.get_serializer(User(**user))
-            return Response(serializer.data)
-        return Response(status=404)
+            return Response(serializer.data) # HTTP 200 OK
+        return Response({"error": "User with that username not found."}, status=status.HTTP_404_NOT_FOUND)
 
     # Needs some work still -> needs update_user() to be made in queries.py
     def update(self, request, pk=None):
         try:
             user = db_query.get_user_by_id(pk)[0]
             if not user:
-                return Response({"detail": "User not found."}, status=404) # Not found
-            
+                return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
             # Ensure user is updating their own account
             if request.user.id == int(pk):
                 serializer = self.get_serializer(User(**request.user))
@@ -135,15 +140,16 @@ class UserViewSet(viewsets.GenericViewSet):
                 if serializer.is_valid():
                     # Ensure new username isnt taken
                     if db_query.get_user_by_username(request.user.username)[0]:
-                        return Response({"detail": "Username taken"}, status=403) # Forbidden
-                
-                #db_query.update_user(pk, new_data)
-                return Response({"detail": "User edited successfully."}, status=204) # No content
+                        return Response({"error": "Username taken"}, status=status.HTTP_403_FORBIDDEN)
+
+                # db_query.update_user(pk, new_data)
+                return Response({"detail": "User edited successfully."}, status=status.HTTP_204_NO_CONTENT)
             else:
-                return Response({"detail": "Invalid credentials"}, status=403) # Forbidden
-        
+                return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
+
         except Exception as e:
-            return Response({"detail": str(e)}, status=500)
+            print(str(e))
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def partial_update(self, request, pk=None):
         pass
@@ -152,17 +158,18 @@ class UserViewSet(viewsets.GenericViewSet):
         try:
             user = db_query.get_user_by_id(pk)[0]
             if not user:
-                return Response({"detail": "User not found."}, status=404) # Not found
-            
+                return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
             # Ensure user is deleting their own account
             if request.user.id == int(pk):
                 db_query.delete_user(pk)
-                return Response({"detail": "User deleted successfully."}, status=204) # No content
+                return Response({"detail": "User deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
             else:
-                return Response({"detail": "Invalid credentials"}, status=403) # Forbidden
-        
+                return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
+
         except Exception as e:
-            return Response({"detail": str(e)}, status=500)
+            print(str(e))
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # Listing controller/handler
 class ListingViewSet(viewsets.GenericViewSet):
@@ -183,7 +190,7 @@ class ListingViewSet(viewsets.GenericViewSet):
     def list(self, request):
         listings = db_query.get_all_listings()
         serializer = self.get_serializer(listings, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data) # HTTP 200 OK
 
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -194,16 +201,16 @@ class ListingViewSet(viewsets.GenericViewSet):
             user_id = request.user.id
             db_query.create_listing(serializer.validated_data, user_id)
 
-            return Response(serializer.data, status=201)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            return Response(serializer.errors, status=400)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
         listing = db_query.get_listing_by_id(pk)[0]
         if listing:
             serializer = self.get_serializer(Listing(**listing))
             return Response(serializer.data)
-        return Response(status=404)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
     def update(self, request, pk=None):
         pass
@@ -215,17 +222,16 @@ class ListingViewSet(viewsets.GenericViewSet):
         try:
             listing = db_query.get_listing_by_id(pk)[0]
             if not listing:
-                return Response({"detail": "Listing not found."}, status=404) # Not found
+                return Response({"detail": "Listing not found."}, status=status.HTTP_404_NOT_FOUND) 
             
             # Ensure user is deleting their own listing
             if request.user.id == listing.author_id:
                 db_query.delete_listing(pk)
-                return Response({"detail": "Listing deleted successfully."}, status=204) # No content
+                return Response({"detail": "Listing deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
             else:
-                return Response({"detail": "Invalid credentials"}, status=403) # Forbidden
+                return Response({"detail": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
         
         except Exception as e:
-            return Response({"detail": str(e)}, status=500)
-        
-        serializer = self.get_serializer(data=request.data)
+            print(str(e))
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
