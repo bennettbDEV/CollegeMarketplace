@@ -76,19 +76,27 @@ class SQLiteDBQuery(DBQuery):
         return users
 
     def get_user_by_id(self, user_id):
-        query = "SELECT * FROM User WHERE id = ?"
+        query = "SELECT * FROM User WHERE id = ? LIMIT 1"
         params = (user_id,)
         self.db_connection.connect()
         user = self.db_connection.execute_query(query, params)
         self.db_connection.disconnect()
+        
+        # The query returns a list of user rows, so return actual user instance
+        if user:
+            user = user[0]
         return user
 
     def get_user_by_username(self, username):
-        query = "SELECT * FROM User WHERE username = ?"
+        query = "SELECT * FROM User WHERE username = ? LIMIT 1"
         params = (username,)
         self.db_connection.connect()
         user = self.db_connection.execute_query(query, params)
         self.db_connection.disconnect()
+
+        # The query returns a list of user rows, so return actual user instance
+        if user:
+            user = user[0]
         return user
 
     def create_user(self, data):

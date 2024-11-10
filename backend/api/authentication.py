@@ -20,7 +20,7 @@ class CustomJWTAuthentication(JWTAuthentication):
         except KeyError:
             raise InvalidTokenError(_("Token contained no recognizable user identification"))
         
-        user_data = db_query.get_user_by_id(user_id)[0]
+        user_data = db_query.get_user_by_id(user_id)
 
         if user_data is None:
             raise AuthenticationFailed("User not found.")
@@ -30,7 +30,7 @@ class CustomJWTAuthentication(JWTAuthentication):
 def validate_user_credentials(username, password):
     # get user from db
     try:
-        user_data = db_query.get_user_by_username(username)[0]
+        user_data = db_query.get_user_by_username(username)
     except IndexError:
         # User doesn't exist
         return None

@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.contrib.auth.hashers import make_password
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -32,7 +31,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
             if user_data:
                 # Get users id
-                user = db_query.get_user_by_username(user_data["username"])[0]
+                user = db_query.get_user_by_username(user_data["username"])
                 user_data["id"] = user["id"]
 
                 # Create tokens for the authenticated user
@@ -100,18 +99,18 @@ class UserViewSet(viewsets.GenericViewSet):
             db_query.create_user(serializer.validated_data)
 
             # Get users id
-            user = db_query.get_user_by_username(username)[0]
+            user = db_query.get_user_by_username(new_username)
             validated_data["id"] = user["id"]
 
             # Generate JWT token for the new user
-            refresh = str(RefreshToken.for_user(User(**validated_data)))
+            refresh = RefreshToken.for_user(User(**validated_data))
             access = str(refresh.access_token)
 
             # Form response
             return Response(
                 {
                     "access": access,
-                    "refresh": refresh,
+                    "refresh": str(refresh),
                 },
                 status=status.HTTP_201_CREATED,
             )
@@ -120,7 +119,7 @@ class UserViewSet(viewsets.GenericViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
-        user = db_query.get_user_by_id(pk)[0]
+        user = db_query.get_user_by_id(pk)
         if user:
             serializer = self.get_serializer(User(**user))
             return Response(serializer.data) # HTTP 200 OK
@@ -129,7 +128,7 @@ class UserViewSet(viewsets.GenericViewSet):
     # Needs some work still -> needs update_user() to be made in queries.py
     def update(self, request, pk=None):
         try:
-            user = db_query.get_user_by_id(pk)[0]
+            user = db_query.get_user_by_id(pk)
             if not user:
                 return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -139,7 +138,7 @@ class UserViewSet(viewsets.GenericViewSet):
 
                 if serializer.is_valid():
                     # Ensure new username isnt taken
-                    if db_query.get_user_by_username(request.user.username)[0]:
+                    if db_query.get_user_by_username(request.user.username):
                         return Response({"error": "Username taken"}, status=status.HTTP_403_FORBIDDEN)
 
                 # db_query.update_user(pk, new_data)
@@ -156,7 +155,7 @@ class UserViewSet(viewsets.GenericViewSet):
 
     def destroy(self, request, pk=None):
         try:
-            user = db_query.get_user_by_id(pk)[0]
+            user = db_query.get_user_by_id(pk)
             if not user:
                 return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -170,6 +169,7 @@ class UserViewSet(viewsets.GenericViewSet):
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 # Listing controller/handler
 class ListingViewSet(viewsets.GenericViewSet):
@@ -206,7 +206,7 @@ class ListingViewSet(viewsets.GenericViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
-        listing = db_query.get_listing_by_id(pk)[0]
+        listing = db_query.get_listing_by_id(pk)
         if listing:
             serializer = self.get_serializer(Listing(**listing))
             return Response(serializer.data)
@@ -220,7 +220,7 @@ class ListingViewSet(viewsets.GenericViewSet):
 
     def destroy(self, request, pk=None):
         try:
-            listing = db_query.get_listing_by_id(pk)[0]
+            listing = db_query.get_listing_by_id(pk)
             if not listing:
                 return Response({"detail": "Listing not found."}, status=status.HTTP_404_NOT_FOUND) 
             
@@ -234,4 +234,3 @@ class ListingViewSet(viewsets.GenericViewSet):
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
