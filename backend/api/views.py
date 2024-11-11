@@ -141,7 +141,7 @@ class UserViewSet(viewsets.GenericViewSet):
                     if db_query.get_user_by_username(request.user.username):
                         return Response({"error": "Username taken"}, status=status.HTTP_403_FORBIDDEN)
 
-                # db_query.update_user(pk, new_data)
+                db_query.update_user(pk, serializer.validated_data)
                 return Response({"detail": "User edited successfully."}, status=status.HTTP_204_NO_CONTENT)
             else:
                 return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)

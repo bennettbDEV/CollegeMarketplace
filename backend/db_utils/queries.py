@@ -27,6 +27,7 @@ class DBQuery(ABC):
         pass
 
 
+# We need to refactor our queries to avoid connecting and disconnecting to the db every time
 class SQLiteDBQuery(DBQuery):
     # Listing functions
     def get_all_listings(self):
@@ -112,6 +113,19 @@ class SQLiteDBQuery(DBQuery):
     def delete_user(self, user_id):
         query = "DELETE FROM user WHERE id = ?"
         params = (user_id,)
+        self.db_connection.connect()
+        self.db_connection.execute_query(query, params)
+        self.db_connection.disconnect()
+
+    def update_user(self, user_id, new_data):
+        # Exclude "id" key:value pair. We should not modify user's id
+        new_data = {key: value for key, value in new_data.items() if key != "id"}
+        # Dynamically generate a string for each column
+        columns = ", ".join(f"{key} = ?" for key in new_data.keys())
+        # Use the generated string to update all specified columns
+        query = f"UPDATE user SET {columns} WHERE id = ?"
+        params = tuple(new_data.values()) + (user_id,)
+
         self.db_connection.connect()
         self.db_connection.execute_query(query, params)
         self.db_connection.disconnect()
