@@ -24,6 +24,22 @@ python manage.py startapp NAME_OF_APP
 python manage.py migrate
     *apply any migrations 
 
+# Notes: Django
+- URL routing + HTTP request to action(function in a view) guide:
+    - https://www.django-rest-framework.org/api-guide/routers/#defaultrouter
+    - https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+- Token stuff: 
+    - https://django-rest-framework-simplejwt.readthedocs.io/en/latest/
+    - https://www.django-rest-framework.org/api-guide/authentication/#authentication
+
+
+# Commands: React/Node
+npm install
+    *installs dependencies
+
+npm run dev
+    *runs the front-end development server. You can exit by pressing CTRL+C
+
 
 
 # Helpful Commands
@@ -33,5 +49,13 @@ python manage.py migrate
 # Commands: General Navigation
 cd .. 
     *this moves us back a directory
+
+mkdir DIRECTORY_NAME
+    *makes a new folder/directory
+
+cat FILE_NAME
+    *outputs the content of a file in the command line
+
+
 
 
