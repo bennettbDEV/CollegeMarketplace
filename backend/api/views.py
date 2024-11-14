@@ -12,7 +12,7 @@ from .models import Listing, User
 from .serializers import LoginSerializer
 
 # added by Chase (will need to edit)
-from .user_handler import UserHandler
+from .handlers import UserHandler
 
 # Initialize specific query object
 db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
@@ -84,37 +84,8 @@ class UserViewSet(viewsets.GenericViewSet):
         if serializer.is_valid():
             validated_data = serializer.validated_data
 
-            # Check if user already exists
-            new_username = validated_data["username"]
-            if db_query.get_user_by_username(new_username):
-                return Response(
-                    {"error": "Username already exists."},
-                    status=status.HTTP_409_CONFLICT,
-                )
-
-            # Generate password
-            validated_data["password"] = make_password(validated_data["password"])
-
-            # Create user
-            db_query.create_user(serializer.validated_data)
-
-            # Get users id
-            user = db_query.get_user_by_username(new_username)
-            validated_data["id"] = user["id"]
-
-            # Generate JWT token for the new user
-            refresh = RefreshToken.for_user(User(**validated_data))
-            access = str(refresh.access_token)
-
-            # Form response
-            return Response(
-                {
-                    "access": access,
-                    "refresh": str(refresh),
-                },
-                status=status.HTTP_201_CREATED,
-            )
-
+            response = UserHandler.register_user(validated_data)
+            return response
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
