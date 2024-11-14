@@ -20,7 +20,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
-from api.views import CustomTokenObtainPairView
+from api.views import LoginView
 
 urlpatterns = [
     #CHASE ADDITIONS
@@ -29,7 +29,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # Authentication
     # api/token/ is used for logging in, token/refresh/ is used to refresh access token
-    path("api/token/", CustomTokenObtainPairView.as_view(), name="get_token"),
+    path("api/token/", LoginView.as_view(), name="get_token"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh"),
 
     # Main api urls

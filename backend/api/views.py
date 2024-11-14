@@ -9,7 +9,7 @@ from db_utils.db_factory import DBFactory, DBType
 from db_utils.queries import SQLiteDBQuery
 from .serializers import UserSerializer, ListingSerializer
 from .models import Listing, User
-from .serializers import CustomTokenObtainPairSerializer
+from .serializers import LoginSerializer
 
 # added by Chase (will need to edit)
 from .user_handler import UserHandler
@@ -17,9 +17,9 @@ from .user_handler import UserHandler
 # Initialize specific query object
 db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
 
-
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
+# CustomTokenObtainPairView
+class LoginView(TokenObtainPairView):
+    serializer_class = LoginSerializer
     permission_classes = [AllowAny]
 
     # Login request

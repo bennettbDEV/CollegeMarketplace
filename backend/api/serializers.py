@@ -4,8 +4,8 @@ from rest_framework.exceptions import AuthenticationFailed
 from api.authentication import validate_user_credentials
 
 
-# Authentication serializer
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+# Authentication serializer - CustomTokenObtainPairSerializer
+class LoginSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         username = attrs["username"]
         password = attrs["password"]
