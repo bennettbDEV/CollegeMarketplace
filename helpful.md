@@ -1,6 +1,10 @@
 # Helpful Commands
 -------------------
 -------------------
+## Websites ## (server must be running)
+http://127.0.0.1:8000/
+
+
 -------------------
 # Commands: Django
 python manage.py runserver
@@ -24,6 +28,11 @@ python manage.py startapp NAME_OF_APP
 python manage.py migrate
     *apply any migrations 
 
+python manage.py createsuperuser
+    *creates a superuser
+    * my account
+    -Username = chasemayberry
+    -Password = it326isgreat
 # Notes: Django
 - URL routing + HTTP request to action(function in a view) guide:
     - https://www.django-rest-framework.org/api-guide/routers/#defaultrouter
