@@ -39,6 +39,7 @@ class UserHandler:
         # Implement logout logic here (e.g., clear session or tokens) EDIT LATER
         pass
 
+
     def list_users(self):
         # Public info so no checks needed, just retrieve users from db
         return db_query.get_all_users()
@@ -47,10 +48,7 @@ class UserHandler:
         # Check if user already exists
         new_username = validated_data["username"]
         if db_query.get_user_by_username(new_username):
-            return Response(
-                {"error": "Username already exists."},
-                status=status.HTTP_409_CONFLICT,
-            )
+            return Response({"error": "Username already exists."},status=status.HTTP_409_CONFLICT,)
 
         # Generate password
         validated_data["password"] = make_password(validated_data["password"])
@@ -78,12 +76,12 @@ class UserHandler:
     def get_user(self, id):
         return db_query.get_user_by_id(id)
 
-    # update_user function
     def update_user(self, username, password):
         # Add logic later
         pass
 
     def partial_update_user(self):
+        # Add logic later
         pass
 
     def delete_user(self, request, id):
@@ -100,4 +98,20 @@ class UserHandler:
 
 
 class LoginHandler:
-    pass
+    def list_listings(self):
+        pass
+
+    def create_listings(self):
+        pass
+
+    def get_listing(self):
+        pass
+
+    def update_listing(self):
+        pass
+
+    def patrial_update_listing(self):
+        pass
+
+    def delete_listing(self):
+        pass
