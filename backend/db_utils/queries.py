@@ -3,8 +3,18 @@ from db_utils.connections import SQLiteConnection
 
 
 class DBQuery(ABC):
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(DBQuery, cls).__new__(cls)
+        return cls._instance
+
     def __init__(self, db_connection):
-        self.db_connection = db_connection
+        # Avoid reinitializing
+        if not hasattr(self, "_initialized"):
+            self.db_connection = db_connection
+            self._initialized = True
 
     @abstractmethod
     def get_all_listings(self):
