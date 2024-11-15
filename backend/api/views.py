@@ -28,35 +28,16 @@ class LoginView(TokenObtainPairView):
         # If valid credentials
         if serializer.is_valid():
             user_data = serializer.validated_data
-
-            if user_data:
-                # Get users id
-                user = db_query.get_user_by_username(user_data["username"])
-                user_data["id"] = user["id"]
-
-                # Create tokens for the authenticated user
-                refresh = RefreshToken.for_user(User(**user_data))
-                access_token = str(refresh.access_token)
-
-                # Return tokens in the response
-                return Response(
-                    {
-                        "access": access_token,
-                        "refresh": str(refresh),
-                    }
-                )
-            else:
-                return Response(
-                    {"error": "Invalid credentials"},
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
+            response = UserHandler.login(UserHandler,user_data)
+            return response
+        
         # If the serializer is invalid, return errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserViewSet(viewsets.GenericViewSet):
     serializer_class = UserSerializer
-
+    
     def get_permissions(self):
         # User must be authenticated if performing any action other than create/list/retrieve
         self.permission_classes = ([AllowAny] if (self.action in ["create", "list", "retrieve"]) else [IsAuthenticated])
@@ -64,14 +45,14 @@ class UserViewSet(viewsets.GenericViewSet):
 
     def get_queryset(self):
         # Gets all users
-        users = db_query.get_all_users()
+        users = UserHandler.list_users(UserHandler)
         # ** operator is used to pass all key value pairs to the calling function
         return [User(**user) for user in users]
 
+
     # Crud actions
     def list(self, request):
-        # Public info so no checks needed, just retrieve users from db
-        users = db_query.get_all_users()
+        users = UserHandler.list_users(UserHandler)
         # Serialize data for all users -> format data as json
         serializer = self.get_serializer(users, many=True)
         return Response(serializer.data)
@@ -84,13 +65,13 @@ class UserViewSet(viewsets.GenericViewSet):
         if serializer.is_valid():
             validated_data = serializer.validated_data
 
-            response = UserHandler.register_user(validated_data)
+            response = UserHandler.register_user(UserHandler,validated_data)
             return response
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
-        user = db_query.get_user_by_id(pk)
+        user = UserHandler.get_user(UserHandler, pk)
         if user:
             serializer = self.get_serializer(User(**user))
             return Response(serializer.data) # HTTP 200 OK
@@ -126,17 +107,8 @@ class UserViewSet(viewsets.GenericViewSet):
 
     def destroy(self, request, pk=None):
         try:
-            user = db_query.get_user_by_id(pk)
-            if not user:
-                return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-
-            # Ensure user is deleting their own account
-            if request.user.id == int(pk):
-                db_query.delete_user(pk)
-                return Response({"detail": "User deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
-            else:
-                return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
-
+            response = UserHandler.delete_user(UserHandler, request, pk)
+            return response
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

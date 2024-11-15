@@ -10,25 +10,40 @@ from .models import User
 db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
 
 class UserHandler:
-    def __init__(self, user):
-        self.user = user
-
     # login function
-    def login(self, username, password):
-        # Implement login logic here. EDIT as this is basic
-        if self.user.username == username and check_password(password, self.user.password):
-            return True
+    def login(self, user_data):
+        if user_data:
+            # Get users id
+            user = db_query.get_user_by_username(user_data["username"])
+            user_data["id"] = user["id"]
+
+            # Create tokens for the authenticated user
+            refresh = RefreshToken.for_user(User(**user_data))
+            access_token = str(refresh.access_token)
+
+            # Return tokens in the response
+            return Response(
+                {
+                    "access": access_token,
+                    "refresh": str(refresh),
+                }
+            )
         else:
-            return False
+            return Response(
+                {"error": "Invalid credentials"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
     # logout function
     def logout(self):
         # Implement logout logic here (e.g., clear session or tokens) EDIT LATER
         pass
 
+    def list_users(self):
+        # Public info so no checks needed, just retrieve users from db
+        return db_query.get_all_users()
 
-
-    def register_user(validated_data):
+    def register_user(self, validated_data):
         # Check if user already exists
         new_username = validated_data["username"]
         if db_query.get_user_by_username(new_username):
@@ -60,15 +75,28 @@ class UserHandler:
             status=status.HTTP_201_CREATED,
         )
 
-    # update_account function
-    def update_account(self, username, password):
+    def get_user(self, id):
+        return db_query.get_user_by_id(id)
+
+    # update_user function
+    def update_user(self, username, password):
         # Add logic later
         pass
 
-    # update_account function
-    def do_stuff(self):
-        # Add logic later
+    def partial_update_user(self):
         pass
+
+    def delete_user(self, request, id):
+        user = db_query.get_user_by_id(id)
+        if not user:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Ensure user is deleting their own account
+        if request.user.id == int(id):
+            db_query.delete_user(id)
+            return Response({"detail": "User deleted successfully."}, status=status.HTTP_204_NO_CONTENT,)
+        else:
+            return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
 
 
 class LoginHandler:
