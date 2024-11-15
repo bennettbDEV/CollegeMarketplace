@@ -3,6 +3,7 @@
 -------------------
 ## Websites ## (server must be running)
 http://127.0.0.1:8000/
+http://127.0.0.1:8000/api/login/
 http://127.0.0.1:8000/admin/login/?next=/admin/ 
     U = chasemayberry
     P = it326isgreat
