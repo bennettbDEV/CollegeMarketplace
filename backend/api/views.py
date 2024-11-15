@@ -1,4 +1,6 @@
+#api/views.py
 from django.contrib.auth.hashers import make_password
+from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -176,3 +178,12 @@ class ListingViewSet(viewsets.GenericViewSet):
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+'''
+Non-class Related Functions 
+'''
+
+#Function to return to the generate the homepage 
+def to_homepage(request):
+    return render(request, 'api/homepage.html',{}) #this naming convention is so stupid imo
