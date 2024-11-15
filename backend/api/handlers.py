@@ -97,11 +97,11 @@ class UserHandler:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
 
 
-class LoginHandler:
+class ListingHandler:
     def list_listings(self):
         pass
 
-    def create_listings(self):
+    def create_listing(self):
         pass
 
     def get_listing(self):
