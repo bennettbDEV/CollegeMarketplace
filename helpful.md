@@ -4,6 +4,9 @@
 ## Websites ## (server must be running)
 http://127.0.0.1:8000/
 
+# Github tips
+- Always remember to pull from main when you start working on the project
+
 
 -------------------
 # Commands: Django
