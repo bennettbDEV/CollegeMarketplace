@@ -40,6 +40,7 @@ python manage.py createsuperuser
     -Username = chasemayberry
     -Password = it326isgreat
 # Notes: Django
+- ViewSets in Django are similar to "Controllers" from other frameworks
 - URL routing + HTTP request to action(function in a view) guide:
     - https://www.django-rest-framework.org/api-guide/routers/#defaultrouter
     - https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
