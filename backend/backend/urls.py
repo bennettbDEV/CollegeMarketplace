@@ -20,6 +20,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
+#for homepage
 from api.views import LoginView, to_homepage 
 
 urlpatterns = [
@@ -30,5 +31,5 @@ urlpatterns = [
     path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh"),
     # Main api urls
     path("api/", include("api.urls")),
-    path('', to_homepage, name='home'),  # Root URL for the homepage
+    path('', to_homepage, name="home"),  # Root URL for the homepage
 ]

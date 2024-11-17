@@ -94,22 +94,6 @@
             <p>Your platform to buy, sell, and exchange college supplies</p>
             <a href="{% url 'login' %}" class="login-button">Login</a> <!-- Login button -->
         </header>
-        <section id="featured-products">
-            <h2>Featured Products</h2>
-            <div class="products-list">
-                {% if featured_products %}
-                    {% for product in featured_products %}
-                        <div class="product-card">
-                            <h3>{{ product.name }}</h3>
-                            <p>{{ product.description }}</p>
-                            <span>Price: ${{ product.price }}</span>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p>No featured products at this time.</p>
-                {% endif %}
-            </div>
-        </section>
         <footer>
             <p>&copy; 2024 ISU Marketplace</p>
         </footer>
