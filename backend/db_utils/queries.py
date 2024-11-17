@@ -127,7 +127,7 @@ class SQLiteDBQuery(DBQuery):
         self.db_connection.execute_query(query, params)
         self.db_connection.disconnect()
 
-    def update_user(self, user_id, new_data):
+    def partial_update_user(self, user_id, new_data):
         # Exclude "id" key:value pair. We should not modify user's id
         new_data = {key: value for key, value in new_data.items() if key != "id"}
         # Dynamically generate a string for each column

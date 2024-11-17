@@ -77,7 +77,7 @@ class UserViewSet(viewsets.GenericViewSet):
             serializer = self.get_serializer(User(**user))
             return Response(serializer.data) # HTTP 200 OK
         return Response({"error": "User with that username not found."}, status=status.HTTP_404_NOT_FOUND)
-
+    
     # Needs some work still -> needs update_user() to be made in queries.py
     def update(self, request, pk=None):
         try:
@@ -104,7 +104,12 @@ class UserViewSet(viewsets.GenericViewSet):
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def partial_update(self, request, pk=None):
-        pass
+        try:
+            response = UserHandler.partial_update_user(UserHandler, request, pk)
+            return response
+        except Exception as e:
+            print(str(e))
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def destroy(self, request, pk=None):
         try:
