@@ -76,10 +76,6 @@ class UserHandler:
     def get_user(self, id):
         return db_query.get_user_by_id(id)
 
-    def update_user(self, username, password):
-        # Add logic later
-        pass
-
     def partial_update_user(self, request, id):
         user = db_query.get_user_by_id(id)
         if not user:

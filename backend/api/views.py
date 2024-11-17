@@ -77,31 +77,6 @@ class UserViewSet(viewsets.GenericViewSet):
             serializer = self.get_serializer(User(**user))
             return Response(serializer.data) # HTTP 200 OK
         return Response({"error": "User with that username not found."}, status=status.HTTP_404_NOT_FOUND)
-    
-    # Needs some work still -> needs update_user() to be made in queries.py
-    def update(self, request, pk=None):
-        try:
-            user = db_query.get_user_by_id(pk)
-            if not user:
-                return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-
-            # Ensure user is updating their own account
-            if request.user.id == int(pk):
-                serializer = self.get_serializer(User(**request.user))
-
-                if serializer.is_valid():
-                    # Ensure new username isnt taken
-                    if db_query.get_user_by_username(request.user.username):
-                        return Response({"error": "Username taken"}, status=status.HTTP_403_FORBIDDEN)
-
-                db_query.update_user(pk, serializer.validated_data)
-                return Response({"detail": "User edited successfully."}, status=status.HTTP_204_NO_CONTENT)
-            else:
-                return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
-
-        except Exception as e:
-            print(str(e))
-            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def partial_update(self, request, pk=None):
         try:
