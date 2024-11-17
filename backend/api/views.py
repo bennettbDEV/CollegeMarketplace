@@ -1,19 +1,15 @@
-#api/views.py
-from django.contrib.auth.hashers import make_password
-from django.shortcuts import render
-from rest_framework import viewsets, status
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework_simplejwt.views import TokenObtainPairView
-
+# api/views.py
 from db_utils.db_factory import DBFactory, DBType
 from db_utils.queries import SQLiteDBQuery
-from .serializers import UserSerializer, ListingSerializer
-from .models import Listing, User
-from .serializers import LoginSerializer
+from django.shortcuts import render
+from rest_framework import status, viewsets
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-# added by Chase (will need to edit)
 from .handlers import UserHandler
+from .models import Listing, User
+from .serializers import ListingSerializer, LoginSerializer, UserSerializer
 
 # Initialize specific query object
 db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
@@ -38,7 +34,7 @@ class LoginView(TokenObtainPairView):
 
 class UserViewSet(viewsets.GenericViewSet):
     serializer_class = UserSerializer
-    
+
     def get_permissions(self):
         # User must be authenticated if performing any action other than create/list/retrieve
         self.permission_classes = ([AllowAny] if (self.action in ["create", "list", "retrieve"]) else [IsAuthenticated])
@@ -50,9 +46,17 @@ class UserViewSet(viewsets.GenericViewSet):
         # ** operator is used to pass all key value pairs to the calling function
         return [User(**user) for user in users]
 
-
     # Crud actions
     def list(self, request):
+        """Lists all user objects.
+
+        Args:
+            request (Request): DRF request object.
+
+        Returns:
+            Response: An object containing a list of all user objects.
+        """
+
         users = UserHandler.list_users(UserHandler)
         # Serialize data for all users -> format data as json
         serializer = self.get_serializer(users, many=True)
@@ -60,25 +64,56 @@ class UserViewSet(viewsets.GenericViewSet):
 
     # User registration
     def create(self, request):
+        """Creates a new User.
+
+        Args:
+            request (Request): DRF request object.
+
+        Returns:
+            Response: If request data is valid, the DRF Response object will contain authentication tokens.
+            Response will always include an HTTP status.
+        """
+
         # Serialize/Validate data
         serializer = self.get_serializer(data=request.data)
 
         if serializer.is_valid():
             validated_data = serializer.validated_data
 
-            response = UserHandler.register_user(UserHandler,validated_data)
+            response = UserHandler.register_user(UserHandler, validated_data)
             return response
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
+        """Retrieves the User with the specified id.
+
+        Args:
+            request (Request): DRF request object.
+            pk (int, optional): The id of the User. Defaults to None.
+
+        Returns:
+            Response: A DRF Response object with the user's data, if the user exists.
+            Response will always include an HTTP status.
+        """
+
         user = UserHandler.get_user(UserHandler, pk)
         if user:
             serializer = self.get_serializer(User(**user))
-            return Response(serializer.data) # HTTP 200 OK
-        return Response({"error": "User with that username not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"error": "User with that username not found."}, status=status.HTTP_404_NOT_FOUND,)
 
     def partial_update(self, request, pk=None):
+        """Updates the specified user with the given data.
+
+        Args:
+            request (Request): DRF request object.
+            pk (int, optional): The id of the User. Defaults to None.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+        """
+
         try:
             response = UserHandler.partial_update_user(UserHandler, request, pk)
             return response
@@ -87,6 +122,15 @@ class UserViewSet(viewsets.GenericViewSet):
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def destroy(self, request, pk=None):
+        """Deletes the specified User.
+
+        Args:
+            request (Request): DRF request object.
+            pk (int, optional): The id of the User. Defaults to None.
+
+        Returns:
+            Resposne: A DRF Response object with an HTTP status.
+        """
         try:
             response = UserHandler.delete_user(UserHandler, request, pk)
             return response
@@ -119,8 +163,6 @@ class ListingViewSet(viewsets.GenericViewSet):
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            validated_data = serializer.validated_data
-
             # Create listing with reference to calling user's id
             user_id = request.user.id
             db_query.create_listing(serializer.validated_data, user_id)
@@ -164,6 +206,6 @@ class ListingViewSet(viewsets.GenericViewSet):
 Non-class Related Functions 
 '''
 
-#Function to return to the generate the homepage 
+# Function to return to the generate the homepage
 def to_homepage(request):
     return render(request, 'api/homepage.html',{}) #this naming convention is so stupid imo

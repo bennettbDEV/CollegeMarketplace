@@ -1,14 +1,18 @@
 # user_handler.py (created by CHASE)
-from django.contrib.auth.hashers import make_password, check_password
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.response import Response
-from rest_framework import status
-from api.serializers import UserSerializer
 from db_utils.db_factory import DBFactory, DBType
 from db_utils.queries import SQLiteDBQuery
-from .models import User 
+from django.contrib.auth.hashers import make_password
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from api.serializers import UserSerializer
+
+from .models import User
+
 # Initialize specific query object
 db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
+
 
 class UserHandler:
     # login function
@@ -30,10 +34,7 @@ class UserHandler:
                 }
             )
         else:
-            return Response(
-                {"error": "Invalid credentials"},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
+            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED,)
 
     # logout function
     def logout(self):
@@ -93,7 +94,7 @@ class UserHandler:
 
             # The "|" operator merges dictionaries + the later dict overwrites values from older dict if the keys are equal
             merged_data = existing_data | new_data
-            
+
             serializer = UserSerializer(data=merged_data, partial=True)
 
             if serializer.is_valid():
