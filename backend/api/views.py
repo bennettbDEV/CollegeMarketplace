@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .handlers import UserHandler
+from .handlers import UserHandler, ListingHandler
 from .models import Listing, User
 from .serializers import ListingSerializer, LoginSerializer, UserSerializer
 
@@ -156,18 +156,16 @@ class ListingViewSet(viewsets.GenericViewSet):
 
     # Crud actions
     def list(self, request):
-        listings = db_query.get_all_listings()
+        listings = ListingHandler.list_listings(ListingHandler)
         serializer = self.get_serializer(listings, many=True)
-        return Response(serializer.data) # HTTP 200 OK
+        return Response(serializer.data)
 
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            # Create listing with reference to calling user's id
             user_id = request.user.id
-            db_query.create_listing(serializer.validated_data, user_id)
-
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            response = ListingHandler.create_listing(ListingHandler, serializer.validated_data, user_id)
+            return response
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

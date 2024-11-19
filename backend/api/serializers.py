@@ -29,13 +29,15 @@ class ListingSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=50)
     description = serializers.CharField(max_length=500)
     price = serializers.FloatField()
+    # TODO: make image serializers.ImageField() later
+    image = serializers.CharField()
+    tags = serializers.ListField()
     created_at = serializers.DateTimeField(read_only=True)
-    # maybe change write_only for author_id
-    author_id = serializers.IntegerField(write_only=True)
-
+    
+    """
     def validate(self, attrs):
         if not attrs.get("title"):
             raise serializers.ValidationError("Title is required.")
         if not attrs.get("description"):
             raise serializers.ValidationError("Description is required.")
-        return attrs
+        return attrs"""

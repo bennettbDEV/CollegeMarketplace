@@ -125,10 +125,17 @@ class UserHandler:
 
 class ListingHandler:
     def list_listings(self):
-        pass
+        # Public info so no checks needed, just retrieve listings from db
+        return db_query.get_all_listings()
 
-    def create_listing(self):
-        pass
+    def create_listing(self, validated_data, user_id):
+        # Create listing with reference to calling user's id
+        try:
+            db_query.create_listing(validated_data, user_id)
+            return Response(validated_data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print(str(e))
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get_listing(self):
         pass
