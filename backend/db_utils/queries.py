@@ -90,9 +90,8 @@ class SQLiteDBQuery(DBQuery):
             # Add tag to listing
             listing_tag_query = "INSERT INTO ListingTag (listing_id, tag_id) VALUES (?, ?);"
             cursor.execute(listing_tag_query, (listing_id, tag_id))
-
-            self.db_connection.connection.commit()
-        
+        # Save change
+        self.db_connection.connection.commit()
         self.db_connection.disconnect()
 
     def get_user_listings(self, user_id):
