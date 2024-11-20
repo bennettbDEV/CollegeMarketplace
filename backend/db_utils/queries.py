@@ -15,6 +15,7 @@ class DBQuery(ABC):
             self.db_connection = db_connection
             self._initialized = True
 
+    # Listing methods
     @abstractmethod
     def get_all_listings(self):
         pass
@@ -22,19 +23,48 @@ class DBQuery(ABC):
     @abstractmethod
     def create_listing(self, data, user_id):
         pass
+    
+    @abstractmethod
+    def get_listing_by_id(self, listing_id):
+        pass
+
+    @abstractmethod
+    def partial_update_listing(self, listing_id, new_data):
+        pass
 
     @abstractmethod
     def delete_listing(self, listing_id):
         pass
 
+    # User methods
     @abstractmethod
-    def get_user_by_id(self, listing_id):
+    def get_all_users(self):
+        pass
+
+    @abstractmethod
+    def create_user(self, data):
+        pass
+    
+    @abstractmethod
+    def get_user_by_id(self, user_id):
+        pass
+    
+    @abstractmethod
+    def get_user_by_username(self, username):
+        pass
+
+    @abstractmethod
+    def partial_update_user(self, user_id, new_data):
+        pass
+
+    @abstractmethod
+    def delete_user(self, user_id):
         pass
 
 
 # We need to refactor our queries to avoid connecting and disconnecting to the db every time
 class SQLiteDBQuery(DBQuery):
-    # Listing functions
+    # Listing methods
     def get_all_listings(self):
         query = """
         SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at,
@@ -139,6 +169,41 @@ class SQLiteDBQuery(DBQuery):
 
         return listings
 
+    def partial_update_listing(self, listing_id, new_data):
+        # Get tag(s) data if it exists
+        tags = new_data.pop("tags", None)
+
+        # Exclude "id" key:value pair. We should not modify listing id
+        new_data = {key: value for key, value in new_data.items() if key != "id"}
+        # Dynamically generate a string for each column
+        columns = ", ".join(f"{key} = ?" for key in new_data.keys())
+        # Use the generated string to update all specified columns
+        query = f"UPDATE Listing SET {columns} WHERE id = ?"
+        params = tuple(new_data.values()) + (listing_id,)
+
+        self.db_connection.connect()
+        self.db_connection.execute_query(query, params)
+
+        # Update tags
+        if tags:
+            # Remove existing tags for the listing
+            delete_query = "DELETE FROM ListingTag WHERE listing_id = ?"
+            self.db_connection.execute_query(delete_query, (listing_id,))
+
+            # Add new tags
+            for tag in tags:
+                # If tag doesn't exit, add it to the Tag table
+                tag_query = "INSERT OR IGNORE INTO Tag (name) VALUES (?);"
+                self.db_connection.execute_query(tag_query, (tag,))
+
+                tag_id_query = "SELECT id FROM Tag WHERE name = ?;"
+                tag_id = self.db_connection.execute_query(tag_id_query, (tag,))[0]["id"]
+
+                listing_tag_query = "INSERT INTO ListingTag (listing_id, tag_id) VALUES (?, ?);"
+                self.db_connection.execute_query(listing_tag_query, (listing_id, tag_id))
+
+        self.db_connection.disconnect()
+
     def delete_listing(self, listing_id):
         query = "DELETE FROM listing WHERE id = ?"
         params = (listing_id,)
@@ -150,7 +215,7 @@ class SQLiteDBQuery(DBQuery):
 
     # --------------------------------------------------------------------------------
 
-    # User functions
+    # User methods
     def get_all_users(self):
         query = "SELECT * FROM user"
         self.db_connection.connect()
@@ -162,6 +227,16 @@ class SQLiteDBQuery(DBQuery):
         users = [{column: row[column] for column in row.keys()} for row in rows]
 
         return users
+    
+    def create_user(self, data):
+            query = """
+            INSERT INTO User (username, password, location) 
+            VALUES (?, ?, ?)
+            """
+            params = (data["username"], data["password"], data["location"])
+            self.db_connection.connect()
+            self.db_connection.execute_query(query, params)
+            self.db_connection.disconnect()
 
     def get_user_by_id(self, user_id):
         query = "SELECT * FROM User WHERE id = ? LIMIT 1"
@@ -187,23 +262,6 @@ class SQLiteDBQuery(DBQuery):
             user = user[0]
         return user
 
-    def create_user(self, data):
-        query = """
-        INSERT INTO User (username, password, location) 
-        VALUES (?, ?, ?)
-        """
-        params = (data["username"], data["password"], data["location"])
-        self.db_connection.connect()
-        self.db_connection.execute_query(query, params)
-        self.db_connection.disconnect()
-
-    def delete_user(self, user_id):
-        query = "DELETE FROM user WHERE id = ?"
-        params = (user_id,)
-        self.db_connection.connect()
-        self.db_connection.execute_query(query, params)
-        self.db_connection.disconnect()
-
     def partial_update_user(self, user_id, new_data):
         # Exclude "id" key:value pair. We should not modify user's id
         new_data = {key: value for key, value in new_data.items() if key != "id"}
@@ -216,3 +274,11 @@ class SQLiteDBQuery(DBQuery):
         self.db_connection.connect()
         self.db_connection.execute_query(query, params)
         self.db_connection.disconnect()
+
+    def delete_user(self, user_id):
+        query = "DELETE FROM user WHERE id = ?"
+        params = (user_id,)
+        self.db_connection.connect()
+        self.db_connection.execute_query(query, params)
+        self.db_connection.disconnect()
+

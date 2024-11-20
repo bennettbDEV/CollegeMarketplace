@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from api.serializers import UserSerializer
+from api.serializers import UserSerializer, ListingSerializer
 
 from .models import User
 
@@ -140,17 +140,36 @@ class ListingHandler:
     def get_listing(self, id):
         return db_query.get_listing_by_id(id)
 
-    def patrial_update_listing(self):
-        pass
+    def partial_update_listing(self, request, id):
+        listing = db_query.get_listing_by_id(id)
+        if not listing:
+            return Response({"error": "Listing not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Ensure user is updating their own listing
+        if request.user.id == int(listing["author_id"]):
+            existing_data = dict(listing)
+            new_data = request.data
+
+            # The "|" operator merges dictionaries + the later dict overwrites values from older dict if the keys are equal
+            merged_data = existing_data | new_data
+
+            serializer = ListingSerializer(data=merged_data, partial=True)
+
+            if serializer.is_valid():
+                db_query.partial_update_listing(id, serializer.validated_data)
+                return Response({"detail": "Listing edited successfully."}, status=status.HTTP_204_NO_CONTENT,)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
 
     def delete_listing(self, request, id):
         listing = db_query.get_listing_by_id(id)
         if not listing:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Listing not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        # Ensure user is deleting their own account
+        # Ensure user is deleting their own listing
         if request.user.id == int(listing["author_id"]):
-            print("yeah")
             db_query.delete_listing(id)
             return Response({"detail": "Listing deleted successfully."}, status=status.HTTP_204_NO_CONTENT,)
         else:

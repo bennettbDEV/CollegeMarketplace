@@ -1,18 +1,14 @@
 # api/views.py
-from db_utils.db_factory import DBFactory, DBType
-from db_utils.queries import SQLiteDBQuery
 from django.shortcuts import render
 from rest_framework import status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .handlers import UserHandler, ListingHandler
+from .handlers import ListingHandler, UserHandler
 from .models import Listing, User
 from .serializers import ListingSerializer, LoginSerializer, UserSerializer
 
-# Initialize specific query object
-db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
 
 # CustomTokenObtainPairView
 class LoginView(TokenObtainPairView):
@@ -142,7 +138,7 @@ class UserViewSet(viewsets.GenericViewSet):
 # Listing controller/handler
 class ListingViewSet(viewsets.GenericViewSet):
     serializer_class = ListingSerializer
-
+    
     def get_permissions(self):
         # User must be authenticated if performing any action other than retrieve/list
         self.permission_classes = ([AllowAny] if (self.action in ["list", "retrieve"]) else [IsAuthenticated])
@@ -150,7 +146,7 @@ class ListingViewSet(viewsets.GenericViewSet):
 
     def get_queryset(self):
         # Gets all listings -> could be modified later to be filtered
-        listings = db_query.get_all_listings()
+        listings = ListingHandler.list_listings(ListingHandler)
         return [Listing(**listing) for listing in listings]
 
 
@@ -177,7 +173,12 @@ class ListingViewSet(viewsets.GenericViewSet):
         return Response({"error": "Listing with that id not found."}, status=status.HTTP_404_NOT_FOUND)
 
     def partial_update(self, request, pk=None):
-        pass
+        try:
+            response = ListingHandler.partial_update_listing(ListingHandler, request, pk)
+            return response
+        except Exception as e:
+            print(str(e))
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def destroy(self, request, pk=None):
         try:
