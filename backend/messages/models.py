@@ -15,14 +15,4 @@ class Message:
         self.receiver_id = receiver_id
         self.content = content
     
-    #Getters
-    def get_message_id(self):
-        return self.message_id
-    def get_content(self):
-        return self.content
-    def get_sender_id(self):
-        return self.sender_id
-    def get_receiver_id(self):
-        return self.receiver_id
-    
 

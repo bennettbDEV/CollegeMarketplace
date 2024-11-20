@@ -179,3 +179,30 @@ class SQLiteDBQuery(DBQuery):
         self.db_connection.connect()
         self.db_connection.execute_query(query, params)
         self.db_connection.disconnect()
+
+    # --------------------------------------------------------------------------------
+
+    # Message functions
+
+    #create message creates a message given sender, receiver, and content, then returns message id
+    def create_message(self, sender_id, receiver_id, content):
+        #create count query and parameters
+        count_query =  "SELECT COUNT(*) FROM Message WHERE sender_id = ?"
+        count_params = (sender_id)
+        #connect to db
+        self.db_connection.connect()
+        #execute query for count of sent messages from user
+        message_count = self.db_connection.execute_query(count_query, count_params)
+        #create new id based off it
+        new_id = message_count + 1
+        #create query and parameters
+        query = """
+        INSERT INTO Message (message_id, sender_id, receiver_id, content) 
+        VALUES (?, ?, ?, ?)
+        """
+        params = (new_id, sender_id, receiver_id, content)
+        #execute query
+        self.db_connection.execute_query(query, params)
+        self.db_connection.disconnect()
+        #return message id
+        return new_id
