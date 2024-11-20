@@ -60,7 +60,6 @@ class SQLiteDBQuery(DBQuery):
 
         return listings
 
-
     def create_listing(self, data, user_id):
         listing_data = {key:value for key,value in data.items() if key != "tags"}
         query = """

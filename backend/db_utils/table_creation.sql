@@ -34,3 +34,8 @@ CREATE TABLE IF NOT EXISTS ListingTag (
     PRIMARY KEY (listing_id, tag_id)
 );
 
+
+
+DROP TABLE Listing
+DROP TABLE Tag
+DROP TABLE ListingTag
