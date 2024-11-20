@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from db_utils.connections import SQLiteConnection
 
 
 class DBQuery(ABC):
@@ -42,12 +41,12 @@ class SQLiteDBQuery(DBQuery):
     # Listing functions
     def get_all_listings(self):
         query = """
-        SELECT l.id, l.title, l.description, l.price, l.image, l.author_id, l.created_at,
+        SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at,
         GROUP_CONCAT(t.name) AS tags
         FROM Listing l
         LEFT JOIN ListingTag lt ON l.id = lt.listing_id
         LEFT JOIN Tag t ON lt.tag_id = t.id
-        GROUP BY l.id, l.title, l.description, l.price, l.image, l.author_id, l.created_at;
+        GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at;
         """
         self.db_connection.connect()
         rows = self.db_connection.execute_query(query)
@@ -65,12 +64,18 @@ class SQLiteDBQuery(DBQuery):
     def create_listing(self, data, user_id):
         listing_data = {key:value for key,value in data.items() if key != "tags"}
         query = """
-        INSERT INTO Listing (title, description, price, image, author_id)
-        VALUES (?, ?, ?, ?, ?);
+        INSERT INTO Listing (title, condition, description, price, image, author_id)
+        VALUES (?, ?, ?, ?, ?, ?);
         """
-        params = (listing_data["title"],listing_data["description"],
-                listing_data["price"], listing_data["image"], user_id)
-        
+        params = (
+            listing_data["title"],
+            listing_data["condition"],
+            listing_data["description"],
+            listing_data["price"],
+            listing_data["image"],
+            user_id,
+        )
+
         self.db_connection.connect()
         cursor = self.db_connection.connection.cursor()
         # Add listing
@@ -85,7 +90,7 @@ class SQLiteDBQuery(DBQuery):
         for tag in data["tags"]:
             cursor.execute(tag_query, (tag,))
             # Get relevent tag id
-            tag_id = cursor.lastrowid or cursor.execute("SELECT id FROM Tag WHERE name = ?", (tag,)).fetchone()[0]
+            tag_id = cursor.execute("SELECT id FROM Tag WHERE name = ?", (tag,)).fetchone()[0]
 
             # Add tag to listing
             listing_tag_query = "INSERT INTO ListingTag (listing_id, tag_id) VALUES (?, ?);"

@@ -27,12 +27,14 @@ class UserSerializer(serializers.Serializer):
 class ListingSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     title = serializers.CharField(max_length=50)
+    condition = serializers.ChoiceField(choices=["Factory New", "Minimal Wear", "Fair", "Well Worn", "Refurbished"])
     description = serializers.CharField(max_length=500)
     price = serializers.FloatField()
     # TODO: make image serializers.ImageField() later
     image = serializers.CharField()
     tags = serializers.ListField()
     created_at = serializers.DateTimeField(read_only=True)
+    author_id = serializers.IntegerField(read_only=True)
     
     """
     def validate(self, attrs):
