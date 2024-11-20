@@ -101,7 +101,7 @@ class UserViewSet(viewsets.GenericViewSet):
         if user:
             serializer = self.get_serializer(User(**user))
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response({"error": "User with that username not found."}, status=status.HTTP_404_NOT_FOUND,)
+        return Response({"error": "User with that id not found."}, status=status.HTTP_404_NOT_FOUND,)
 
     def partial_update(self, request, pk=None):
         """Updates the specified user with the given data.
@@ -170,14 +170,11 @@ class ListingViewSet(viewsets.GenericViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
-        listing = db_query.get_listing_by_id(pk)
+        listing = ListingHandler.get_listing(ListingHandler, pk)
         if listing:
             serializer = self.get_serializer(Listing(**listing))
-            return Response(serializer.data)
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    def update(self, request, pk=None):
-        pass
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"error": "Listing with that id not found."}, status=status.HTTP_404_NOT_FOUND)
 
     def partial_update(self, request, pk=None):
         pass

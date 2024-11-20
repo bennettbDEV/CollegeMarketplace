@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS Listing (
     price REAL NOT NULL,
     image TEXT NOT NULL,
     author_id INTEGER NOT NULL,
-    tag_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (author_id) REFERENCES User(id) ON DELETE CASCADE

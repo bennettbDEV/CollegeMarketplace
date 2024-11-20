@@ -24,10 +24,6 @@ class DBQuery(ABC):
         pass
 
     @abstractmethod
-    def get_user_listings(self, user_id):
-        pass
-
-    @abstractmethod
     def delete_listing(self, listing_id):
         pass
 
@@ -98,12 +94,49 @@ class SQLiteDBQuery(DBQuery):
         self.db_connection.connection.commit()
         self.db_connection.disconnect()
 
-    def get_user_listings(self, user_id):
-        query = "SELECT * FROM listing WHERE author_id = ?"
-        params = (user_id,)
+    def get_listing_by_id(self, listing_id):
+        query = """
+        SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at,
+        GROUP_CONCAT(t.name) AS tags
+        FROM Listing l
+        LEFT JOIN ListingTag lt ON l.id = lt.listing_id
+        LEFT JOIN Tag t ON lt.tag_id = t.id
+        WHERE l.id = ?
+        GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at;
+        """
         self.db_connection.connect()
-        listings = self.db_connection.execute_query(query, params)
+        rows = self.db_connection.execute_query(query, (listing_id,))
         self.db_connection.disconnect()
+
+        if not rows:
+            return None 
+
+        row = rows[0]
+        listing_dict = {column: row[column] for column in row.keys() if column != "tags"}
+        listing_dict["tags"] = row["tags"].split(",") if row["tags"] else []
+
+        return listing_dict
+    
+    def get_listing_by_author_id(self, author_id):
+        query = """
+        SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at,
+        GROUP_CONCAT(t.name) AS tags
+        FROM Listing l
+        LEFT JOIN ListingTag lt ON l.id = lt.listing_id
+        LEFT JOIN Tag t ON lt.tag_id = t.id
+        WHERE l.author_id = ?
+        GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at;
+        """
+        self.db_connection.connect()
+        rows = self.db_connection.execute_query(query, (author_id,))
+        self.db_connection.disconnect()
+
+        listings = []
+        for row in rows:
+            listing_dict = {column: row[column] for column in row.keys() if column != "tags"}
+            listing_dict["tags"] = row["tags"].split(",") if row["tags"] else []
+            listings.append(listing_dict)
+
         return listings
 
     def delete_listing(self, listing_id):

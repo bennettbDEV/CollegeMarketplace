@@ -137,11 +137,8 @@ class ListingHandler:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def get_listing(self):
-        pass
-
-    def update_listing(self):
-        pass
+    def get_listing(self, id):
+        return db_query.get_listing_by_id(id)
 
     def patrial_update_listing(self):
         pass
