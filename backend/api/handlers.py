@@ -143,5 +143,15 @@ class ListingHandler:
     def patrial_update_listing(self):
         pass
 
-    def delete_listing(self):
-        pass
+    def delete_listing(self, request, id):
+        listing = db_query.get_listing_by_id(id)
+        if not listing:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Ensure user is deleting their own account
+        if request.user.id == int(listing["author_id"]):
+            print("yeah")
+            db_query.delete_listing(id)
+            return Response({"detail": "Listing deleted successfully."}, status=status.HTTP_204_NO_CONTENT,)
+        else:
+            return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)

@@ -181,17 +181,8 @@ class ListingViewSet(viewsets.GenericViewSet):
 
     def destroy(self, request, pk=None):
         try:
-            listing = db_query.get_listing_by_id(pk)
-            if not listing:
-                return Response({"detail": "Listing not found."}, status=status.HTTP_404_NOT_FOUND) 
-            
-            # Ensure user is deleting their own listing
-            if request.user.id == listing.author_id:
-                db_query.delete_listing(pk)
-                return Response({"detail": "Listing deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
-            else:
-                return Response({"detail": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
-        
+            response = ListingHandler.delete_listing(ListingHandler, request, pk)
+            return response
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
