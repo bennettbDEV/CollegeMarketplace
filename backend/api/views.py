@@ -1,18 +1,14 @@
 # api/views.py
-from db_utils.db_factory import DBFactory, DBType
-from db_utils.queries import SQLiteDBQuery
 from django.shortcuts import render
 from rest_framework import status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .handlers import UserHandler, ListingHandler
+from .handlers import ListingHandler, UserHandler
 from .models import Listing, User
 from .serializers import ListingSerializer, LoginSerializer, UserSerializer
 
-# Initialize specific query object
-db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
 
 # CustomTokenObtainPairView
 class LoginView(TokenObtainPairView):
@@ -101,7 +97,7 @@ class UserViewSet(viewsets.GenericViewSet):
         if user:
             serializer = self.get_serializer(User(**user))
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response({"error": "User with that username not found."}, status=status.HTTP_404_NOT_FOUND,)
+        return Response({"error": "User with that id not found."}, status=status.HTTP_404_NOT_FOUND,)
 
     def partial_update(self, request, pk=None):
         """Updates the specified user with the given data.
@@ -142,7 +138,7 @@ class UserViewSet(viewsets.GenericViewSet):
 # Listing controller/handler
 class ListingViewSet(viewsets.GenericViewSet):
     serializer_class = ListingSerializer
-
+    
     def get_permissions(self):
         # User must be authenticated if performing any action other than retrieve/list
         self.permission_classes = ([AllowAny] if (self.action in ["list", "retrieve"]) else [IsAuthenticated])
@@ -150,7 +146,7 @@ class ListingViewSet(viewsets.GenericViewSet):
 
     def get_queryset(self):
         # Gets all listings -> could be modified later to be filtered
-        listings = db_query.get_all_listings()
+        listings = ListingHandler.list_listings(ListingHandler)
         return [Listing(**listing) for listing in listings]
 
 
@@ -170,31 +166,24 @@ class ListingViewSet(viewsets.GenericViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
-        listing = db_query.get_listing_by_id(pk)
+        listing = ListingHandler.get_listing(ListingHandler, pk)
         if listing:
             serializer = self.get_serializer(Listing(**listing))
-            return Response(serializer.data)
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    def update(self, request, pk=None):
-        pass
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"error": "Listing with that id not found."}, status=status.HTTP_404_NOT_FOUND)
 
     def partial_update(self, request, pk=None):
-        pass
+        try:
+            response = ListingHandler.partial_update_listing(ListingHandler, request, pk)
+            return response
+        except Exception as e:
+            print(str(e))
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def destroy(self, request, pk=None):
         try:
-            listing = db_query.get_listing_by_id(pk)
-            if not listing:
-                return Response({"detail": "Listing not found."}, status=status.HTTP_404_NOT_FOUND) 
-            
-            # Ensure user is deleting their own listing
-            if request.user.id == listing.author_id:
-                db_query.delete_listing(pk)
-                return Response({"detail": "Listing deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
-            else:
-                return Response({"detail": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
-        
+            response = ListingHandler.delete_listing(ListingHandler, request, pk)
+            return response
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

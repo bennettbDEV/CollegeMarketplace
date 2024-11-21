@@ -10,11 +10,11 @@ CREATE TABLE IF NOT EXISTS User (
 CREATE TABLE IF NOT EXISTS Listing (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
+    condition TEXT NOT NULL,
     description TEXT NOT NULL,
     price REAL NOT NULL,
     image TEXT NOT NULL,
     author_id INTEGER NOT NULL,
-    tag_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (author_id) REFERENCES User(id) ON DELETE CASCADE
@@ -33,3 +33,8 @@ CREATE TABLE IF NOT EXISTS ListingTag (
     PRIMARY KEY (listing_id, tag_id)
 );
 
+
+
+DROP TABLE Listing
+DROP TABLE Tag
+DROP TABLE ListingTag
