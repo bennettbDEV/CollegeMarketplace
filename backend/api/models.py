@@ -53,9 +53,10 @@ class SMSMessage(Message):
 CLASS: Listing
 '''
 class Listing:
-    def __init__(self, id, title, description, price, image, author_id, tags, created_at):
+    def __init__(self, id, title, condition, description, price, image, author_id, tags, created_at):
         self.id = id
         self.title = title
+        self.condition = condition
         self.description = description
         self.price = price
         self.image = image
