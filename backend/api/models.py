@@ -9,7 +9,6 @@ CONTAINS:
 '''
 CLASS: User
 '''
-
 class User:
     # We might need to make our own abstract user
     #Functions
@@ -54,13 +53,16 @@ class SMSMessage(Message):
 CLASS: Listing
 '''
 class Listing:
-    def __init__(self, id, title, description, price, created_at, author_id):
+    def __init__(self, id, title, condition, description, price, image, author_id, tags, created_at):
         self.id = id
         self.title = title
+        self.condition = condition
         self.description = description
         self.price = price
-        self.created_at = created_at
+        self.image = image
         self.author_id = author_id
+        self.tags = tags
+        self.created_at = created_at
 
     def __str__(self):
         return self.title

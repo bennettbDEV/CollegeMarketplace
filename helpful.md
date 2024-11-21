@@ -11,6 +11,9 @@ http://127.0.0.1:8000/admin/login/?next=/admin/
     U = chasemayberry
     P = it326isgreat
 
+# Github tips
+- Always remember to pull from main when you start working on the project
+
 
 -------------------
 # Commands: Django
@@ -41,6 +44,7 @@ python manage.py createsuperuser
     -Username = chasemayberry
     -Password = it326isgreat
 # Notes: Django
+- ViewSets in Django are similar to "Controllers" from other frameworks
 - URL routing + HTTP request to action(function in a view) guide:
     - https://www.django-rest-framework.org/api-guide/routers/#defaultrouter
     - https://developer.mozilla.org/en-US/docs/Web/HTTP/Status

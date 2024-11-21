@@ -38,7 +38,6 @@ class SQLiteConnection(DBConnection):
                 cursor.execute(query)
 
             if query.strip().upper().startswith("SELECT"):
-
                 return cursor.fetchall()
             else:
                 # For INSERT, UPDATE, DELETE queries

@@ -26,5 +26,7 @@ class DBFactory:
     def get_db_connection(db_type):
         if db_type == DBType.SQLITE:
             return SQLiteConnection(db_configs[DBType.SQLITE])
+        elif db_type == DBType.POSTGRES:
+            return SQLiteConnection(db_configs[DBType.POSTGRES])
         else:
             raise ValueError("Unsupported database type")
