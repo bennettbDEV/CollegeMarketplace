@@ -187,17 +187,22 @@ class SQLiteDBQuery(DBQuery):
     #create message creates a message given sender, receiver, and content, then returns message id
     def create_message(self, sender_id, receiver_id, content):
         #create count query and parameters
-        count_query =  "SELECT COUNT(*) FROM Message WHERE sender_id = ?"
+        count_query =  "SELECT MAX(messageID) FROM message WHERE senderID = ?"
         count_params = (sender_id)
         #connect to db
         self.db_connection.connect()
-        #execute query for count of sent messages from user
+        #execute query to get biggest ID from user sent, 
         message_count = self.db_connection.execute_query(count_query, count_params)
+        #if message_count isnt null, get first value in table returned, otherwise set to 0 as its the first message
+        if message_count:
+            message_count = message_count[0]
+        else:
+            message_count = 0
         #create new id based off it
         new_id = message_count + 1
         #create query and parameters
         query = """
-        INSERT INTO Message (message_id, sender_id, receiver_id, content) 
+        INSERT INTO message (messageID, senderID, receiverID, content) 
         VALUES (?, ?, ?, ?)
         """
         params = (new_id, sender_id, receiver_id, content)
@@ -206,3 +211,44 @@ class SQLiteDBQuery(DBQuery):
         self.db_connection.disconnect()
         #return message id
         return new_id
+    
+    #delete message using message_id and receiver_id
+    def delete_message(self, message_id, receiver_id):
+        #query and param initialization
+        query = "DELETE FROM message WHERE receiverID = ? AND messageID = ?"
+        params = (receiver_id, message_id)
+        #do query
+        self.db_connection.connect()
+        self.db_connection.execute_query(query, params)
+        self.db_connection.disconnect()
+
+    #get message from message_id and receiver_id
+    def get_message(self, message_id, receiver_id):
+        #make query and parameters
+        query = "SELECT * FROM message WHERE receiverID = ? and messageID = ? LIMIT 1"
+        params = (receiver_id, message_id)
+        #execute query
+        self.db_connection.connect()
+        message = self.db_connection.execute_query(query, params)
+        self.db_connection.disconnect()
+        
+        # The query returns a list of message rows, so return actual message instance
+        if message:
+            message = message[0]
+        return message
+    
+    #gets all messages received by the user
+    def get_all_messages(self, user_id):
+        #make query and parameters
+        query = "SELECT * FROM message WHERE receiverID = ?"
+        params = (user_id)
+        #do query
+        self.db_connection.connect()
+        messages = self.db_connection.execute_query(query, params)
+        self.db_connection.disconnect()
+        #return messages
+        return messages
+    
+
+    
+    
