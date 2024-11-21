@@ -12,18 +12,26 @@ function Home() {
     const getListings = () => {
         api
             .get("/api/listings/")
-            .then((response) => response.data)
-            .then((data) => {
+            .then((response) => {
+                setListings(response.data);
+            })
+            .catch((err) => {
+                console.error('Error fetching listings:', err);
+                //alert("Error: " + (err.response ? err.response.data : err.message));
+            });
+            
+    };
+/*
+.then((data) => {
                 setListings(data);
                 console.log(data);
             })
             .catch((err) => alert(err));
-    };
-
+*/
     return (
         <div>
             <div>
-                <h2>Listings</h2>
+                <h1>Listings</h1>
                 <ListingFeed listings={listings} />
             </div>
             
