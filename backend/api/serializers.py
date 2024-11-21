@@ -32,7 +32,7 @@ class ListingSerializer(serializers.Serializer):
     price = serializers.FloatField()
     # TODO: make image serializers.ImageField() later
     image = serializers.CharField()
-    tags = serializers.ListField()
+    tags = serializers.ListField(allow_null=True)
     created_at = serializers.DateTimeField(read_only=True)
     author_id = serializers.IntegerField(read_only=True)
     
