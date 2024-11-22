@@ -67,12 +67,12 @@ class SQLiteDBQuery(DBQuery):
     # Listing methods
     def get_all_listings(self):
         query = """
-        SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at,
+        SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at,
         GROUP_CONCAT(t.name) AS tags
         FROM Listing l
         LEFT JOIN ListingTag lt ON l.id = lt.listing_id
         LEFT JOIN Tag t ON lt.tag_id = t.id
-        GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at;
+        GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at;
         """
         self.db_connection.connect()
         rows = self.db_connection.execute_query(query)
@@ -92,6 +92,7 @@ class SQLiteDBQuery(DBQuery):
         INSERT INTO Listing (title, condition, description, price, image, author_id)
         VALUES (?, ?, ?, ?, ?, ?);
         """
+        # Likes and dislikes are set to 0 when created in db
         params = (
             listing_data["title"],
             listing_data["condition"],
@@ -126,13 +127,13 @@ class SQLiteDBQuery(DBQuery):
 
     def get_listing_by_id(self, listing_id):
         query = """
-        SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at,
+        SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at,
         GROUP_CONCAT(t.name) AS tags
         FROM Listing l
         LEFT JOIN ListingTag lt ON l.id = lt.listing_id
         LEFT JOIN Tag t ON lt.tag_id = t.id
         WHERE l.id = ?
-        GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at;
+        GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at;
         """
         self.db_connection.connect()
         rows = self.db_connection.execute_query(query, (listing_id,))
@@ -149,13 +150,13 @@ class SQLiteDBQuery(DBQuery):
     
     def get_listing_by_author_id(self, author_id):
         query = """
-        SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at,
+        SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at,
         GROUP_CONCAT(t.name) AS tags
         FROM Listing l
         LEFT JOIN ListingTag lt ON l.id = lt.listing_id
         LEFT JOIN Tag t ON lt.tag_id = t.id
         WHERE l.author_id = ?
-        GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at;
+        GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at;
         """
         self.db_connection.connect()
         rows = self.db_connection.execute_query(query, (author_id,))
@@ -173,8 +174,9 @@ class SQLiteDBQuery(DBQuery):
         # Get tag(s) data if it exists
         tags = new_data.pop("tags", None)
 
-        # Exclude "id" key:value pair. We should not modify listing id
-        new_data = {key: value for key, value in new_data.items() if key != "id"}
+        # Exclude id, likes, and dislikes:
+        exclude = ["id","likes","dislikes"]
+        new_data = {key: value for key, value in new_data.items() if key not in exclude}
         # Dynamically generate a string for each column
         columns = ", ".join(f"{key} = ?" for key in new_data.keys())
         # Use the generated string to update all specified columns

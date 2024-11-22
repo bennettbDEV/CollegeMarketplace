@@ -149,7 +149,10 @@ class ListingHandler:
         if request.user.id == int(listing["author_id"]):
             existing_data = dict(listing)
             new_data = request.data
+            
+            # TODO: Include logic to to return a status.HTTP_403_FORBIDDEN when the user is trying to change only likes or dislikes for a listing
 
+            
             # The "|" operator merges dictionaries + the later dict overwrites values from older dict if the keys are equal
             merged_data = existing_data | new_data
 
