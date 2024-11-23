@@ -10,7 +10,6 @@ CONTAINS:
 CLASS: User
 '''
 class User:
-    # We might need to make our own abstract user
     #Functions
     def __init__(self, id, username, password=None, location=None):
         self.id = id

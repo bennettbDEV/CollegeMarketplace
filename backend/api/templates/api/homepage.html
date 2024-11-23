@@ -2,101 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISU Marketplace - Home</title>
-    <style>
-        /* Basic reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        /* Center the content on the page */
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: Arial, sans-serif;
-            background-color: #f8f8f8;
-            color: #333;
-        }
-
-        /* Container for the main content */
-        .container {
-            text-align: center;
-            max-width: 800px;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-
-        header h1 {
-            font-size: 2em;
-            margin-bottom: 0.5em;
-        }
-
-        header p {
-            font-size: 1.1em;
-            color: #555;
-            margin-bottom: 1em;
-        }
-
-        #featured-products h2 {
-            margin-top: 1em;
-            font-size: 1.5em;
-            color: #333;
-        }
-
-        .products-list {
-            margin-top: 1em;
-        }
-
-        .product-card {
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-
-        .login-button {
-            display: inline-block;
-            margin-top: 1.5em;
-            padding: 10px 20px;
-            font-size: 1em;
-            color: #fff;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .login-button:hover {
-            background-color: #0056b3;
-        }
-
-        footer {
-            margin-top: 2em;
-            font-size: 0.9em;
-            color: #777;
-        }
-    </style>
+    <title>Homepage</title>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Welcome to ISU Marketplace</h1>
-            <p>Your platform to buy, sell, and exchange college supplies</p>
-            <a href="{% url 'login' %}" class="login-button">Login</a> <!-- Login button -->
-        </header>
-        <footer>
-            <p>&copy; 2024 ISU Marketplace</p>
-        </footer>
-    </div>
+    <h1>Welcome to the Marketplace</h1>
+    {% if is_authenticated %}
+        <p>Hello, {{ user.username }}!</p>
+        <a href="/logout/">Logout</a>
+    {% else %}
+        <p>Please log in to access your account.</p>
+        <form method="post" action="/api/login/">
+            {% csrf_token %}
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <button type="submit">Login</button>
+        </form>
+    {% endif %}
 </body>
 </html>
