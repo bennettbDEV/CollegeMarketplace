@@ -140,28 +140,34 @@ class UserViewSet(viewsets.GenericViewSet):
             Resposne: A DRF Response object with an HTTP status.
         """
         try:
-            user = User.objects.get(pk=pk)
-            if request.user != user and not request.user.is_superuser:
-                return Response(
-                    {"error": "You do not have permission to delete this user."},
-                    status=status.HTTP_403_FORBIDDEN,
-                )
-            
-            user.delete()
-            return Response(
-                {"message": f"User with ID {pk} has been deleted successfully."},
-                status=status.HTTP_200_OK,
-            )
-        except User.DoesNotExist:
-            return Response(
-                {"error": "User not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            response = UserHandler.delete_user(UserHandler, request, pk)
+            return response
         except Exception as e:
-            return Response(
-                {"error": f"An unexpected error occurred: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            print(str(e))
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # try:
+        #     user = User.objects.get(pk=pk)
+        #     if request.user != user and not request.user.is_superuser:
+        #         return Response(
+        #             {"error": "You do not have permission to delete this user."},
+        #             status=status.HTTP_403_FORBIDDEN,
+        #         )
+            
+        #     user.delete()
+        #     return Response(
+        #         {"message": f"User with ID {pk} has been deleted successfully."},
+        #         status=status.HTTP_200_OK,
+        #     )
+        # except User.DoesNotExist:
+        #     return Response(
+        #         {"error": "User not found."},
+        #         status=status.HTTP_404_NOT_FOUND,
+        #     )
+        # except Exception as e:
+        #     return Response(
+        #         {"error": f"An unexpected error occurred: {str(e)}"},
+        #         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        #     )
 
 '''
 CLASS: ListingViewSet
