@@ -6,6 +6,7 @@ http://127.0.0.1:8000/
 http://127.0.0.1:8000/api/login/
 http://127.0.0.1:8000/api/users/
 http://127.0.0.1:8000/api/token/
+http://127.0.0.1:8000/api/users/<id>/delete/ 
 
 http://127.0.0.1:8000/admin/login/?next=/admin/ 
     U = chasemayberry
@@ -43,6 +44,7 @@ python manage.py createsuperuser
     * my account
     -Username = chasemayberry
     -Password = it326isgreat
+
 # Notes: Django
 - ViewSets in Django are similar to "Controllers" from other frameworks
 - URL routing + HTTP request to action(function in a view) guide:

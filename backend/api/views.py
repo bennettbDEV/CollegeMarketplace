@@ -4,12 +4,21 @@ from rest_framework import status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
-
 from .handlers import ListingHandler, UserHandler
 from .models import Listing, User
 from .serializers import ListingSerializer, LoginSerializer, UserSerializer
+#ChaseTesting
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from django.contrib import messages
 
 
+
+
+
+'''
+CLASS: LoginView
+'''
 # CustomTokenObtainPairView
 class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
@@ -26,8 +35,27 @@ class LoginView(TokenObtainPairView):
         
         # If the serializer is invalid, return errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def login_view(request):
+        if request.method == "POST":
+            username = request.POST.get("username")
+            password = request.POST.get("password")
+
+            # Authenticate the user
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect("/")  # Redirect to homepage or dashboard
+            else:
+                messages.error(request, "Invalid username or password.")
+        
+        # Render the login page
+        return render(request, "api/login.html")
 
 
+'''
+CLASS: UserViewSet
+'''
 class UserViewSet(viewsets.GenericViewSet):
     serializer_class = UserSerializer
 
@@ -52,7 +80,6 @@ class UserViewSet(viewsets.GenericViewSet):
         Returns:
             Response: An object containing a list of all user objects.
         """
-
         users = UserHandler.list_users(UserHandler)
         # Serialize data for all users -> format data as json
         serializer = self.get_serializer(users, many=True)
@@ -128,13 +155,32 @@ class UserViewSet(viewsets.GenericViewSet):
             Resposne: A DRF Response object with an HTTP status.
         """
         try:
-            response = UserHandler.delete_user(UserHandler, request, pk)
-            return response
+            user = User.objects.get(pk=pk)
+            if request.user != user and not request.user.is_superuser:
+                return Response(
+                    {"error": "You do not have permission to delete this user."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            
+            user.delete()
+            return Response(
+                {"message": f"User with ID {pk} has been deleted successfully."},
+                status=status.HTTP_200_OK,
+            )
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         except Exception as e:
-            print(str(e))
-            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": f"An unexpected error occurred: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
-
+'''
+CLASS: ListingViewSet
+'''
 # Listing controller/handler
 class ListingViewSet(viewsets.GenericViewSet):
     serializer_class = ListingSerializer
@@ -195,4 +241,9 @@ Non-class Related Functions
 
 # Function to return to the generate the homepage
 def to_homepage(request):
-    return render(request, 'api/homepage.html',{}) #this naming convention is so stupid imo
+    # If the user is authenticated, redirect to another page or display a welcome message
+    context = {
+        "is_authenticated": request.user.is_authenticated,
+        "user": request.user if request.user.is_authenticated else None,
+    }
+    return render(request, 'api/homepage.html', context)
