@@ -36,21 +36,6 @@ class LoginView(TokenObtainPairView):
         # If the serializer is invalid, return errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    def login_view(request):
-        if request.method == "POST":
-            username = request.POST.get("username")
-            password = request.POST.get("password")
-
-            # Authenticate the user
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect("/")  # Redirect to homepage or dashboard
-            else:
-                messages.error(request, "Invalid username or password.")
-        
-        # Render the login page
-        return render(request, "api/login.html")
 
 
 '''

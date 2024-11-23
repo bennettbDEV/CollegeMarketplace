@@ -43,7 +43,7 @@ user_delete = UserViewSet.as_view({"delete": "destroy"})
 
 
 urlpatterns = [
-    path('', views.to_homepage, name='home'),  # The main homepage
+    path('', views.to_homepage, name='home'),  #the main homepage
     #login (TO_CHANGE)
     path('login/', LoginView.as_view(template_name='api\login.html'), name='login'),
     path('', include(router.urls)),
