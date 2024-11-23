@@ -152,6 +152,7 @@ class ListingHandler:
             
             # TODO: Include logic to to return a status.HTTP_403_FORBIDDEN when the user is trying to change only likes or dislikes for a listing
 
+            # TODO: Include check to see if newdata is empty -> if so just return an ok status or something similar
             
             # The "|" operator merges dictionaries + the later dict overwrites values from older dict if the keys are equal
             merged_data = existing_data | new_data
