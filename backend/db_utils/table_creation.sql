@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS Listing (
     description TEXT NOT NULL,
     price REAL NOT NULL,
     image TEXT NOT NULL,
+    likes INTEGER DEFAULT 0 NOT NULL,
+    dislikes INTEGER DEFAULT 0 NOT NULL,
     author_id INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
