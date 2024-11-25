@@ -1,13 +1,11 @@
-# user_handler.py (created by CHASE)
+#handlers/py
 from db_utils.db_factory import DBFactory, DBType
 from db_utils.queries import SQLiteDBQuery
 from django.contrib.auth.hashers import make_password
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
 from api.serializers import UserSerializer, ListingSerializer
-
 from .models import User
 
 # Initialize specific query object
@@ -193,6 +191,9 @@ class ListingHandler:
         # Include check to make sure the user is deleting their own favorite listing
         # db_query.remove_favorite_listing(self, user_id, listing_id)
         pass
+
+
+
 
     # Could have this in user handler
     def list_favorite_listings(self, user_id):

@@ -185,7 +185,10 @@ class ListingViewSet(viewsets.GenericViewSet):
         return [Listing(**listing) for listing in listings]
 
 
-    # Crud actions
+    '''
+    CRUD actions for ListingViewSet
+    '''
+
     def list(self, request):
         listings = ListingHandler.list_listings(ListingHandler)
         serializer = self.get_serializer(listings, many=True)
@@ -224,13 +227,18 @@ class ListingViewSet(viewsets.GenericViewSet):
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-    # Favorite/Save Listing actions:
+    '''
+    Favorite/Save Listing actions
 
-    # Router will automatically create a url based on the method name and details in the @action line
-    # The url for this method will be listings/{pk}/favorite_listing/
+    -Router will automatically create a url based on the method name and details in the @action line
+    -The url for this method will be listings/{pk}/favorite_listing/
+    '''
+
+    #Function: add listing to favorites 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def favorite_listing(self, request, pk=None):
-        """Adds a listing to the user's saved/favorite listings list.
+        """
+        Adds a listing to the user's saved/favorite listings list.
 
         Args:
             request (Request): DRF request object.
@@ -239,13 +247,11 @@ class ListingViewSet(viewsets.GenericViewSet):
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
-
-        # TODO: Write necessary code to add to user_favorite_listing
         user_id = request.user.id
-        response = ListingHandler.add_favorite_listing(ListingHandler, user_id, pk)
-
-        return response
-
+        response_data, status_code = ListingHandler.add_favorite_listing(user_id, pk)
+        return Response(response_data, status=status_code)
+    
+    #Function: remove listing from favorites 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def remove_favorite_listing(self, request, pk=None):
         """Removes a listing from the user's saved/favorite listings list.
@@ -257,12 +263,11 @@ class ListingViewSet(viewsets.GenericViewSet):
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
-
-        # TODO: Write necessary code to add to user_favorite_listing
-
+        user_id = request.user.id
+        response_data, status_code = ListingHandler.remove_favorite_listing(user_id, pk)
+        return Response(response_data, status=status_code)
         # response = ListingHandler.remove_favorite_listing(ListingHandler, user_id, listing_id)
         
-        pass
 
     # Maybe add to UserViewSet instead?
     # Default method is "get"
