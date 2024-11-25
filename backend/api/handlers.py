@@ -182,8 +182,12 @@ class ListingHandler:
 
     # Favorite/Save Listing actions:
     def add_favorite_listing(self, user_id, listing_id):
-        # db_query.add_favorite_listing(self, user_id, listing_id)
-        pass
+        listing = db_query.get_listing_by_id(listing_id)
+        if not listing:
+            return Response({"error": "Listing not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        db_query.add_favorite_listing(user_id, listing_id)
+        return Response({"detail": "Listing favorited successfully."}, status=status.HTTP_204_NO_CONTENT)
 
     def remove_favorite_listing(self, user_id, listing_id):
         # Include check to make sure the user is deleting their own favorite listing

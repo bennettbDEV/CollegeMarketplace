@@ -35,8 +35,17 @@ CREATE TABLE IF NOT EXISTS ListingTag (
     PRIMARY KEY (listing_id, tag_id)
 );
 
--- TODO: MAKE UserFavoriteListing table
+-- TODO: MAKE UsersFavoriteListing table
+CREATE TABLE IF NOT EXISTS UserFavoriteListing (
+    listing_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY (listing_id) REFERENCES Listing(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE,
+    PRIMARY KEY (listing_id, user_id)
+    )
 
+
+-- TODO: Make tables for messages
 
 
 DROP TABLE Listing

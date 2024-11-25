@@ -1,3 +1,4 @@
 SELECT * FROM Listing
+SELECT * FROM UserFavoriteListing
 
 DELETE FROM USER

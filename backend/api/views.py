@@ -241,10 +241,10 @@ class ListingViewSet(viewsets.GenericViewSet):
         """
 
         # TODO: Write necessary code to add to user_favorite_listing
-        
-        # response = ListingHandler.add_favorite_listing(ListingHandler, user_id, listing_id)
+        user_id = request.user.id
+        response = ListingHandler.add_favorite_listing(ListingHandler, user_id, pk)
 
-        pass
+        return response
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def remove_favorite_listing(self, request, pk=None):
