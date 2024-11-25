@@ -35,6 +35,8 @@ CREATE TABLE IF NOT EXISTS ListingTag (
     PRIMARY KEY (listing_id, tag_id)
 );
 
+-- TODO: MAKE UserFavoriteListing table
+
 
 
 DROP TABLE Listing

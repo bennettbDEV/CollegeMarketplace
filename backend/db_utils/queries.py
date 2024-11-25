@@ -212,6 +212,16 @@ class SQLiteDBQuery(DBQuery):
         with self.db_connection as db:
             db.execute_query(query, params)
 
+    # TODO: Write queries for adding, deleting, and retrieving listings to/from UserFavoriteListing
+    def add_favorite_listing(self, user_id, listing_id):
+        pass
+
+    def remove_favorite_listing(self, user_id, listing_id):
+        pass
+
+    def retrieve_favorite_listings(self, user_id):
+        pass
+
     # --------------------------------------------------------------------------------
 
     # User methods

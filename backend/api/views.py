@@ -1,6 +1,7 @@
 # api/views.py
 from django.shortcuts import render
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -11,9 +12,6 @@ from .serializers import ListingSerializer, LoginSerializer, UserSerializer
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from django.contrib import messages
-
-
-
 
 
 '''
@@ -224,6 +222,66 @@ class ListingViewSet(viewsets.GenericViewSet):
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+    # Favorite/Save Listing actions:
+
+    # Router will automatically create a url based on the method name and details in the @action line
+    # The url for this method will be listings/{pk}/favorite_listing/
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def favorite_listing(self, request, pk=None):
+        """Adds a listing to the user's saved/favorite listings list.
+
+        Args:
+            request (Request): DRF request object.
+            pk (int, optional): The id of the Listing. Defaults to None.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+        """
+
+        # TODO: Write necessary code to add to user_favorite_listing
+        
+        # response = ListingHandler.add_favorite_listing(ListingHandler, user_id, listing_id)
+
+        pass
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def remove_favorite_listing(self, request, pk=None):
+        """Removes a listing from the user's saved/favorite listings list.
+
+        Args:
+            request (Request): DRF request object.
+            pk (int, optional): The id of the Listing. Defaults to None.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+        """
+
+        # TODO: Write necessary code to add to user_favorite_listing
+
+        # response = ListingHandler.remove_favorite_listing(ListingHandler, user_id, listing_id)
+        
+        pass
+
+    # Maybe add to UserViewSet instead?
+    # Default method is "get"
+    @action(detail=False, permission_classes=[IsAuthenticated])
+    def list_favorite_listings(self, request):
+        """Fetches all the users saved/favorite listings.
+
+        Args:
+            request (Request): DRF request object.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+        """
+
+        # TODO: Write necessary code to retrieve the user's favorite listings
+
+        # response = ListingHandler.list_favorite_listings(ListingHandler, user_id)
+
+        pass
 
 
 '''

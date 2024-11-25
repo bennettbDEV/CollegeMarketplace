@@ -178,3 +178,19 @@ class ListingHandler:
             return Response({"detail": "Listing deleted successfully."}, status=status.HTTP_204_NO_CONTENT,)
         else:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
+
+
+    # Favorite/Save Listing actions:
+    def add_favorite_listing(self, user_id, listing_id):
+        # db_query.add_favorite_listing(self, user_id, listing_id)
+        pass
+
+    def remove_favorite_listing(self, user_id, listing_id):
+        # Include check to make sure the user is deleting their own favorite listing
+        # db_query.remove_favorite_listing(self, user_id, listing_id)
+        pass
+
+    # Could have this in user handler
+    def list_favorite_listings(self, user_id):
+        # db_query.list_favorite_listings(self, user_id)
+        pass
