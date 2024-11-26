@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from django.conf import settings
+
 
 class DBQuery(ABC):
     _instance = None
@@ -80,10 +82,11 @@ class SQLiteDBQuery(DBQuery):
 
         listings = []
         for row in rows:
-            listing_dict = {column: row[column] for column in row.keys() if column != "tags"}
-            listing_dict["tags"] = row["tags"].split(",") if row["tags"] else []
-            listings.append(listing_dict)
+            listing = {column: row[column] for column in row.keys() if column != "tags"}
+            listing["tags"] = row["tags"].split(",") if row["tags"] else []
+            listing["image"] = f"{settings.MEDIA_URL}{listing['image']}"
 
+            listings.append(listing)
         return listings
 
     def create_listing(self, data, user_id):
@@ -143,10 +146,11 @@ class SQLiteDBQuery(DBQuery):
             return None 
 
         row = rows[0]
-        listing_dict = {column: row[column] for column in row.keys() if column != "tags"}
-        listing_dict["tags"] = row["tags"].split(",") if row["tags"] else []
+        listing = {column: row[column] for column in row.keys() if column != "tags"}
+        listing["tags"] = row["tags"].split(",") if row["tags"] else []
+        listing["image"] = f"{settings.MEDIA_URL}{listing['image']}"
 
-        return listing_dict
+        return listing
     
     def get_listing_by_author_id(self, author_id):
         query = """

@@ -35,3 +35,7 @@ urlpatterns = [
     path("api/", include("api.urls")),
     path('', to_homepage, name="home"),  # Root URL for the homepage
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+#if settings.DEBUG:
+#   urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

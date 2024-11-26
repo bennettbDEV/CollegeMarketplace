@@ -136,14 +136,17 @@ class ListingHandler:
             if image:
                 # Generate random name
                 image_name = str(uuid.uuid4())
-                image_path = os.path.join(settings.MEDIA_ROOT, 'listings', image_name)
+
+                # Set image path to media/listings/
+                image_path = os.path.join(settings.MEDIA_ROOT, "listings", image_name)
                 os.makedirs(os.path.dirname(image_path), exist_ok=True)
+
                 # "wb+" means write binary
-                with open(image_path, 'wb+') as destination:
+                with open(image_path, "wb+") as destination:
                     for chunk in image.chunks():
                         destination.write(chunk)
 
-                validated_data[image] = f"listings/{image_name}"
+                validated_data["image"] = f"listings/{image_name}"
             else:
                 return Response({'error': 'Image is required'}, status=status.HTTP_400_BAD_REQUEST)
             
