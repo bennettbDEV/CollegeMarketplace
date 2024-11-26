@@ -1,3 +1,4 @@
+#api/serializers.py
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
@@ -19,7 +20,7 @@ class LoginSerializer(TokenObtainPairSerializer):
 
 class UserSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    username = serializers.CharField(max_length=150)
+    username = serializers.CharField(max_length=50)
     password = serializers.CharField(write_only=True)  # Wont be revealed in reads
     location = serializers.CharField(max_length=50, allow_null=True)
 
@@ -32,6 +33,8 @@ class ListingSerializer(serializers.Serializer):
     price = serializers.FloatField()
     # TODO: make image serializers.ImageField() later
     image = serializers.CharField()
+    likes = serializers.IntegerField(read_only=True)
+    dislikes = serializers.IntegerField(read_only=True)
     tags = serializers.ListField(allow_null=True)
     created_at = serializers.DateTimeField(read_only=True)
     author_id = serializers.IntegerField(read_only=True)

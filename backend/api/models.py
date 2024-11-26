@@ -10,7 +10,6 @@ CONTAINS:
 CLASS: User
 '''
 class User:
-    # We might need to make our own abstract user
     #Functions
     def __init__(self, id, username, password=None, location=None):
         self.id = id
@@ -39,7 +38,7 @@ class Message:
     #Functions
     def __init__(self, id):
         self.id = id
- 
+
 '''
 SUB-CLASS: SMS Message
 '''
@@ -53,15 +52,17 @@ class SMSMessage(Message):
 CLASS: Listing
 '''
 class Listing:
-    def __init__(self, id, title, condition, description, price, image, author_id, tags, created_at):
+    def __init__(self, id, title, condition, description, price, image, likes, dislikes, tags, created_at, author_id):
         self.id = id
         self.title = title
         self.condition = condition
         self.description = description
         self.price = price
         self.image = image
-        self.author_id = author_id
+        self.likes = likes
+        self.dislikes = dislikes
         self.tags = tags
+        self.author_id = author_id
         self.created_at = created_at
 
     def __str__(self):

@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS Listing (
     description TEXT NOT NULL,
     price REAL NOT NULL,
     image TEXT NOT NULL,
+    likes INTEGER DEFAULT 0 NOT NULL,
+    dislikes INTEGER DEFAULT 0 NOT NULL,
     author_id INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
@@ -33,6 +35,17 @@ CREATE TABLE IF NOT EXISTS ListingTag (
     PRIMARY KEY (listing_id, tag_id)
 );
 
+-- TODO: MAKE UsersFavoriteListing table
+CREATE TABLE IF NOT EXISTS UserFavoriteListing (
+    listing_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY (listing_id) REFERENCES Listing(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE,
+    PRIMARY KEY (listing_id, user_id)
+    )
+
+
+-- TODO: Make tables for messages
 
 
 DROP TABLE Listing

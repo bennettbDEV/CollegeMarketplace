@@ -67,16 +67,16 @@ class SQLiteDBQuery(DBQuery):
     # Listing methods
     def get_all_listings(self):
         query = """
-        SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at,
+        SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at,
         GROUP_CONCAT(t.name) AS tags
         FROM Listing l
         LEFT JOIN ListingTag lt ON l.id = lt.listing_id
         LEFT JOIN Tag t ON lt.tag_id = t.id
-        GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at;
+        GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at;
         """
-        self.db_connection.connect()
-        rows = self.db_connection.execute_query(query)
-        self.db_connection.disconnect()
+        
+        with self.db_connection as db:
+            rows = db.execute_query(query)
 
         listings = []
         for row in rows:
@@ -92,6 +92,7 @@ class SQLiteDBQuery(DBQuery):
         INSERT INTO Listing (title, condition, description, price, image, author_id)
         VALUES (?, ?, ?, ?, ?, ?);
         """
+        # Likes and dislikes are set to 0 when created in db
         params = (
             listing_data["title"],
             listing_data["condition"],
@@ -101,42 +102,42 @@ class SQLiteDBQuery(DBQuery):
             user_id,
         )
 
-        self.db_connection.connect()
-        cursor = self.db_connection.connection.cursor()
-        # Add listing
-        cursor.execute(query, params)
+        with self.db_connection as db:
+            cursor = db.connection.cursor()
+            # Add listing
+            cursor.execute(query, params)
 
-        # Get id of inserted listing
-        listing_id = cursor.lastrowid
+            # Get id of inserted listing
+            listing_id = cursor.lastrowid
 
-        # Add tags
-        # If tag doesn't exit, add it to the Tag table
-        tag_query = "INSERT OR IGNORE INTO Tag (name) VALUES (?);"
-        for tag in data["tags"]:
-            cursor.execute(tag_query, (tag,))
-            # Get relevent tag id
-            tag_id = cursor.execute("SELECT id FROM Tag WHERE name = ?", (tag,)).fetchone()[0]
+            # Add tags
+            # If tag doesn't exit, add it to the Tag table
+            tag_query = "INSERT OR IGNORE INTO Tag (name) VALUES (?);"
+            for tag in data["tags"]:
+                cursor.execute(tag_query, (tag,))
+                # Get relevent tag id
+                tag_id = cursor.execute("SELECT id FROM Tag WHERE name = ?", (tag,)).fetchone()[0]
 
-            # Add tag to listing
-            listing_tag_query = "INSERT INTO ListingTag (listing_id, tag_id) VALUES (?, ?);"
-            cursor.execute(listing_tag_query, (listing_id, tag_id))
-        # Save change
-        self.db_connection.connection.commit()
-        self.db_connection.disconnect()
+                # Add tag to listing
+                listing_tag_query = "INSERT INTO ListingTag (listing_id, tag_id) VALUES (?, ?);"
+                cursor.execute(listing_tag_query, (listing_id, tag_id))
+            
+            # Save change
+            db.connection.commit()
 
     def get_listing_by_id(self, listing_id):
         query = """
-        SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at,
+        SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at,
         GROUP_CONCAT(t.name) AS tags
         FROM Listing l
         LEFT JOIN ListingTag lt ON l.id = lt.listing_id
         LEFT JOIN Tag t ON lt.tag_id = t.id
         WHERE l.id = ?
-        GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at;
+        GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at;
         """
-        self.db_connection.connect()
-        rows = self.db_connection.execute_query(query, (listing_id,))
-        self.db_connection.disconnect()
+
+        with self.db_connection as db:
+            rows = db.execute_query(query, (listing_id,))
 
         if not rows:
             return None 
@@ -149,17 +150,17 @@ class SQLiteDBQuery(DBQuery):
     
     def get_listing_by_author_id(self, author_id):
         query = """
-        SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at,
+        SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at,
         GROUP_CONCAT(t.name) AS tags
         FROM Listing l
         LEFT JOIN ListingTag lt ON l.id = lt.listing_id
         LEFT JOIN Tag t ON lt.tag_id = t.id
         WHERE l.author_id = ?
-        GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.author_id, l.created_at;
+        GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at;
         """
-        self.db_connection.connect()
-        rows = self.db_connection.execute_query(query, (author_id,))
-        self.db_connection.disconnect()
+
+        with self.db_connection as db:
+            rows = db.execute_query(query, (author_id,))
 
         listings = []
         for row in rows:
@@ -173,59 +174,71 @@ class SQLiteDBQuery(DBQuery):
         # Get tag(s) data if it exists
         tags = new_data.pop("tags", None)
 
-        # Exclude "id" key:value pair. We should not modify listing id
-        new_data = {key: value for key, value in new_data.items() if key != "id"}
+        # Exclude id, likes, and dislikes:
+        exclude = ["id","likes","dislikes"]
+        new_data = {key: value for key, value in new_data.items() if key not in exclude}
+
         # Dynamically generate a string for each column
         columns = ", ".join(f"{key} = ?" for key in new_data.keys())
         # Use the generated string to update all specified columns
         query = f"UPDATE Listing SET {columns} WHERE id = ?"
         params = tuple(new_data.values()) + (listing_id,)
 
-        self.db_connection.connect()
-        self.db_connection.execute_query(query, params)
+        
+        with self.db_connection as db:
+            db.execute_query(query, params)
 
-        # Update tags
-        if tags:
-            # Remove existing tags for the listing
-            delete_query = "DELETE FROM ListingTag WHERE listing_id = ?"
-            self.db_connection.execute_query(delete_query, (listing_id,))
+            # Update tags
+            if tags:
+                # Remove existing tags for the listing
+                delete_query = "DELETE FROM ListingTag WHERE listing_id = ?"
+                db.execute_query(delete_query, (listing_id,))
 
-            # Add new tags
-            for tag in tags:
-                # If tag doesn't exit, add it to the Tag table
-                tag_query = "INSERT OR IGNORE INTO Tag (name) VALUES (?);"
-                self.db_connection.execute_query(tag_query, (tag,))
+                # Add new tags
+                for tag in tags:
+                    # If tag doesn't exit, add it to the Tag table
+                    tag_query = "INSERT OR IGNORE INTO Tag (name) VALUES (?);"
+                    db.execute_query(tag_query, (tag,))
 
-                tag_id_query = "SELECT id FROM Tag WHERE name = ?;"
-                tag_id = self.db_connection.execute_query(tag_id_query, (tag,))[0]["id"]
+                    tag_id_query = "SELECT id FROM Tag WHERE name = ?;"
+                    tag_id = db.execute_query(tag_id_query, (tag,))[0]["id"]
 
-                listing_tag_query = "INSERT INTO ListingTag (listing_id, tag_id) VALUES (?, ?);"
-                self.db_connection.execute_query(listing_tag_query, (listing_id, tag_id))
-
-        self.db_connection.disconnect()
+                    listing_tag_query = "INSERT INTO ListingTag (listing_id, tag_id) VALUES (?, ?);"
+                    db.execute_query(listing_tag_query, (listing_id, tag_id))
 
     def delete_listing(self, listing_id):
         query = "DELETE FROM listing WHERE id = ?"
         params = (listing_id,)
-        self.db_connection.connect()
-        self.db_connection.execute_query(query, params)
-        self.db_connection.disconnect()
+        with self.db_connection as db:
+            db.execute_query(query, params)
 
+    # TODO: Write queries for adding, deleting, and retrieving listings to/from UserFavoriteListing
+    def add_favorite_listing(self, user_id, listing_id):
+        query = """
+            INSERT INTO UserFavoriteListing (user_id, listing_id) 
+            VALUES (?, ?)
+            """
+        params = (user_id, listing_id)
+        with self.db_connection as db:
+            db.execute_query(query, params)
 
+    def remove_favorite_listing(self, user_id, listing_id):
+        pass
+
+    def retrieve_favorite_listings(self, user_id):
+        pass
 
     # --------------------------------------------------------------------------------
 
     # User methods
     def get_all_users(self):
         query = "SELECT * FROM user"
-        self.db_connection.connect()
 
-        rows = self.db_connection.execute_query(query)
-        self.db_connection.disconnect()
+        with self.db_connection as db:
+            rows = db.execute_query(query)
 
         # Turn data from rows into a list of dicts
         users = [{column: row[column] for column in row.keys()} for row in rows]
-
         return users
     
     def create_user(self, data):
@@ -234,16 +247,14 @@ class SQLiteDBQuery(DBQuery):
             VALUES (?, ?, ?)
             """
             params = (data["username"], data["password"], data["location"])
-            self.db_connection.connect()
-            self.db_connection.execute_query(query, params)
-            self.db_connection.disconnect()
+            with self.db_connection as db:
+                db.execute_query(query, params)
 
     def get_user_by_id(self, user_id):
         query = "SELECT * FROM User WHERE id = ? LIMIT 1"
         params = (user_id,)
-        self.db_connection.connect()
-        user = self.db_connection.execute_query(query, params)
-        self.db_connection.disconnect()
+        with self.db_connection as db:
+            user = db.execute_query(query, params)
         
         # The query returns a list of user rows, so return actual user instance
         if user:
@@ -253,9 +264,9 @@ class SQLiteDBQuery(DBQuery):
     def get_user_by_username(self, username):
         query = "SELECT * FROM User WHERE username = ? LIMIT 1"
         params = (username,)
-        self.db_connection.connect()
-        user = self.db_connection.execute_query(query, params)
-        self.db_connection.disconnect()
+
+        with self.db_connection as db:
+            user = db.execute_query(query, params)
 
         # The query returns a list of user rows, so return actual user instance
         if user:
@@ -271,14 +282,12 @@ class SQLiteDBQuery(DBQuery):
         query = f"UPDATE user SET {columns} WHERE id = ?"
         params = tuple(new_data.values()) + (user_id,)
 
-        self.db_connection.connect()
-        self.db_connection.execute_query(query, params)
-        self.db_connection.disconnect()
+        with self.db_connection as db:
+            db.execute_query(query, params)
 
     def delete_user(self, user_id):
         query = "DELETE FROM user WHERE id = ?"
         params = (user_id,)
-        self.db_connection.connect()
-        self.db_connection.execute_query(query, params)
-        self.db_connection.disconnect()
+        with self.db_connection as db:
+            db.execute_query(query, params)
 

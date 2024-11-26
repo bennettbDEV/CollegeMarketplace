@@ -1,13 +1,11 @@
-# user_handler.py (created by CHASE)
+#handlers/py
 from db_utils.db_factory import DBFactory, DBType
 from db_utils.queries import SQLiteDBQuery
 from django.contrib.auth.hashers import make_password
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
 from api.serializers import UserSerializer, ListingSerializer
-
 from .models import User
 
 # Initialize specific query object
@@ -149,7 +147,11 @@ class ListingHandler:
         if request.user.id == int(listing["author_id"]):
             existing_data = dict(listing)
             new_data = request.data
+            
+            # TODO: Include logic to to return a status.HTTP_403_FORBIDDEN when the user is trying to change only likes or dislikes for a listing
 
+            # TODO: Include check to see if newdata is empty -> if so just return an ok status or something similar
+            
             # The "|" operator merges dictionaries + the later dict overwrites values from older dict if the keys are equal
             merged_data = existing_data | new_data
 
@@ -174,3 +176,26 @@ class ListingHandler:
             return Response({"detail": "Listing deleted successfully."}, status=status.HTTP_204_NO_CONTENT,)
         else:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
+
+
+    # Favorite/Save Listing actions:
+    def add_favorite_listing(self, user_id, listing_id):
+        listing = db_query.get_listing_by_id(listing_id)
+        if not listing:
+            return Response({"error": "Listing not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        db_query.add_favorite_listing(user_id, listing_id)
+        return Response({"detail": "Listing favorited successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+    def remove_favorite_listing(self, user_id, listing_id):
+        # Include check to make sure the user is deleting their own favorite listing
+        # db_query.remove_favorite_listing(self, user_id, listing_id)
+        pass
+
+
+
+
+    # Could have this in user handler
+    def list_favorite_listings(self, user_id):
+        # db_query.list_favorite_listings(self, user_id)
+        pass

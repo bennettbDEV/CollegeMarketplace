@@ -1,15 +1,22 @@
 # api/views.py
 from django.shortcuts import render
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
-
 from .handlers import ListingHandler, UserHandler
 from .models import Listing, User
 from .serializers import ListingSerializer, LoginSerializer, UserSerializer
+#ChaseTesting
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from django.contrib import messages
 
 
+'''
+CLASS: LoginView
+'''
 # CustomTokenObtainPairView
 class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
@@ -26,8 +33,12 @@ class LoginView(TokenObtainPairView):
         
         # If the serializer is invalid, return errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 
+'''
+CLASS: UserViewSet
+'''
 class UserViewSet(viewsets.GenericViewSet):
     serializer_class = UserSerializer
 
@@ -52,7 +63,6 @@ class UserViewSet(viewsets.GenericViewSet):
         Returns:
             Response: An object containing a list of all user objects.
         """
-
         users = UserHandler.list_users(UserHandler)
         # Serialize data for all users -> format data as json
         serializer = self.get_serializer(users, many=True)
@@ -133,8 +143,33 @@ class UserViewSet(viewsets.GenericViewSet):
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # try:
+        #     user = User.objects.get(pk=pk)
+        #     if request.user != user and not request.user.is_superuser:
+        #         return Response(
+        #             {"error": "You do not have permission to delete this user."},
+        #             status=status.HTTP_403_FORBIDDEN,
+        #         )
+            
+        #     user.delete()
+        #     return Response(
+        #         {"message": f"User with ID {pk} has been deleted successfully."},
+        #         status=status.HTTP_200_OK,
+        #     )
+        # except User.DoesNotExist:
+        #     return Response(
+        #         {"error": "User not found."},
+        #         status=status.HTTP_404_NOT_FOUND,
+        #     )
+        # except Exception as e:
+        #     return Response(
+        #         {"error": f"An unexpected error occurred: {str(e)}"},
+        #         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        #     )
 
-
+'''
+CLASS: ListingViewSet
+'''
 # Listing controller/handler
 class ListingViewSet(viewsets.GenericViewSet):
     serializer_class = ListingSerializer
@@ -150,7 +185,10 @@ class ListingViewSet(viewsets.GenericViewSet):
         return [Listing(**listing) for listing in listings]
 
 
-    # Crud actions
+    '''
+    CRUD actions for ListingViewSet
+    '''
+
     def list(self, request):
         listings = ListingHandler.list_listings(ListingHandler)
         serializer = self.get_serializer(listings, many=True)
@@ -189,10 +227,77 @@ class ListingViewSet(viewsets.GenericViewSet):
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+    '''
+    Favorite/Save Listing actions
+
+    -Router will automatically create a url based on the method name and details in the @action line
+    -The url for this method will be listings/{pk}/favorite_listing/
+    '''
+
+    #Function: add listing to favorites 
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def favorite_listing(self, request, pk=None):
+        """
+        Adds a listing to the user's saved/favorite listings list.
+
+        Args:
+            request (Request): DRF request object.
+            pk (int, optional): The id of the Listing. Defaults to None.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+        """
+        user_id = request.user.id
+        response_data, status_code = ListingHandler.add_favorite_listing(user_id, pk)
+        return Response(response_data, status=status_code)
+    
+    #Function: remove listing from favorites 
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def remove_favorite_listing(self, request, pk=None):
+        """Removes a listing from the user's saved/favorite listings list.
+
+        Args:
+            request (Request): DRF request object.
+            pk (int, optional): The id of the Listing. Defaults to None.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+        """
+        user_id = request.user.id
+        response_data, status_code = ListingHandler.remove_favorite_listing(user_id, pk)
+        return Response(response_data, status=status_code)
+        # response = ListingHandler.remove_favorite_listing(ListingHandler, user_id, listing_id)
+        
+
+    # Maybe add to UserViewSet instead?
+    # Default method is "get"
+    @action(detail=False, permission_classes=[IsAuthenticated])
+    def list_favorite_listings(self, request):
+        """Fetches all the users saved/favorite listings.
+
+        Args:
+            request (Request): DRF request object.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+        """
+
+        # TODO: Write necessary code to retrieve the user's favorite listings
+
+        # response = ListingHandler.list_favorite_listings(ListingHandler, user_id)
+
+        pass
+
+
 '''
 Non-class Related Functions 
 '''
 
 # Function to return to the generate the homepage
 def to_homepage(request):
-    return render(request, 'api/homepage.html',{}) #this naming convention is so stupid imo
+    # If the user is authenticated, redirect to another page or display a welcome message
+    context = {
+        "is_authenticated": request.user.is_authenticated,
+        "user": request.user if request.user.is_authenticated else None,
+    }
+    return render(request, 'api/homepage.html', context)
