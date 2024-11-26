@@ -207,7 +207,7 @@ class ListingViewSet(viewsets.GenericViewSet):
     def retrieve(self, request, pk=None):
         listing = ListingHandler.get_listing(ListingHandler, pk)
         if listing:
-            serializer = self.get_serializer(Listing(**listing))
+            serializer = self.get_serializer(listing)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"error": "Listing with that id not found."}, status=status.HTTP_404_NOT_FOUND)
 
