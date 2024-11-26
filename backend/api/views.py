@@ -198,6 +198,7 @@ class ListingViewSet(viewsets.GenericViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             user_id = request.user.id
+
             response = ListingHandler.create_listing(ListingHandler, serializer.validated_data, user_id)
             return response
         else:

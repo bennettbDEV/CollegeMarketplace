@@ -4,6 +4,9 @@ from db_utils.queries import SQLiteDBQuery
 from django.contrib.auth.hashers import make_password
 from rest_framework import status
 from rest_framework.response import Response
+import os
+import uuid
+from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
 from api.serializers import UserSerializer, ListingSerializer
 from .models import User
@@ -129,6 +132,21 @@ class ListingHandler:
     def create_listing(self, validated_data, user_id):
         # Create listing with reference to calling user's id
         try:
+            image = validated_data.get("image")
+            if image:
+                # Generate random name
+                image_name = str(uuid.uuid4())
+                image_path = os.path.join(settings.MEDIA_ROOT, 'listings', image_name)
+                os.makedirs(os.path.dirname(image_path), exist_ok=True)
+                # "wb+" means write binary
+                with open(image_path, 'wb+') as destination:
+                    for chunk in image.chunks():
+                        destination.write(chunk)
+
+                validated_data[image] = f"listings/{image_name}"
+            else:
+                return Response({'error': 'Image is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
             db_query.create_listing(validated_data, user_id)
             return Response(validated_data, status=status.HTTP_201_CREATED)
         except Exception as e:

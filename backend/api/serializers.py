@@ -31,8 +31,7 @@ class ListingSerializer(serializers.Serializer):
     condition = serializers.ChoiceField(choices=["Factory New", "Minimal Wear", "Fair", "Well Worn", "Refurbished"])
     description = serializers.CharField(max_length=500)
     price = serializers.FloatField()
-    # TODO: make image serializers.ImageField() later
-    image = serializers.CharField()
+    image = serializers.ImageField()
     likes = serializers.IntegerField(read_only=True)
     dislikes = serializers.IntegerField(read_only=True)
     tags = serializers.ListField(allow_null=True)
