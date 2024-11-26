@@ -1,0 +1,28 @@
+.home-container {
+    display: flex;
+    gap: 20px; /* Space between Filters and Listings */
+    padding: 20px;
+  }
+  
+  .filters-section {
+    flex: 1; /* Filters take up less space */
+    max-width: 300px; /* Limit the width of the filters */
+  }
+  
+  .listings-section {
+    flex: 3; /* Listings take up more space */
+  }
+  
+  .listings-section h1 {
+    margin-top: 0; /* Remove extra spacing at the top of the Listings section */
+  }
+  
+  @media (max-width: 768px) {
+    .home-container {
+      flex-direction: column; /* Stack Filters and Listings on small screens */
+    }
+  
+    .filters-section {
+      max-width: 100%; /* Filters take full width on small screens */
+    }
+  }
