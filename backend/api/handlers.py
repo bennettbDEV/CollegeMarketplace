@@ -1,14 +1,17 @@
 #handlers/py
+import os
+import uuid
+
 from db_utils.db_factory import DBFactory, DBType
 from db_utils.queries import SQLiteDBQuery
+from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from rest_framework import status
 from rest_framework.response import Response
-import os
-import uuid
-from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
-from api.serializers import UserSerializer, ListingSerializer
+
+from api.serializers import ListingSerializer, UserSerializer
+
 from .models import User
 
 # Initialize specific query object
@@ -134,19 +137,8 @@ class ListingHandler:
         try:
             image = validated_data.get("image")
             if image:
-                # Generate random name
-                image_name = str(uuid.uuid4())
-
-                # Set image path to media/listings/
-                image_path = os.path.join(settings.MEDIA_ROOT, "listings", image_name)
-                os.makedirs(os.path.dirname(image_path), exist_ok=True)
-
-                # "wb+" means write binary
-                with open(image_path, "wb+") as destination:
-                    for chunk in image.chunks():
-                        destination.write(chunk)
-
-                validated_data["image"] = f"listings/{image_name}"
+                valid_path = self.save_image(image=image, image_type="listings")
+                validated_data["image"] = valid_path
             else:
                 return Response({'error': 'Image is required'}, status=status.HTTP_400_BAD_REQUEST)
             
@@ -166,19 +158,27 @@ class ListingHandler:
 
         # Ensure user is updating their own listing
         if request.user.id == int(listing["author_id"]):
-            existing_data = dict(listing)
+            #existing_data = dict(listing)
             new_data = request.data
-            
-            # TODO: Include logic to to return a status.HTTP_403_FORBIDDEN when the user is trying to change only likes or dislikes for a listing
 
-            # TODO: Include check to see if newdata is empty -> if so just return an ok status or something similar
+            if not new_data:
+                return Response({"error": "Body empty"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Gives more detailed resposne if user is trying to edit likes/dislikes
+            if "likes" in new_data or "dislikes" in new_data:
+                return Response({"error": "Invalid keys: 'likes', 'dislikes'."}, status=status.HTTP_403_FORBIDDEN)
             
             # The "|" operator merges dictionaries + the later dict overwrites values from older dict if the keys are equal
-            merged_data = existing_data | new_data
+            #merged_data = existing_data | new_data
 
-            serializer = ListingSerializer(data=merged_data, partial=True)
+            serializer = ListingSerializer(data=new_data, partial=True)
 
             if serializer.is_valid():
+                image = serializer.validated_data.get("image")
+                if image:
+                    valid_path = self.save_image(image, image_type="listings")
+                    serializer.validated_data["image"] = valid_path
+                
                 db_query.partial_update_listing(id, serializer.validated_data)
                 return Response({"detail": "Listing edited successfully."}, status=status.HTTP_204_NO_CONTENT,)
             else:
@@ -213,10 +213,24 @@ class ListingHandler:
         # db_query.remove_favorite_listing(self, user_id, listing_id)
         pass
 
-
-
-
     # Could have this in user handler
     def list_favorite_listings(self, user_id):
         # db_query.list_favorite_listings(self, user_id)
         pass
+
+    # Helper method for saving an image
+    @staticmethod
+    def save_image(image, image_type):
+        # Generate random name
+        image_name = str(uuid.uuid4())
+
+        # Set image path to media/<image_type>/
+        # ex. media/listings/
+        image_path = os.path.join(settings.MEDIA_ROOT, image_type, image_name)
+        os.makedirs(os.path.dirname(image_path), exist_ok=True)
+
+        # "wb+" means write binary
+        with open(image_path, "wb+") as destination:
+            for chunk in image.chunks():
+                destination.write(chunk)
+        return f"{image_type}/{image_name}"
