@@ -5,14 +5,10 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
+
 from .handlers import ListingHandler, UserHandler
 from .models import Listing, User
 from .serializers import ListingSerializer, LoginSerializer, UserSerializer
-#ChaseTesting
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
-from django.contrib import messages
-
 
 '''
 CLASS: LoginView
@@ -28,9 +24,9 @@ class LoginView(TokenObtainPairView):
         # If valid credentials
         if serializer.is_valid():
             user_data = serializer.validated_data
-            response = UserHandler.login(UserHandler,user_data)
+            response = UserHandler.login(UserHandler, user_data)
             return response
-        
+
         # If the serializer is invalid, return errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -125,7 +121,7 @@ class UserViewSet(viewsets.GenericViewSet):
             return response
         except Exception as e:
             print(str(e))
-            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR,)
 
     def destroy(self, request, pk=None):
         """Deletes the specified User.
@@ -143,29 +139,7 @@ class UserViewSet(viewsets.GenericViewSet):
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        # try:
-        #     user = User.objects.get(pk=pk)
-        #     if request.user != user and not request.user.is_superuser:
-        #         return Response(
-        #             {"error": "You do not have permission to delete this user."},
-        #             status=status.HTTP_403_FORBIDDEN,
-        #         )
-            
-        #     user.delete()
-        #     return Response(
-        #         {"message": f"User with ID {pk} has been deleted successfully."},
-        #         status=status.HTTP_200_OK,
-        #     )
-        # except User.DoesNotExist:
-        #     return Response(
-        #         {"error": "User not found."},
-        #         status=status.HTTP_404_NOT_FOUND,
-        #     )
-        # except Exception as e:
-        #     return Response(
-        #         {"error": f"An unexpected error occurred: {str(e)}"},
-        #         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        #     )
+
 
 '''
 CLASS: ListingViewSet
@@ -184,11 +158,9 @@ class ListingViewSet(viewsets.GenericViewSet):
         listings = ListingHandler.list_listings(ListingHandler)
         return [Listing(**listing) for listing in listings]
 
-
     '''
     CRUD actions for ListingViewSet
     '''
-
     def list(self, request):
         listings = ListingHandler.list_listings(ListingHandler)
         serializer = self.get_serializer(listings, many=True)
@@ -226,7 +198,6 @@ class ListingViewSet(viewsets.GenericViewSet):
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
     '''
     Favorite/Save Listing actions
@@ -293,7 +264,6 @@ class ListingViewSet(viewsets.GenericViewSet):
 '''
 Non-class Related Functions 
 '''
-
 # Function to return to the generate the homepage
 def to_homepage(request):
     # If the user is authenticated, redirect to another page or display a welcome message

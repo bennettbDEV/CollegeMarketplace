@@ -14,12 +14,12 @@ from api.serializers import ListingSerializer, UserSerializer
 
 from .models import User
 
+
 # Initialize specific query object
 db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
 
 
 class UserHandler:
-    # login function
     def login(self, user_data):
         if user_data:
             # Get users id
@@ -40,7 +40,6 @@ class UserHandler:
         else:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED,)
 
-    # logout function
     def logout(self):
         # Implement logout logic here (e.g., clear session or tokens) EDIT LATER
         pass
@@ -198,8 +197,7 @@ class ListingHandler:
         else:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
 
-
-    # Favorite/Save Listing actions:
+    # Favorite/Save Listing actions ------------
     def add_favorite_listing(self, user_id, listing_id):
         listing = db_query.get_listing_by_id(listing_id)
         if not listing:
@@ -218,19 +216,21 @@ class ListingHandler:
         # db_query.list_favorite_listings(self, user_id)
         pass
 
-    # Helper method for saving an image
-    @staticmethod
-    def save_image(image, image_type):
-        # Generate random name
-        image_name = str(uuid.uuid4())
 
-        # Set image path to media/<image_type>/
-        # ex. media/listings/
-        image_path = os.path.join(settings.MEDIA_ROOT, image_type, image_name)
-        os.makedirs(os.path.dirname(image_path), exist_ok=True)
 
-        # "wb+" means write binary
-        with open(image_path, "wb+") as destination:
-            for chunk in image.chunks():
-                destination.write(chunk)
-        return f"{image_type}/{image_name}"
+# Helper method for saving an image
+@staticmethod
+def save_image(image, image_type):
+    # Generate random name
+    image_name = str(uuid.uuid4())
+
+    # Set image path to media/<image_type>/
+    # ex. media/listings/
+    image_path = os.path.join(settings.MEDIA_ROOT, image_type, image_name)
+    os.makedirs(os.path.dirname(image_path), exist_ok=True)
+
+    # "wb+" means write binary
+    with open(image_path, "wb+") as destination:
+        for chunk in image.chunks():
+            destination.write(chunk)
+    return f"{image_type}/{image_name}"

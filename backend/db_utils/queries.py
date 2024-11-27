@@ -25,7 +25,7 @@ class DBQuery(ABC):
     @abstractmethod
     def create_listing(self, data, user_id):
         pass
-    
+
     @abstractmethod
     def get_listing_by_id(self, listing_id):
         pass
@@ -46,11 +46,11 @@ class DBQuery(ABC):
     @abstractmethod
     def create_user(self, data):
         pass
-    
+
     @abstractmethod
     def get_user_by_id(self, user_id):
         pass
-    
+
     @abstractmethod
     def get_user_by_username(self, username):
         pass
@@ -76,7 +76,7 @@ class SQLiteDBQuery(DBQuery):
         LEFT JOIN Tag t ON lt.tag_id = t.id
         GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at;
         """
-        
+
         with self.db_connection as db:
             rows = db.execute_query(query)
 
@@ -90,7 +90,7 @@ class SQLiteDBQuery(DBQuery):
         return listings
 
     def create_listing(self, data, user_id):
-        listing_data = {key:value for key,value in data.items() if key != "tags"}
+        listing_data = {key: value for key, value in data.items() if key != "tags"}
         query = """
         INSERT INTO Listing (title, condition, description, price, image, author_id)
         VALUES (?, ?, ?, ?, ?, ?);
@@ -119,12 +119,16 @@ class SQLiteDBQuery(DBQuery):
             for tag in data["tags"]:
                 cursor.execute(tag_query, (tag,))
                 # Get relevent tag id
-                tag_id = cursor.execute("SELECT id FROM Tag WHERE name = ?", (tag,)).fetchone()[0]
+                tag_id = cursor.execute(
+                    "SELECT id FROM Tag WHERE name = ?", (tag,)
+                ).fetchone()[0]
 
                 # Add tag to listing
-                listing_tag_query = "INSERT INTO ListingTag (listing_id, tag_id) VALUES (?, ?);"
+                listing_tag_query = (
+                    "INSERT INTO ListingTag (listing_id, tag_id) VALUES (?, ?);"
+                )
                 cursor.execute(listing_tag_query, (listing_id, tag_id))
-            
+
             # Save change
             db.connection.commit()
 
@@ -143,7 +147,7 @@ class SQLiteDBQuery(DBQuery):
             rows = db.execute_query(query, (listing_id,))
 
         if not rows:
-            return None 
+            return None
 
         row = rows[0]
         listing = {column: row[column] for column in row.keys() if column != "tags"}
@@ -151,7 +155,7 @@ class SQLiteDBQuery(DBQuery):
         listing["image"] = f"{settings.MEDIA_URL}{listing['image']}"
 
         return listing
-    
+
     def get_listing_by_author_id(self, author_id):
         query = """
         SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at,
@@ -168,7 +172,9 @@ class SQLiteDBQuery(DBQuery):
 
         listings = []
         for row in rows:
-            listing_dict = {column: row[column] for column in row.keys() if column != "tags"}
+            listing_dict = {
+                column: row[column] for column in row.keys() if column != "tags"
+            }
             listing_dict["tags"] = row["tags"].split(",") if row["tags"] else []
             listings.append(listing_dict)
 
@@ -179,16 +185,16 @@ class SQLiteDBQuery(DBQuery):
         tags = new_data.pop("tags", None)
 
         # Exclude id, likes, and dislikes:
-        exclude = ["id","likes","dislikes"]
+        exclude = ["id", "likes", "dislikes"]
         new_data = {key: value for key, value in new_data.items() if key not in exclude}
 
         # Dynamically generate a string for each column
         columns = ", ".join(f"{key} = ?" for key in new_data.keys())
+        
         # Use the generated string to update all specified columns
         query = f"UPDATE Listing SET {columns} WHERE id = ?"
         params = tuple(new_data.values()) + (listing_id,)
 
-        
         with self.db_connection as db:
             db.execute_query(query, params)
 
@@ -207,7 +213,9 @@ class SQLiteDBQuery(DBQuery):
                     tag_id_query = "SELECT id FROM Tag WHERE name = ?;"
                     tag_id = db.execute_query(tag_id_query, (tag,))[0]["id"]
 
-                    listing_tag_query = "INSERT INTO ListingTag (listing_id, tag_id) VALUES (?, ?);"
+                    listing_tag_query = (
+                        "INSERT INTO ListingTag (listing_id, tag_id) VALUES (?, ?);"
+                    )
                     db.execute_query(listing_tag_query, (listing_id, tag_id))
 
     def delete_listing(self, listing_id):
@@ -244,22 +252,22 @@ class SQLiteDBQuery(DBQuery):
         # Turn data from rows into a list of dicts
         users = [{column: row[column] for column in row.keys()} for row in rows]
         return users
-    
+
     def create_user(self, data):
-            query = """
+        query = """
             INSERT INTO User (username, password, location) 
             VALUES (?, ?, ?)
             """
-            params = (data["username"], data["password"], data["location"])
-            with self.db_connection as db:
-                db.execute_query(query, params)
+        params = (data["username"], data["password"], data["location"])
+        with self.db_connection as db:
+            db.execute_query(query, params)
 
     def get_user_by_id(self, user_id):
         query = "SELECT * FROM User WHERE id = ? LIMIT 1"
         params = (user_id,)
         with self.db_connection as db:
             user = db.execute_query(query, params)
-        
+
         # The query returns a list of user rows, so return actual user instance
         if user:
             user = user[0]
@@ -280,8 +288,10 @@ class SQLiteDBQuery(DBQuery):
     def partial_update_user(self, user_id, new_data):
         # Exclude "id" key:value pair. We should not modify user's id
         new_data = {key: value for key, value in new_data.items() if key != "id"}
+
         # Dynamically generate a string for each column
         columns = ", ".join(f"{key} = ?" for key in new_data.keys())
+
         # Use the generated string to update all specified columns
         query = f"UPDATE user SET {columns} WHERE id = ?"
         params = tuple(new_data.values()) + (user_id,)
@@ -294,4 +304,3 @@ class SQLiteDBQuery(DBQuery):
         params = (user_id,)
         with self.db_connection as db:
             db.execute_query(query, params)
-

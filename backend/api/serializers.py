@@ -1,8 +1,8 @@
-#api/serializers.py
-from django.conf import settings
+# api/serializers.py
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 from api.authentication import validate_user_credentials
 
 
@@ -29,7 +29,9 @@ class UserSerializer(serializers.Serializer):
 class ListingSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     title = serializers.CharField(max_length=50)
-    condition = serializers.ChoiceField(choices=["Factory New", "Minimal Wear", "Fair", "Well Worn", "Refurbished"])
+    condition = serializers.ChoiceField(
+        choices=["Factory New", "Minimal Wear", "Fair", "Well Worn", "Refurbished"]
+    )
     description = serializers.CharField(max_length=500)
     price = serializers.FloatField()
     image = serializers.ImageField(use_url=True)
@@ -46,11 +48,3 @@ class ListingSerializer(serializers.Serializer):
         if image:
             representation["image"] = image
         return representation
-
-    """
-    def validate(self, attrs):
-        if not attrs.get("title"):
-            raise serializers.ValidationError("Title is required.")
-        if not attrs.get("description"):
-            raise serializers.ValidationError("Description is required.")
-        return attrs"""
