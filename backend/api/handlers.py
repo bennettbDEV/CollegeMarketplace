@@ -236,7 +236,7 @@ class ListingHandler:
             Response: A DRF Response object with the list of favorite listings and an HTTP status.
         """
         #fetch all favorite listings for the user
-        favorite_listings = db_query.get_user_favorite_listings(user_id) #TODO: flesh this out 
+        favorite_listings = db_query.retrieve_favorite_listings(user_id)
 
         #if empty
         if not favorite_listings:
