@@ -42,6 +42,10 @@ CLASS: UserViewSet
 class UserViewSet(viewsets.GenericViewSet):
     serializer_class = UserSerializer
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user_handler = UserHandler()
+
     def get_permissions(self):
         # User must be authenticated if performing any action other than create/list/retrieve
         self.permission_classes = ([AllowAny] if (self.action in ["create", "list", "retrieve"]) else [IsAuthenticated])
@@ -49,7 +53,7 @@ class UserViewSet(viewsets.GenericViewSet):
 
     def get_queryset(self):
         # Gets all users
-        users = UserHandler.list_users(UserHandler)
+        users = self.user_handler.list_users()
         # ** operator is used to pass all key value pairs to the calling function
         return [User(**user) for user in users]
 
@@ -63,7 +67,7 @@ class UserViewSet(viewsets.GenericViewSet):
         Returns:
             Response: An object containing a list of all user objects.
         """
-        users = UserHandler.list_users(UserHandler)
+        users = self.user_handler.list_users()
         # Serialize data for all users -> format data as json
         serializer = self.get_serializer(users, many=True)
         return Response(serializer.data)
@@ -86,7 +90,7 @@ class UserViewSet(viewsets.GenericViewSet):
         if serializer.is_valid():
             validated_data = serializer.validated_data
 
-            response = UserHandler.register_user(UserHandler, validated_data)
+            response = self.user_handler.register_user(validated_data)
             return response
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -103,7 +107,7 @@ class UserViewSet(viewsets.GenericViewSet):
             Response will always include an HTTP status.
         """
 
-        user = UserHandler.get_user(UserHandler, pk)
+        user = self.user_handler.get_user(pk)
         if user:
             serializer = self.get_serializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -121,7 +125,7 @@ class UserViewSet(viewsets.GenericViewSet):
         """
 
         try:
-            response = UserHandler.partial_update_user(UserHandler, request, pk)
+            response = self.user_handler.partial_update_user(request, pk)
             return response
         except Exception as e:
             print(str(e))
@@ -138,7 +142,7 @@ class UserViewSet(viewsets.GenericViewSet):
             Resposne: A DRF Response object with an HTTP status.
         """
         try:
-            response = UserHandler.delete_user(UserHandler, request, pk)
+            response = self.user_handler.delete_user(request, pk)
             return response
         except Exception as e:
             print(str(e))
@@ -152,7 +156,11 @@ CLASS: ListingViewSet
 # Listing controller/handler
 class ListingViewSet(viewsets.GenericViewSet):
     serializer_class = ListingSerializer
-    
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.listing_handler = ListingHandler()
+
     def get_permissions(self):
         # User must be authenticated if performing any action other than retrieve/list
         self.permission_classes = ([AllowAny] if (self.action in ["list", "retrieve"]) else [IsAuthenticated])
@@ -160,14 +168,14 @@ class ListingViewSet(viewsets.GenericViewSet):
 
     def get_queryset(self):
         # Gets all listings -> could be modified later to be filtered
-        listings = ListingHandler.list_listings(ListingHandler)
+        listings = self.listing_handler.list_listings()
         return [Listing(**listing) for listing in listings]
 
     '''
     CRUD actions for ListingViewSet
     '''
     def list(self, request):
-        listings = ListingHandler.list_listings(ListingHandler)
+        listings = self.listing_handler.list_listings()
         serializer = self.get_serializer(listings, many=True)
         return Response(serializer.data)
 
@@ -176,13 +184,13 @@ class ListingViewSet(viewsets.GenericViewSet):
         if serializer.is_valid():
             user_id = request.user.id
 
-            response = ListingHandler.create_listing(ListingHandler, serializer.validated_data, user_id)
+            response = self.listing_handler.create_listing(serializer.validated_data, user_id)
             return response
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
-        listing = ListingHandler.get_listing(ListingHandler, pk)
+        listing = self.listing_handler.get_listing(pk)
         if listing:
             serializer = self.get_serializer(listing)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -190,7 +198,7 @@ class ListingViewSet(viewsets.GenericViewSet):
 
     def partial_update(self, request, pk=None):
         try:
-            response = ListingHandler.partial_update_listing(ListingHandler, request, pk)
+            response = self.listing_handler.partial_update_listing(request, pk)
             return response
         except Exception as e:
             print(str(e))
@@ -198,7 +206,7 @@ class ListingViewSet(viewsets.GenericViewSet):
 
     def destroy(self, request, pk=None):
         try:
-            response = ListingHandler.delete_listing(ListingHandler, request, pk)
+            response = self.listing_handler.delete_listing(request, pk)
             return response
         except Exception as e:
             print(str(e))
@@ -226,7 +234,7 @@ class ListingViewSet(viewsets.GenericViewSet):
         """
         try:
             user_id = request.user.id
-            response_data, status_code = ListingHandler.add_favorite_listing(user_id, pk)
+            response_data, status_code = self.listing_handler.add_favorite_listing(user_id, pk)
             return Response(response_data, status=status_code)
         except Exception as e:
             return Response({"ERROR: unexpected error while adding the listing to favorites"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -245,11 +253,11 @@ class ListingViewSet(viewsets.GenericViewSet):
         """
         try:
             user_id = request.user.id
-            response_data, status_code = ListingHandler.remove_favorite_listing(user_id, pk)
+            response_data, status_code = self.listing_handler.remove_favorite_listing(user_id, pk)
             return Response(response_data, status=status_code)
         except Exception as e:
             return Response({"ERROR: unexpected error while removing the listing from favorites"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        # response = ListingHandler.remove_favorite_listing(ListingHandler, user_id, listing_id)
+        # response = self.listing_handler.remove_favorite_listing(ListingHandler, user_id, listing_id)
         
 
     # Maybe add to UserViewSet instead?
@@ -270,7 +278,7 @@ class ListingViewSet(viewsets.GenericViewSet):
         try:
             user_id = request.user.id
             #Call the handler function to retrieve favorite listings
-            favorite_listings = ListingHandler.list_favorite_listings(user_id)
+            favorite_listings = self.listing_handler.list_favorite_listings(user_id)
             #Return the list of favorite listings
             return Response({"favorites": favorite_listings},status=status.HTTP_200_OK)
         except Exception as e:
