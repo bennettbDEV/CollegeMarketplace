@@ -57,6 +57,12 @@ class UserHandler:
         # Generate password
         validated_data["password"] = make_password(validated_data["password"])
 
+        # Create image if given
+        image = validated_data.get("image")
+        if image:
+            valid_path = save_image(image=image, image_type="users")
+            validated_data["image"] = valid_path
+        
         # Create user
         db_query.create_user(validated_data)
 
@@ -87,23 +93,32 @@ class UserHandler:
 
         # Ensure user is updating their own account
         if request.user.id == int(id):
-            existing_data = dict(user)
+            #existing_data = dict(user)
             new_data = request.data
 
+            if not new_data:
+                return Response({"error": "Body empty"}, status=status.HTTP_400_BAD_REQUEST)
+            
             # Hash password, if user is changing password
             # Consider returning error here if we want to implement change password somewhere else
             if "password" in new_data:
                 new_data["password"] = make_password(new_data["password"])
 
             # The "|" operator merges dictionaries + the later dict overwrites values from older dict if the keys are equal
-            merged_data = existing_data | new_data
+            #merged_data = existing_data | new_data
 
-            serializer = UserSerializer(data=merged_data, partial=True)
+            serializer = UserSerializer(data=new_data, partial=True)
 
             if serializer.is_valid():
                 # Ensure new username isnt taken if it's being updated
                 if "username" in new_data and db_query.get_user_by_username(new_data["username"]):
                     return Response({"error": "Username is already taken."}, status=status.HTTP_403_FORBIDDEN,)
+                
+                # If editing image, we need to save the new one
+                image = serializer.validated_data.get("image")
+                if image:
+                    valid_path = save_image(image, image_type="users")
+                    serializer.validated_data["image"] = valid_path
 
                 db_query.partial_update_user(id, serializer.validated_data)
                 return Response({"detail": "User edited successfully."}, status=status.HTTP_204_NO_CONTENT,)
@@ -136,7 +151,7 @@ class ListingHandler:
         try:
             image = validated_data.get("image")
             if image:
-                valid_path = self.save_image(image=image, image_type="listings")
+                valid_path = save_image(image=image, image_type="listings")
                 validated_data["image"] = valid_path
             else:
                 return Response({'error': 'Image is required'}, status=status.HTTP_400_BAD_REQUEST)

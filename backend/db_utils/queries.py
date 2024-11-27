@@ -197,7 +197,8 @@ class SQLiteDBQuery(DBQuery):
         params = tuple(new_data.values()) + (listing_id,)
 
         with self.db_connection as db:
-            db.execute_query(query, params)
+            if new_data:
+                db.execute_query(query, params)
 
             # Update tags
             if tags:
@@ -308,10 +309,10 @@ class SQLiteDBQuery(DBQuery):
 
     def create_user(self, data):
         query = """
-            INSERT INTO User (username, password, location) 
-            VALUES (?, ?, ?)
+            INSERT INTO User (username, password, location, image) 
+            VALUES (?, ?, ?, ?)
             """
-        params = (data["username"], data["password"], data["location"])
+        params = (data["username"], data["password"], data["location"], data["image"])
         with self.db_connection as db:
             db.execute_query(query, params)
 
@@ -324,7 +325,7 @@ class SQLiteDBQuery(DBQuery):
         # The query returns a list of user rows, so return actual user instance
         if user:
             user = user[0]
-        return user
+        return dict(user)
 
     def get_user_by_username(self, username):
         query = "SELECT * FROM User WHERE username = ? LIMIT 1"
