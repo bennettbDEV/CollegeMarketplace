@@ -275,7 +275,7 @@ class SQLiteDBQuery(DBQuery):
         self.db_connection.execute_query(query, params)
         self.db_connection.disconnect()
         
-     def delete_user(self, user_id):
+    def delete_user(self, user_id):
         query = "DELETE FROM user WHERE id = ?"
         params = (user_id,)
         self.db_connection.connect()
@@ -290,7 +290,7 @@ class SQLiteDBQuery(DBQuery):
         #create query and parameters
         query = """
         INSERT INTO message (sender, receiver, content) 
-        VALUES (?, ?, ?, ?)
+        VALUES (?, ?, ?)
         """
         params = (sender_id, receiver_id, content)
         #execute query

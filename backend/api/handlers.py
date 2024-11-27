@@ -167,7 +167,7 @@ class ListingHandler:
         listing = db_query.get_listing_by_id(id)
         if not listing:
             return Response({"error": "Listing not found."}, status=status.HTTP_404_NOT_FOUND)
-        
+
         # Ensure user is deleting their own listing
         if request.user.id == int(listing["author_id"]):
             db_query.delete_listing(id)

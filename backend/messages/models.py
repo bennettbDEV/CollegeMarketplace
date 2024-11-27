@@ -10,10 +10,10 @@ class Message:
     # message_text = models.TextField()
 
     #Constructor
-    def __init__(self, message_id, sender_id, receiver_id, content):
-        self.message_id = message_id
-        self.sender_id = sender_id
-        self.receiver_id = receiver_id
+    def __init__(self, id, sender, receiver, content):
+        self.id = id
+        self.sender = sender
+        self.receiver = receiver
         self.content = content
     
 
