@@ -24,6 +24,16 @@ class UserSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=50)
     password = serializers.CharField(write_only=True)  # Wont be revealed in reads
     location = serializers.CharField(max_length=50, allow_null=True)
+    image = serializers.ImageField(use_url=True, allow_null=True)
+
+    # Override default to_representation
+    def to_representation(self, instance):
+        # When fetching serialized data - turn image field into url reference
+        representation = super().to_representation(instance)
+        image = instance.get("image")
+        if image:
+            representation["image"] = image
+        return representation
 
 
 class ListingSerializer(serializers.Serializer):

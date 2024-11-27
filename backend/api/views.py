@@ -105,7 +105,7 @@ class UserViewSet(viewsets.GenericViewSet):
 
         user = UserHandler.get_user(UserHandler, pk)
         if user:
-            serializer = self.get_serializer(User(**user))
+            serializer = self.get_serializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"error": "User with that id not found."}, status=status.HTTP_404_NOT_FOUND,)
 
