@@ -1,5 +1,11 @@
 # api/views.py
+import mimetypes
+import os
+
+from django.conf import settings
+from django.http import FileResponse
 from django.shortcuts import render
+from django.views import View
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -13,7 +19,6 @@ from .serializers import ListingSerializer, LoginSerializer, UserSerializer
 '''
 CLASS: LoginView
 '''
-# CustomTokenObtainPairView
 class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]
@@ -259,6 +264,24 @@ class ListingViewSet(viewsets.GenericViewSet):
         # response = ListingHandler.list_favorite_listings(ListingHandler, user_id)
 
         pass
+
+
+class ServeImageView(View):
+    """
+    Serve images with correct Content type.
+    """
+    def get(self, request, image_path):
+        # Construct the full path to the image
+        full_path = os.path.join(settings.MEDIA_ROOT, image_path)
+        if not os.path.exists(full_path):
+            return Response({"error": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Attempt to determine mime type using Mimetypes
+        mime_type, _ = mimetypes.guess_type(full_path)
+        mime_type = mime_type or "application/octet-stream"
+
+        # Return file with the guessed Content type
+        return FileResponse(open(full_path, "rb"), content_type=mime_type)
 
 
 '''
