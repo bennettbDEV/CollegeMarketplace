@@ -289,7 +289,9 @@ class ServeImageView(View):
     """
     def get(self, request, image_path):
         # Construct the full path to the image
-        full_path = os.path.join(settings.MEDIA_ROOT, image_path)
+        full_path = os.path.normpath(os.path.join(settings.MEDIA_ROOT, image_path))
+        if not full_path.startswith(settings.MEDIA_ROOT):
+            return Response({"error": "Invalid image path."}, status=status.HTTP_400_BAD_REQUEST)
         if not os.path.exists(full_path):
             return Response({"error": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
 
