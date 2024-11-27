@@ -33,3 +33,11 @@ CREATE TABLE IF NOT EXISTS ListingTag (
     PRIMARY KEY (listing_id, tag_id)
 );
 
+-- Make Message table
+CREATE TABLE IF NOT EXISTS Message (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender INTEGER NOT NULL,
+    receiver INTEGER NOT NULL,
+    content TEXT
+);
+

@@ -186,31 +186,17 @@ class SQLiteDBQuery(DBQuery):
 
     #create message creates a message given sender, receiver, and content, then returns message id
     def create_message(self, sender_id, receiver_id, content):
-        #create count query and parameters
-        count_query =  "SELECT MAX(messageID) FROM message WHERE senderID = ?"
-        count_params = (sender_id)
-        #connect to db
-        self.db_connection.connect()
-        #execute query to get biggest ID from user sent, 
-        message_count = self.db_connection.execute_query(count_query, count_params)
-        #if message_count isnt null, get first value in table returned, otherwise set to 0 as its the first message
-        if message_count:
-            message_count = message_count[0]
-        else:
-            message_count = 0
-        #create new id based off it
-        new_id = message_count + 1
         #create query and parameters
         query = """
-        INSERT INTO message (messageID, senderID, receiverID, content) 
+        INSERT INTO message (sender, receiver, content) 
         VALUES (?, ?, ?, ?)
         """
-        params = (new_id, sender_id, receiver_id, content)
+        params = (sender_id, receiver_id, content)
         #execute query
+        self.db_connection.connect()
         self.db_connection.execute_query(query, params)
         self.db_connection.disconnect()
-        #return message id
-        return new_id
+        #attempt get new message ID without too much hassle and return it
     
     #delete message using message_id and receiver_id
     def delete_message(self, message_id, receiver_id):
