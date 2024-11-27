@@ -1,23 +1,24 @@
 # api/views.py
+import mimetypes
+import os
+
+from django.conf import settings
+from django.http import FileResponse
 from django.shortcuts import render
+from django.views import View
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
+
 from .handlers import ListingHandler, UserHandler
 from .models import Listing, User
 from .serializers import ListingSerializer, LoginSerializer, UserSerializer
-#ChaseTesting
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
-from django.contrib import messages
-
 
 '''
 CLASS: LoginView
 '''
-# CustomTokenObtainPairView
 class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]
@@ -28,9 +29,9 @@ class LoginView(TokenObtainPairView):
         # If valid credentials
         if serializer.is_valid():
             user_data = serializer.validated_data
-            response = UserHandler.login(UserHandler,user_data)
+            response = UserHandler.login(UserHandler, user_data)
             return response
-        
+
         # If the serializer is invalid, return errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -124,7 +125,7 @@ class UserViewSet(viewsets.GenericViewSet):
             return response
         except Exception as e:
             print(str(e))
-            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR,)
 
     def destroy(self, request, pk=None):
         """Deletes the specified User.
@@ -142,29 +143,7 @@ class UserViewSet(viewsets.GenericViewSet):
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        # try:
-        #     user = User.objects.get(pk=pk)
-        #     if request.user != user and not request.user.is_superuser:
-        #         return Response(
-        #             {"error": "You do not have permission to delete this user."},
-        #             status=status.HTTP_403_FORBIDDEN,
-        #         )
-            
-        #     user.delete()
-        #     return Response(
-        #         {"message": f"User with ID {pk} has been deleted successfully."},
-        #         status=status.HTTP_200_OK,
-        #     )
-        # except User.DoesNotExist:
-        #     return Response(
-        #         {"error": "User not found."},
-        #         status=status.HTTP_404_NOT_FOUND,
-        #     )
-        # except Exception as e:
-        #     return Response(
-        #         {"error": f"An unexpected error occurred: {str(e)}"},
-        #         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        #     )
+
 
 
 '''
@@ -184,11 +163,9 @@ class ListingViewSet(viewsets.GenericViewSet):
         listings = ListingHandler.list_listings(ListingHandler)
         return [Listing(**listing) for listing in listings]
 
-
     '''
     CRUD actions for ListingViewSet
     '''
-
     def list(self, request):
         listings = ListingHandler.list_listings(ListingHandler)
         serializer = self.get_serializer(listings, many=True)
@@ -198,6 +175,7 @@ class ListingViewSet(viewsets.GenericViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             user_id = request.user.id
+
             response = ListingHandler.create_listing(ListingHandler, serializer.validated_data, user_id)
             return response
         else:
@@ -206,7 +184,7 @@ class ListingViewSet(viewsets.GenericViewSet):
     def retrieve(self, request, pk=None):
         listing = ListingHandler.get_listing(ListingHandler, pk)
         if listing:
-            serializer = self.get_serializer(Listing(**listing))
+            serializer = self.get_serializer(listing)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"error": "Listing with that id not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -225,7 +203,6 @@ class ListingViewSet(viewsets.GenericViewSet):
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
     '''
     Favorite/Save Listing actions
@@ -306,10 +283,29 @@ class ListingViewSet(viewsets.GenericViewSet):
             )
 
 
+class ServeImageView(View):
+    """
+    Serve images with correct Content type.
+    """
+    def get(self, request, image_path):
+        # Construct the full path to the image
+        full_path = os.path.normpath(os.path.join(settings.MEDIA_ROOT, image_path))
+        if not full_path.startswith(settings.MEDIA_ROOT):
+            return Response({"error": "Invalid image path."}, status=status.HTTP_400_BAD_REQUEST)
+        if not os.path.exists(full_path):
+            return Response({"error": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Attempt to determine mime type using Mimetypes
+        mime_type, _ = mimetypes.guess_type(full_path)
+        mime_type = mime_type or "application/octet-stream"
+
+        # Return file with the guessed Content type
+        return FileResponse(open(full_path, "rb"), content_type=mime_type)
+
+
 '''
 Non-class Related Functions 
 '''
-
 # Function to return to the generate the homepage
 def to_homepage(request):
     # If the user is authenticated, redirect to another page or display a welcome message

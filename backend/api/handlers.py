@@ -1,19 +1,25 @@
 #handlers/py
+import os
+import uuid
+
 from db_utils.db_factory import DBFactory, DBType
 from db_utils.queries import SQLiteDBQuery
+from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from api.serializers import UserSerializer, ListingSerializer
+
+from api.serializers import ListingSerializer, UserSerializer
+
 from .models import User
+
 
 # Initialize specific query object
 db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
 
 
 class UserHandler:
-    # login function
     def login(self, user_data):
         if user_data:
             # Get users id
@@ -34,7 +40,6 @@ class UserHandler:
         else:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED,)
 
-    # logout function
     def logout(self):
         # Implement logout logic here (e.g., clear session or tokens) EDIT LATER
         pass
@@ -129,6 +134,13 @@ class ListingHandler:
     def create_listing(self, validated_data, user_id):
         # Create listing with reference to calling user's id
         try:
+            image = validated_data.get("image")
+            if image:
+                valid_path = self.save_image(image=image, image_type="listings")
+                validated_data["image"] = valid_path
+            else:
+                return Response({'error': 'Image is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
             db_query.create_listing(validated_data, user_id)
             return Response(validated_data, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -145,19 +157,27 @@ class ListingHandler:
 
         # Ensure user is updating their own listing
         if request.user.id == int(listing["author_id"]):
-            existing_data = dict(listing)
+            #existing_data = dict(listing)
             new_data = request.data
-            
-            # TODO: Include logic to to return a status.HTTP_403_FORBIDDEN when the user is trying to change only likes or dislikes for a listing
 
-            # TODO: Include check to see if newdata is empty -> if so just return an ok status or something similar
+            if not new_data:
+                return Response({"error": "Body empty"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Gives more detailed resposne if user is trying to edit likes/dislikes
+            if "likes" in new_data or "dislikes" in new_data:
+                return Response({"error": "Invalid keys: 'likes', 'dislikes'."}, status=status.HTTP_403_FORBIDDEN)
             
             # The "|" operator merges dictionaries + the later dict overwrites values from older dict if the keys are equal
-            merged_data = existing_data | new_data
+            #merged_data = existing_data | new_data
 
-            serializer = ListingSerializer(data=merged_data, partial=True)
+            serializer = ListingSerializer(data=new_data, partial=True)
 
             if serializer.is_valid():
+                image = serializer.validated_data.get("image")
+                if image:
+                    valid_path = self.save_image(image, image_type="listings")
+                    serializer.validated_data["image"] = valid_path
+                
                 db_query.partial_update_listing(id, serializer.validated_data)
                 return Response({"detail": "Listing edited successfully."}, status=status.HTTP_204_NO_CONTENT,)
             else:
@@ -182,7 +202,6 @@ class ListingHandler:
     '''
     Favorite/Save Listing actions:
     '''
-
     #Function: handler logic for adding a favorite listing 
     def add_favorite_listing(self, user_id, listing_id):
         listing = db_query.get_listing_by_id(listing_id)
@@ -195,9 +214,8 @@ class ListingHandler:
 
     # Function: handler logic for removing a listing from 'favorites'
     def remove_favorite_listing(self, user_id, listing_id):
-        """
-        Removes a listing from the user's favorites.
-
+        """Removes a listing from the user's favorites.
+        
         Args:
             user_id (int): The ID of the user attempting to remove the favorite listing.
             listing_id (int): The ID of the listing to be removed.
@@ -243,3 +261,27 @@ class ListingHandler:
             return Response({"favorites": []},status=status.HTTP_200_OK)
         #return
         return Response({"favorites": favorite_listings},status=status.HTTP_200_OK)
+
+
+    # Could have this in user handler
+    def list_favorite_listings(self, user_id):
+        # db_query.list_favorite_listings(self, user_id)
+        pass
+
+
+# Helper method for saving an image
+@staticmethod
+def save_image(image, image_type):
+    # Generate random name
+    image_name = str(uuid.uuid4())
+
+    # Set image path to media/<image_type>/
+    # ex. media/listings/
+    image_path = os.path.join(settings.MEDIA_ROOT, image_type, image_name)
+    os.makedirs(os.path.dirname(image_path), exist_ok=True)
+
+    # "wb+" means write binary
+    with open(image_path, "wb+") as destination:
+        for chunk in image.chunks():
+            destination.write(chunk)
+    return f"{image_type}/{image_name}"

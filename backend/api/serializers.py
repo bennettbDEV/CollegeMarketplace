@@ -1,7 +1,8 @@
-#api/serializers.py
+# api/serializers.py
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 from api.authentication import validate_user_credentials
 
 
@@ -28,21 +29,22 @@ class UserSerializer(serializers.Serializer):
 class ListingSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     title = serializers.CharField(max_length=50)
-    condition = serializers.ChoiceField(choices=["Factory New", "Minimal Wear", "Fair", "Well Worn", "Refurbished"])
+    condition = serializers.ChoiceField(
+        choices=["Factory New", "Minimal Wear", "Fair", "Well Worn", "Refurbished"]
+    )
     description = serializers.CharField(max_length=500)
     price = serializers.FloatField()
-    # TODO: make image serializers.ImageField() later
-    image = serializers.CharField()
+    image = serializers.ImageField(use_url=True)
     likes = serializers.IntegerField(read_only=True)
     dislikes = serializers.IntegerField(read_only=True)
     tags = serializers.ListField(allow_null=True)
     created_at = serializers.DateTimeField(read_only=True)
     author_id = serializers.IntegerField(read_only=True)
-    
-    """
-    def validate(self, attrs):
-        if not attrs.get("title"):
-            raise serializers.ValidationError("Title is required.")
-        if not attrs.get("description"):
-            raise serializers.ValidationError("Description is required.")
-        return attrs"""
+
+    # When fetching serialized data - turn image field into url reference
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        image = instance.get("image")
+        if image:
+            representation["image"] = image
+        return representation
