@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../api";
-import ListingFeed from "../components/ListingFeed"
+import ListingFeed from "../components/ListingFeed";
 
 function Home() {
     const [listings, setListings] = useState([]);
@@ -14,19 +14,27 @@ function Home() {
             .get("/api/listings/")
             .then((response) => response.data)
             .then((data) => {
+                console.log("API Response:", data);
                 setListings(data);
-                console.log(data);
             })
-            .catch((err) => alert(err));
+            .catch((err) => {
+                console.error("Error fetching listings:", err);
+                //alert("Error: " + (err.response ? err.response.data : err.message));
+            });
     };
-
+    /*
+.then((data) => {
+    setListings(data);
+    console.log(data);
+    })
+    .catch((err) => alert(err));
+  */
     return (
         <div>
             <div>
-                <h2>Listings</h2>
+                <h1>Listings</h1>
                 <ListingFeed listings={listings} />
             </div>
-            
         </div>
     );
 }
