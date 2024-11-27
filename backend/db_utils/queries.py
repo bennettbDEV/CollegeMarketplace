@@ -1,3 +1,4 @@
+#db_utils/queries.py
 from abc import ABC, abstractmethod
 
 from django.conf import settings
@@ -233,12 +234,64 @@ class SQLiteDBQuery(DBQuery):
         params = (user_id, listing_id)
         with self.db_connection as db:
             db.execute_query(query, params)
-
+            
+    #Function: query to remove a favorite listing 
     def remove_favorite_listing(self, user_id, listing_id):
-        pass
+        """
+        Removes a favorite listing for the given user.
 
+        Args:
+            user_id (int): The ID of the user.
+            listing_id (int): The ID of the listing to be removed.
+
+        Returns:
+            None: The function executes the SQL query and commits changes.
+        """
+        query = """
+            DELETE FROM UserFavoriteListing 
+            WHERE user_id = ? AND listing_id = ?
+        """
+        params = (user_id, listing_id)
+        
+        with self.db_connection as db:
+            db.execute_query(query, params)
+
+    #Function: query to retrieve a list of the user's favorite listings 
     def retrieve_favorite_listings(self, user_id):
-        pass
+        """
+        Retrieves all favorite listings for a given user.
+
+        Args:
+            user_id (int): The ID of the user whose favorites are being fetched.
+
+        Returns:
+            list: A list of dictionaries containing details of the user's favorite listings.
+        """
+        query = """
+            SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at,
+            GROUP_CONCAT(t.name) AS tags
+            FROM UserFavoriteListing ufl
+            INNER JOIN Listing l ON ufl.listing_id = l.id
+            LEFT JOIN ListingTag lt ON l.id = lt.listing_id
+            LEFT JOIN Tag t ON lt.tag_id = t.id
+            WHERE ufl.user_id = ?
+            GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at;
+        """
+        params = (user_id,)
+        
+        with self.db_connection as db:
+            rows = db.execute_query(query, params)
+
+        # Process rows into a list of favorite listings
+        favorite_listings = []
+        for row in rows:
+            listing = {column: row[column] for column in row.keys() if column != "tags"}
+            listing["tags"] = row["tags"].split(",") if row["tags"] else []
+            favorite_listings.append(listing)
+
+        return favorite_listings
+
+    #Function: 
 
     # --------------------------------------------------------------------------------
 

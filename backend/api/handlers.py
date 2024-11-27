@@ -185,6 +185,8 @@ class ListingHandler:
         else:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
 
+
+    #Function: handler logic for deleting a listing
     def delete_listing(self, request, id):
         listing = db_query.get_listing_by_id(id)
         if not listing:
@@ -197,25 +199,74 @@ class ListingHandler:
         else:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
 
-    # Favorite/Save Listing actions ------------
+    '''
+    Favorite/Save Listing actions:
+    '''
+    #Function: handler logic for adding a favorite listing 
     def add_favorite_listing(self, user_id, listing_id):
         listing = db_query.get_listing_by_id(listing_id)
         if not listing:
-            return Response({"error": "Listing not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"ERROR": "Listing not found."}, status=status.HTTP_404_NOT_FOUND)
         
         db_query.add_favorite_listing(user_id, listing_id)
         return Response({"detail": "Listing favorited successfully."}, status=status.HTTP_204_NO_CONTENT)
 
+
+    # Function: handler logic for removing a listing from 'favorites'
     def remove_favorite_listing(self, user_id, listing_id):
-        # Include check to make sure the user is deleting their own favorite listing
-        # db_query.remove_favorite_listing(self, user_id, listing_id)
-        pass
+        """Removes a listing from the user's favorites.
+        
+        Args:
+            user_id (int): The ID of the user attempting to remove the favorite listing.
+            listing_id (int): The ID of the listing to be removed.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+        """
+        #check if listing exists 
+        listing = db_query.get_listing_by_id(listing_id)
+        #check if listing exists 
+        if not listing:
+            return Response({"ERROR": "Listing not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # check if the listing is in the user's favorites
+        # is_favorited = db_query.check_favorite_exists(user_id, listing_id)
+        # if not is_favorited:
+        #     return Response( {"ERROR": "Listing is not in the user's favorites."}, status=status.HTTP_400_BAD_REQUEST)
+        #remove the listing from the user's favorites
+        db_query.remove_favorite_listing(user_id, listing_id)
+        #return success
+        return Response(
+            {"detail": "Listing removed from favorites successfully."},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
+    # Function: handler logic listing all a user's 'favorites'
+    def list_favorite_listings(self, user_id):
+        """
+        Retrieves all listings favorited by the user.
+
+        Args:
+            user_id (int): The ID of the user whose favorite listings are being fetched.
+
+        Returns:
+            Response: A DRF Response object with the list of favorite listings and an HTTP status.
+        """
+        #fetch all favorite listings for the user
+        favorite_listings = db_query.retrieve_favorite_listings(user_id)
+
+        #if empty
+        if not favorite_listings:
+            return Response({"favorites": []},status=status.HTTP_200_OK)
+        #return
+        return Response({"favorites": favorite_listings},status=status.HTTP_200_OK)
+
 
     # Could have this in user handler
     def list_favorite_listings(self, user_id):
         # db_query.list_favorite_listings(self, user_id)
         pass
-
 
 
 # Helper method for saving an image

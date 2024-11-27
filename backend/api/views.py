@@ -34,7 +34,6 @@ class LoginView(TokenObtainPairView):
 
         # If the serializer is invalid, return errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
 
 '''
@@ -146,6 +145,7 @@ class UserViewSet(viewsets.GenericViewSet):
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+
 '''
 CLASS: ListingViewSet
 '''
@@ -224,9 +224,12 @@ class ListingViewSet(viewsets.GenericViewSet):
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
-        user_id = request.user.id
-        response_data, status_code = ListingHandler.add_favorite_listing(user_id, pk)
-        return Response(response_data, status=status_code)
+        try:
+            user_id = request.user.id
+            response_data, status_code = ListingHandler.add_favorite_listing(user_id, pk)
+            return Response(response_data, status=status_code)
+        except Exception as e:
+            return Response({"ERROR: unexpected error while adding the listing to favorites"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     #Function: remove listing from favorites 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
@@ -240,17 +243,23 @@ class ListingViewSet(viewsets.GenericViewSet):
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
-        user_id = request.user.id
-        response_data, status_code = ListingHandler.remove_favorite_listing(user_id, pk)
-        return Response(response_data, status=status_code)
+        try:
+            user_id = request.user.id
+            response_data, status_code = ListingHandler.remove_favorite_listing(user_id, pk)
+            return Response(response_data, status=status_code)
+        except Exception as e:
+            return Response({"ERROR: unexpected error while removing the listing from favorites"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         # response = ListingHandler.remove_favorite_listing(ListingHandler, user_id, listing_id)
         
 
     # Maybe add to UserViewSet instead?
     # Default method is "get"
+
+    #Function: lists all the listings that have been 'favorited' by the user 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def list_favorite_listings(self, request):
-        """Fetches all the users saved/favorite listings.
+        """
+        Fetches all the user's saved/favorite listings.
 
         Args:
             request (Request): DRF request object.
@@ -258,12 +267,20 @@ class ListingViewSet(viewsets.GenericViewSet):
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
-
-        # TODO: Write necessary code to retrieve the user's favorite listings
-
-        # response = ListingHandler.list_favorite_listings(ListingHandler, user_id)
-
-        pass
+        try:
+            user_id = request.user.id
+            #Call the handler function to retrieve favorite listings
+            favorite_listings = ListingHandler.list_favorite_listings(user_id)
+            #Return the list of favorite listings
+            return Response({"favorites": favorite_listings},status=status.HTTP_200_OK)
+        except Exception as e:
+            # Log the error for debugging
+            print(f"Error in list_favorite_listings: {e}")
+            # Return a generic server error response
+            return Response(
+                {"error": "An unexpected error occurred while fetching favorite listings."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class ServeImageView(View):
