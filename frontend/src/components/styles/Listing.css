@@ -1,0 +1,81 @@
+.listing-container {
+    border: 1px solid #ccc;
+    padding: 16px;
+    margin: 16px 0;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .listing-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  .listing-condition, 
+  .listing-description,
+  .listing-price,
+  .listing-date,
+  .listing-author {
+    margin: 4px 0;
+  }
+  
+  .listing-tags {
+    margin-top: 8px;
+  }
+  
+  .listing-tag {
+    display: inline-block;
+    background-color: #e0f7fa;
+    color: #d83434;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-right: 4px;
+    font-size: 14px;
+  }
+  
+  .listing-tag:hover {
+    background-color: #d74848;
+    color: #fff;
+  }.listing-container {
+  border: 1px solid #ccc;
+  padding: 16px;
+  margin: 16px 0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.listing-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.listing-condition, 
+.listing-description,
+.listing-price,
+.listing-date,
+.listing-author {
+  margin: 4px 0;
+}
+
+.listing-tags {
+  margin-top: 8px;
+}
+
+.listing-tag {
+  display: inline-block;
+  background-color: #cc0000;
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-right: 4px;
+  font-size: 14px;
+}
+
+.listing-tag:hover {
+  background-color: #df3c3c;
+  color: #fff;
+}

@@ -1,4 +1,6 @@
 import React from "react";
+import "./styles/Listing.css";
+
 
 function Listing({listing}) {
     const formattedDate = new Date(listing.created_at).toLocaleDateString("en-US")

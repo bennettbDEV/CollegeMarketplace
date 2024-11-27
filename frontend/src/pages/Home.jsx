@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import api from "../api";
 import ListingFeed from "../components/ListingFeed";
+import NavBar from '../components/Navbar.jsx';
+import Filters from '../components/Filters.jsx';
+import './styles/Home.css';
 
 function Home() {
     const [listings, setListings] = useState([]);
@@ -31,11 +34,17 @@ function Home() {
   */
     return (
         <div>
-            <div>
-                <h1>Listings</h1>
-                <ListingFeed listings={listings} />
-            </div>
+      <NavBar />
+      <div className="home-container">
+        <div className="filters-section">
+          <Filters />
         </div>
+        <div className="listings-section">
+          <h1>Listings</h1>
+          <ListingFeed listings={listings} />
+        </div>
+      </div>
+    </div>
     );
 }
 
