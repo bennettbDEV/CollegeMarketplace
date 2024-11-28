@@ -259,12 +259,7 @@ class ListingViewSet(viewsets.GenericViewSet):
         except Exception as e:
             print(e)
             return Response({"ERROR: unexpected error while removing the listing from favorites"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        # response = self.listing_handler.remove_favorite_listing(ListingHandler, user_id, listing_id)
         
-
-    # Maybe add to UserViewSet instead?
-    # Default method is "get"
-
     #Function: lists all the listings that have been 'favorited' by the user 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def list_favorite_listings(self, request):
@@ -291,6 +286,24 @@ class ListingViewSet(viewsets.GenericViewSet):
                 {"error": "An unexpected error occurred while fetching favorite listings."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+    # Like and dislike listing
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def like_listing(self, request, pk=None):
+        listing = self.listing_handler.get_listing(pk)
+        print(type(listing))
+        if listing:
+            response = self.listing_handler.like_listing(pk, listing["likes"])
+            return response
+        return Response({"error": "Listing with that id not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def dislike_listing(self, request, pk=None):
+        listing = self.listing_handler.get_listing(pk)
+        if listing:
+            response = self.listing_handler.dislike_listing(pk, listing["dislikes"])
+            return response
+        return Response({"error": "Listing with that id not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
 class ServeImageView(View):

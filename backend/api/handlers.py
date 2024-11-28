@@ -277,6 +277,23 @@ class ListingHandler:
         #return
         return Response({"favorites": favorite_listings},status=status.HTTP_200_OK)
 
+    # Like and dislike listing
+    def like_listing(self, listing_id, likes):
+        try:
+            db_query.like_listing(listing_id, likes)
+            return Response({"detail": "Listing liked successfully."}, status=status.HTTP_204_NO_CONTENT,)
+        except Exception as e:
+            print(str(e))
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def dislike_listing(self, listing_id, dislikes):
+        try:
+            db_query.dislike_listing(listing_id, dislikes)
+            return Response({"detail": "Listing disliked successfully."}, status=status.HTTP_204_NO_CONTENT,)
+        except Exception as e:
+            print(str(e))
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 # Helper method for saving an image
 @staticmethod

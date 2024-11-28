@@ -292,8 +292,21 @@ class SQLiteDBQuery(DBQuery):
 
         return favorite_listings
 
-    #Function: 
+    #Like and dislike queries:
+    def like_listing(self, listing_id, current_likes):
+        query = "UPDATE Listing SET likes = ? WHERE id = ?"
+        params = (current_likes + 1, listing_id)
 
+        with self.db_connection as db:
+            db.execute_query(query, params)
+
+    def dislike_listing(self, listing_id, current_dislikes):
+        query = "UPDATE Listing SET dislikes = ? WHERE id = ?"
+        params = (current_dislikes + 1, listing_id)
+
+        with self.db_connection as db:
+            db.execute_query(query, params)
+            
     # --------------------------------------------------------------------------------
 
     # User methods
