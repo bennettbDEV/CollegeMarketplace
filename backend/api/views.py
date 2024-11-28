@@ -8,6 +8,7 @@ from django.shortcuts import render
 from django.views import View
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -36,11 +37,30 @@ class LoginView(TokenObtainPairView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 50
+
+    def get_paginated_response(self, data):
+        return Response(
+            {
+                "links": {
+                    "next": self.get_next_link(),
+                    "previous": self.get_previous_link(),
+                },
+                "count": self.page.paginator.count,
+                "results": data,
+            }
+        )
+
+
 '''
 CLASS: UserViewSet
 '''
 class UserViewSet(viewsets.GenericViewSet):
     serializer_class = UserSerializer
+    pagination_class = StandardResultsSetPagination
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -67,12 +87,17 @@ class UserViewSet(viewsets.GenericViewSet):
         Returns:
             Response: An object containing a list of all user objects.
         """
-        users = self.user_handler.list_users()
-        # Serialize data for all users -> format data as json
-        serializer = self.get_serializer(users, many=True)
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        # Fallback if pagination is not applicable
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    # User registration
     def create(self, request):
         """Creates a new User.
 
@@ -147,7 +172,7 @@ class UserViewSet(viewsets.GenericViewSet):
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+    
     '''
     Block/Unblock Content 
     '''
@@ -236,13 +261,13 @@ class UserViewSet(viewsets.GenericViewSet):
             return Response({"error": "An unexpected error occurred while checking block status."},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
 '''
 CLASS: ListingViewSet
 '''
 # Listing controller/handler
 class ListingViewSet(viewsets.GenericViewSet):
     serializer_class = ListingSerializer
+    pagination_class = StandardResultsSetPagination
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -262,8 +287,15 @@ class ListingViewSet(viewsets.GenericViewSet):
     CRUD actions for ListingViewSet
     '''
     def list(self, request):
-        listings = self.listing_handler.list_listings()
-        serializer = self.get_serializer(listings, many=True)
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        # Fallback if pagination is not applicable
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     def create(self, request):

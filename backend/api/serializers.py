@@ -30,7 +30,7 @@ class UserSerializer(serializers.Serializer):
     def to_representation(self, instance):
         # When fetching serialized data - turn image field into url reference
         representation = super().to_representation(instance)
-        image = instance.get("image")
+        image = instance.image
         if image:
             representation["image"] = image
         return representation
@@ -54,7 +54,7 @@ class ListingSerializer(serializers.Serializer):
     # When fetching serialized data - turn image field into url reference
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        image = instance.get("image")
+        image = instance.image
         if image:
             representation["image"] = image
         return representation
