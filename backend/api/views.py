@@ -147,6 +147,93 @@ class UserViewSet(viewsets.GenericViewSet):
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    '''
+    Block/Unblock Content 
+    '''
+    #Function: block
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def block_user(self, request, pk=None):
+        """
+        Blocks the specified user.
+
+        Args:
+            request (Request): DRF request object.
+            pk (int): The ID of the user to be blocked.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+        """
+        try:
+            blocker_id = request.user.id
+            blocked_id = int(pk)
+
+            # Call the handler method to block the user
+            response_data, status_code = UserHandler.block_user(blocker_id, blocked_id)
+            return Response(response_data, status=status_code)
+
+        except ValueError:
+            return Response(
+                {"error": "Invalid user ID."},status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(f"Error blocking user: {e}")
+            return Response({"error": "An unexpected error occurred while blocking the user."},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    #Function: unblock
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def unblock_user(self, request, pk=None):
+        """
+        Unblocks the specified user.
+
+        Args:
+            request (Request): DRF request object.
+            pk (int): The ID of the user to be unblocked.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+        """
+        try:
+            blocker_id = request.user.id
+            blocked_id = int(pk)
+
+            # Call the handler method to unblock the user
+            response_data, status_code = UserHandler.unblock_user(blocker_id, blocked_id)
+            return Response(response_data, status=status_code)
+        
+        #if error
+        except ValueError:
+            return Response({"error": "Invalid user ID."},status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(f"Error unblocking user: {e}")
+            return Response({"error": "An unexpected error occurred while unblocking the user."},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    #Function: check if a user is blocked
+    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
+    def is_user_blocked(self, request, pk=None):
+        """
+        Checks if the authenticated user has been blocked by the specified user.
+
+        Args:
+            request (Request): DRF request object.
+            pk (int): The ID of the user to check against.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+        """
+        try:
+            sender_id = request.user.id
+            receiver_id = int(pk)
+
+            # Call the handler method to check if the user is blocked
+            is_blocked = UserHandler.is_user_blocked(sender_id, receiver_id)
+            return Response({"is_blocked": is_blocked},status=status.HTTP_200_OK)
+        
+        #if error
+        except ValueError:
+            return Response({"error": "Invalid user ID."},status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print(f"Error checking block status: {e}")
+            return Response({"error": "An unexpected error occurred while checking block status."},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
@@ -306,6 +393,9 @@ class ListingViewSet(viewsets.GenericViewSet):
         return Response({"error": "Listing with that id not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
+'''
+CLASS: ServeImageView
+'''
 class ServeImageView(View):
     """
     Serve images with correct Content type.

@@ -226,6 +226,10 @@ class SQLiteDBQuery(DBQuery):
         with self.db_connection as db:
             db.execute_query(query, params)
 
+
+    '''
+    Favorite Listing Content
+    '''
     # TODO: Write queries for adding, deleting, and retrieving listings to/from UserFavoriteListing
     def add_favorite_listing(self, user_id, listing_id):
         query = """
@@ -291,6 +295,91 @@ class SQLiteDBQuery(DBQuery):
             favorite_listings.append(listing)
 
         return favorite_listings
+
+
+    '''
+    Block / Unblock Content
+    '''
+    # TODO - ensure this is checked within message 
+    #Function: block a user 
+    def block_user(self, blocker_id, blocked_id):
+        """
+        Adds a user to the blocker's block list.
+
+        Args:
+            blocker_id (int): The ID of the user blocking another user.
+            blocked_id (int): The ID of the user to be blocked.
+
+        Returns:
+            dict: A dictionary with the result message and HTTP status.
+        """
+        query = """
+            INSERT INTO UserBlock (blocker_id, blocked_id) 
+            VALUES (?, ?)
+        """
+        params = (blocker_id, blocked_id)
+
+        with self.db_connection as db:
+            # Check if the block already exists
+            existing_block = db.execute_query(
+                "SELECT 1 FROM UserBlock WHERE blocker_id = ? AND blocked_id = ?",
+                params,
+            )
+            if existing_block:
+                return {"error": "User is already blocked."}, 400
+
+            db.execute_query(query, params)
+            return {"message": "User blocked successfully."}, 200
+
+    #Function: unblock a user  
+    def unblock_user(self, blocker_id, blocked_id):
+        """
+        Removes a user from the blocker's block list.
+
+        Args:
+            blocker_id (int): The ID of the user removing the block.
+            blocked_id (int): The ID of the user being unblocked.
+
+        Returns:
+            dict: A dictionary with the result message and HTTP status.
+        """
+        query = """
+            DELETE FROM UserBlock 
+            WHERE blocker_id = ? AND blocked_id = ?
+        """
+        params = (blocker_id, blocked_id)
+
+        with self.db_connection as db:
+            db.execute_query(query, params)
+            return {"message": "User unblocked successfully."}, 200
+
+    #Function: check if user is blocked
+    def is_user_blocked(self, sender_id, receiver_id):
+        """
+        Checks if the sender is blocked by the receiver.
+
+        Args:
+            sender_id (int): The ID of the user sending the message.
+            receiver_id (int): The ID of the user receiving the message.
+
+        Returns:
+            bool: True if the sender is blocked, False otherwise.
+        """
+        query = """
+            SELECT 1 
+            FROM UserBlock 
+            WHERE blocker_id = ? AND blocked_id = ?
+        """
+        params = (receiver_id, sender_id)
+
+        with self.db_connection as db:
+            result = db.execute_query(query, params)
+            return bool(result)
+
+
+    '''
+    Like / Dislike Listing Content
+    '''
 
     #Like and dislike queries:
     def like_listing(self, listing_id, current_likes):

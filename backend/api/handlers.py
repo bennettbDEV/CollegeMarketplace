@@ -140,6 +140,63 @@ class UserHandler:
         else:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
 
+    '''
+    Block / Unblock Content
+    '''
+
+    #Function: block
+    def block_user(self, blocker_id, blocked_id):
+        """
+        Blocks a user by adding an entry to the UserBlock table.
+
+        Args:
+            blocker_id (int): The ID of the user blocking another user.
+            blocked_id (int): The ID of the user being blocked.
+
+        Returns:
+            dict: A response with a message and HTTP status code.
+        """
+        # Check if blocker is trying to block themselves
+        if blocker_id == blocked_id:
+            return {"error": "You cannot block yourself."}, 400
+
+        # Call the database query to block the user
+        result, status_code = db_query.block_user(blocker_id, blocked_id)
+        return result, status_code
+
+    #Function: unblock
+    def unblock_user(self, blocker_id, blocked_id):
+        """
+        Unblocks a user by removing the block relationship from the UserBlock table.
+
+        Args:
+            blocker_id (int): The ID of the user removing the block.
+            blocked_id (int): The ID of the user being unblocked.
+
+        Returns:
+            dict: A response with a message and HTTP status code.
+        """
+        # Call the database query to unblock the user
+        result, status_code = db_query.unblock_user(blocker_id, blocked_id)
+        return result, status_code
+    
+    #Function: check if blocked
+    def is_user_blocked(self, sender_id, receiver_id):
+        """
+        Checks if a user is blocked by another user.
+
+        Args:
+            sender_id (int): The ID of the sender.
+            receiver_id (int): The ID of the intended recipient.
+
+        Returns:
+            bool: True if the sender is blocked, False otherwise.
+        """
+        return db_query.is_user_blocked(sender_id, receiver_id)
+
+
+
+
 
 class ListingHandler:
     def list_listings(self):
