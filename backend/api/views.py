@@ -234,13 +234,14 @@ class ListingViewSet(viewsets.GenericViewSet):
         """
         try:
             user_id = request.user.id
-            response_data, status_code = self.listing_handler.add_favorite_listing(user_id, pk)
-            return Response(response_data, status=status_code)
+            response = self.listing_handler.add_favorite_listing(user_id, pk)
+            return response
         except Exception as e:
+            print(e)
             return Response({"ERROR: unexpected error while adding the listing to favorites"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     #Function: remove listing from favorites 
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['delete'], permission_classes=[IsAuthenticated])
     def remove_favorite_listing(self, request, pk=None):
         """Removes a listing from the user's saved/favorite listings list.
 
@@ -253,9 +254,10 @@ class ListingViewSet(viewsets.GenericViewSet):
         """
         try:
             user_id = request.user.id
-            response_data, status_code = self.listing_handler.remove_favorite_listing(user_id, pk)
-            return Response(response_data, status=status_code)
+            response = self.listing_handler.remove_favorite_listing(user_id, pk)
+            return response
         except Exception as e:
+            print(e)
             return Response({"ERROR: unexpected error while removing the listing from favorites"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         # response = self.listing_handler.remove_favorite_listing(ListingHandler, user_id, listing_id)
         
@@ -278,9 +280,9 @@ class ListingViewSet(viewsets.GenericViewSet):
         try:
             user_id = request.user.id
             #Call the handler function to retrieve favorite listings
-            favorite_listings = self.listing_handler.list_favorite_listings(user_id)
+            response = self.listing_handler.list_favorite_listings(user_id)
             #Return the list of favorite listings
-            return Response({"favorites": favorite_listings},status=status.HTTP_200_OK)
+            return response
         except Exception as e:
             # Log the error for debugging
             print(f"Error in list_favorite_listings: {e}")

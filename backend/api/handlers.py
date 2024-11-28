@@ -278,12 +278,6 @@ class ListingHandler:
         return Response({"favorites": favorite_listings},status=status.HTTP_200_OK)
 
 
-    # Could have this in user handler
-    def list_favorite_listings(self, user_id):
-        # db_query.list_favorite_listings(self, user_id)
-        pass
-
-
 # Helper method for saving an image
 @staticmethod
 def save_image(image, image_type):
