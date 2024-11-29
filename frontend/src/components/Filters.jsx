@@ -61,9 +61,11 @@ const Filters = ({ onFilterChange }) => {
           onChange={(e) => setCondition(e.target.value)}
         >
           <option value="">All</option>
-          <option value="new">New</option>
-          <option value="used">Used</option>
-          <option value="refurbished">Refurbished</option>
+          <option value="Factory New">Factory New</option>
+          <option value="Minimal Wear">Minimal Wear</option>
+          <option value="Fair">Fair</option>
+          <option value="Well Worn">Well Worn</option>
+          <option value="Refurbished">Refurbished</option>
         </select>
       </div>
 

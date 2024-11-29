@@ -11,15 +11,34 @@ function Home() {
   const [nextPage, setNextPage] = useState(null);
   const [previousPage, setPreviousPage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState({
+    searchTerm: "",
+    minPrice: "",
+    maxPrice: "",
+    condition: "",
+  });
 
   useEffect(() => {
     getListings("/api/listings/");
-  }, []);
+  }, [filters]);
+
+  const buildFilterQuery = () => {
+    const queryParams = new URLSearchParams();
+
+    if (filters.searchTerm) queryParams.append("search", filters.searchTerm);
+    if (filters.minPrice) queryParams.append("min_price", filters.minPrice);
+    if (filters.maxPrice) queryParams.append("max_price", filters.maxPrice);
+    if (filters.condition) queryParams.append("condition", filters.condition);
+
+    return queryParams.toString();
+  };
 
   const getListings = (url) => {
     setLoading(true);
+    const filterQuery = buildFilterQuery();
+    const fullUrl = filterQuery ? `${url}?${filterQuery}` : url;
     api
-      .get(url)
+      .get(fullUrl)
       .then((response) => response.data)
       .then((data) => {
         console.log("API Response:", data);
@@ -35,12 +54,17 @@ function Home() {
       });
   };
 
+  const handleFilterChange = (updatedFilters) => {
+    setFilters(updatedFilters);
+    getListings("/api/listings/");
+  };
+
   return (
     <div>
       <NavBar />
       <div className="home-container">
         <div className="filters-section">
-          <Filters />
+          <Filters onFilterChange={handleFilterChange} />
         </div>
 
         <div className="listings-section">
@@ -58,7 +82,7 @@ function Home() {
                   onClick={getListings}
                   label="Previous"
                 />
-                
+
                 <LinkedButton
                   url={nextPage}
                   onClick={getListings}
