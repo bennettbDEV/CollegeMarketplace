@@ -195,13 +195,14 @@ class UserHandler:
         return db_query.is_user_blocked(sender_id, receiver_id)
 
 
-
-
-
 class ListingHandler:
     def list_listings(self):
         # Public info so no checks needed, just retrieve listings from db
         return db_query.get_all_listings()
+    
+    def list_filtered_listings(self, filters=None, search_term=None, ordering=None):
+        # Public info so no checks needed, just retrieve listings from db
+        return db_query.get_filtered_listings(filters, search_term, ordering)
 
     def create_listing(self, validated_data, user_id):
         # Create listing with reference to calling user's id

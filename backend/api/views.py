@@ -279,8 +279,20 @@ class ListingViewSet(viewsets.GenericViewSet):
         return super().get_permissions()
 
     def get_queryset(self):
-        # Gets all listings -> could be modified later to be filtered
-        listings = self.listing_handler.list_listings()
+        filters = {} # No filters by default
+
+        search_term = self.request.query_params.get("search", None)
+        ordering = self.request.query_params.get("ordering", None)
+        
+        # Add supported filters
+        for param, value in self.request.query_params.items():
+            if param in ["min_price", "max_price", "min_likes", "max_dislikes", "condition"]:  # Allowed filters
+                filters[param] = value
+
+        # Get the filtered and sorted listings
+        listings = self.listing_handler.list_filtered_listings(filters, search_term, ordering)
+
+        # Return listings as Listing instances
         return [Listing(**listing) for listing in listings]
 
     '''

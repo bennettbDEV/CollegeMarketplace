@@ -90,6 +90,79 @@ class SQLiteDBQuery(DBQuery):
             listings.append(listing)
         return listings
 
+    def get_filtered_listings(self, filters=None, search_term=None, ordering=None):
+        query = """
+        SELECT l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at,
+        GROUP_CONCAT(t.name) AS tags
+        FROM Listing l
+        LEFT JOIN ListingTag lt ON l.id = lt.listing_id
+        LEFT JOIN Tag t ON lt.tag_id = t.id
+        WHERE 1=1 --<filters>
+        GROUP BY l.id, l.title, l.condition, l.description, l.price, l.image, l.likes, l.dislikes, l.author_id, l.created_at
+        """
+
+        params = []
+
+        filter_clauses = ""
+        # Apply filters to the query
+        if filters:
+            for field, value in filters.items():
+                operator = "="
+                if field.startswith("min"):
+                    operator = ">="
+                    field = field[(field.find("_")+1):]
+                    value = int(value)
+                elif field.startswith("max"):
+                    operator = "<="
+                    field = field[(field.find("_")+1):]
+                    value = int(value)
+
+                filter_clauses += f" AND {field} {operator} ?"
+                params.append(value)
+
+        # Apply search term if provided (e.g., filter by title or description)
+        if search_term:
+            filter_clauses += (
+                " AND (title LIKE ? OR description LIKE ? OR t.name LIKE ?)"
+            )
+            params.extend([f"%{search_term}%", f"%{search_term}%", f"%{search_term}%"])
+
+        query = query.replace("--<filters>", filter_clauses)
+
+        # Apply ordering if provided
+        if ordering:
+            # Prefix with '-' for descending order
+            descending = ordering.startswith("-")
+            field_name = ordering.lstrip("-")  # Remove '-' if exists
+
+            # Ensure the field name is valid
+            valid_fields = [
+                "title",
+                "condition",
+                "description",
+                "price",
+                "likes",
+                "dislikes",
+                "created_at",
+            ]
+            if field_name.lower() in valid_fields:
+                query += f" ORDER BY {ordering}"
+                if not descending:
+                    query += " ASC"
+                # Descending by default
+
+        with self.db_connection as db:
+            rows = db.execute_query(query, params)
+
+        listings = []
+        for row in rows:
+            listing = {column: row[column] for column in row.keys() if column != "tags"}
+            listing["tags"] = row["tags"].split(",") if row["tags"] else []
+            listing["image"] = f"{settings.MEDIA_URL}{listing['image']}"
+
+            listings.append(listing)
+        return listings
+
     def create_listing(self, data, user_id):
         listing_data = {key: value for key, value in data.items() if key != "tags"}
         query = """
