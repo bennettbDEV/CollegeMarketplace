@@ -67,15 +67,14 @@ class UserViewSet(viewsets.GenericViewSet):
         self.user_handler = UserHandler()
 
     def get_permissions(self):
-        # User must be authenticated if performing any action other than create/list/retrieve
-        self.permission_classes = ([AllowAny] if (self.action in ["create", "list", "retrieve"]) else [IsAuthenticated])
+        # User must be authenticated if performing any action other than create/retrieve
+        self.permission_classes = ([AllowAny] if (self.action in ["create", "retrieve"]) else [IsAuthenticated])
         return super().get_permissions()
 
     def get_queryset(self):
         # Gets all users
         users = self.user_handler.list_users()
-        # ** operator is used to pass all key value pairs to the calling function
-        return [User(**user) for user in users]
+        return users
 
     # Crud actions
     def list(self, request):
@@ -194,8 +193,8 @@ class UserViewSet(viewsets.GenericViewSet):
             blocked_id = int(pk)
 
             # Call the handler method to block the user
-            response_data, status_code = UserHandler.block_user(blocker_id, blocked_id)
-            return Response(response_data, status=status_code)
+            response = self.user_handler.block_user(blocker_id, blocked_id)
+            return response
 
         except ValueError:
             return Response(
@@ -222,8 +221,8 @@ class UserViewSet(viewsets.GenericViewSet):
             blocked_id = int(pk)
 
             # Call the handler method to unblock the user
-            response_data, status_code = UserHandler.unblock_user(blocker_id, blocked_id)
-            return Response(response_data, status=status_code)
+            response = self.user_handler.unblock_user(blocker_id, blocked_id)
+            return response
         
         #if error
         except ValueError:
@@ -250,8 +249,8 @@ class UserViewSet(viewsets.GenericViewSet):
             receiver_id = int(pk)
 
             # Call the handler method to check if the user is blocked
-            is_blocked = UserHandler.is_user_blocked(sender_id, receiver_id)
-            return Response({"is_blocked": is_blocked},status=status.HTTP_200_OK)
+            response = self.user_handler.is_user_blocked(sender_id, receiver_id)
+            return response
         
         #if error
         except ValueError:

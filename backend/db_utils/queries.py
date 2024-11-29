@@ -303,7 +303,6 @@ class SQLiteDBQuery(DBQuery):
     '''
     Favorite Listing Content
     '''
-    # TODO: Write queries for adding, deleting, and retrieving listings to/from UserFavoriteListing
     def add_favorite_listing(self, user_id, listing_id):
         query = """
             INSERT INTO UserFavoriteListing (user_id, listing_id) 
@@ -388,21 +387,13 @@ class SQLiteDBQuery(DBQuery):
         """
         query = """
             INSERT INTO UserBlock (blocker_id, blocked_id) 
-            VALUES (?, ?)
+            VALUES (?, ?) ON CONFLICT DO NOTHING
         """
         params = (blocker_id, blocked_id)
 
         with self.db_connection as db:
-            # Check if the block already exists
-            existing_block = db.execute_query(
-                "SELECT 1 FROM UserBlock WHERE blocker_id = ? AND blocked_id = ?",
-                params,
-            )
-            if existing_block:
-                return {"error": "User is already blocked."}, 400
-
-            db.execute_query(query, params)
-            return {"message": "User blocked successfully."}, 200
+            num_affected_rows = db.execute_query(query, params)
+            return num_affected_rows
 
     #Function: unblock a user  
     def unblock_user(self, blocker_id, blocked_id):
@@ -419,12 +410,13 @@ class SQLiteDBQuery(DBQuery):
         query = """
             DELETE FROM UserBlock 
             WHERE blocker_id = ? AND blocked_id = ?
+            ON CONFLICT DO NOTHING
         """
         params = (blocker_id, blocked_id)
 
         with self.db_connection as db:
-            db.execute_query(query, params)
-            return {"message": "User unblocked successfully."}, 200
+            num_affected_rows = db.execute_query(query, params)
+            return num_affected_rows
 
     #Function: check if user is blocked
     def is_user_blocked(self, sender_id, receiver_id):
@@ -443,7 +435,7 @@ class SQLiteDBQuery(DBQuery):
             FROM UserBlock 
             WHERE blocker_id = ? AND blocked_id = ?
         """
-        params = (receiver_id, sender_id)
+        params = (sender_id, receiver_id)
 
         with self.db_connection as db:
             result = db.execute_query(query, params)

@@ -4,6 +4,7 @@ SELECT * FROM Listing WHERE price < 50 AND price > 40
 
 SELECT * FROM User
 SELECT * FROM UserFavoriteListing
+SELECT * FROM UserBlock
 
 DELETE FROM USER
 

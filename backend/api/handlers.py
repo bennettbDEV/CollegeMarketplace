@@ -41,12 +41,14 @@ class UserHandler:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED,)
 
     def logout(self):
-        # Implement logout logic here (e.g., clear session or tokens) EDIT LATER
+        # Method not really needed -> with tokens logout can be implemented easier on frontend
         pass
 
     def list_users(self):
         # Public info so no checks needed, just retrieve users from db
-        return db_query.get_all_users()
+        users = db_query.get_all_users()
+        # ** operator is used to pass all key value pairs to the calling function
+        return [User(**user) for user in users]
 
     def register_user(self, validated_data):
         # Check if user already exists
@@ -84,7 +86,8 @@ class UserHandler:
         )
 
     def get_user(self, id):
-        return db_query.get_user_by_id(id)
+        user_data = db_query.get_user_by_id(id)
+        return User(**user_data)
 
     def partial_update_user(self, request, id):
         user = db_query.get_user_by_id(id)
@@ -143,7 +146,6 @@ class UserHandler:
     '''
     Block / Unblock Content
     '''
-
     #Function: block
     def block_user(self, blocker_id, blocked_id):
         """
@@ -154,15 +156,26 @@ class UserHandler:
             blocked_id (int): The ID of the user being blocked.
 
         Returns:
-            dict: A response with a message and HTTP status code.
+            Response: A DRF Response object with an HTTP status.
         """
-        # Check if blocker is trying to block themselves
-        if blocker_id == blocked_id:
-            return {"error": "You cannot block yourself."}, 400
 
-        # Call the database query to block the user
-        result, status_code = db_query.block_user(blocker_id, blocked_id)
-        return result, status_code
+        try:
+            # Check if blocker is trying to block themselves
+            if blocker_id == blocked_id:
+                return Response({"error": "You cannot block yourself."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Call the database query to block the user
+            num_affected_rows = db_query.block_user(blocker_id, blocked_id)
+
+            # If 1+ rows affected, then block successful
+            # Otherwise if num is 0, user is already blocked
+            if num_affected_rows > 0:
+                return Response({"detail": "User Blocked successfully."}, status=status.HTTP_204_NO_CONTENT,)
+            else:
+                return Response({"detail": "User already blocked."}, status=status.HTTP_204_NO_CONTENT,)
+        except Exception as e:
+            print(str(e))
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     #Function: unblock
     def unblock_user(self, blocker_id, blocked_id):
@@ -174,11 +187,18 @@ class UserHandler:
             blocked_id (int): The ID of the user being unblocked.
 
         Returns:
-            dict: A response with a message and HTTP status code.
+            Response: A DRF Response object with an HTTP status.
         """
         # Call the database query to unblock the user
-        result, status_code = db_query.unblock_user(blocker_id, blocked_id)
-        return result, status_code
+        try:
+            num_affected_rows = db_query.unblock_user(blocker_id, blocked_id)
+            if num_affected_rows > 0:
+                return Response({"detail": "User unblocked successfully."}, status=status.HTTP_204_NO_CONTENT,)
+            else:
+                return Response({"detail": "User already unblocked."}, status=status.HTTP_204_NO_CONTENT,)
+        except Exception as e:
+            print(str(e))
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     #Function: check if blocked
     def is_user_blocked(self, sender_id, receiver_id):
@@ -190,9 +210,17 @@ class UserHandler:
             receiver_id (int): The ID of the intended recipient.
 
         Returns:
-            bool: True if the sender is blocked, False otherwise.
+            Response: A DRF Response object with an HTTP status.
         """
-        return db_query.is_user_blocked(sender_id, receiver_id)
+
+        try:
+            if db_query.is_user_blocked(sender_id, receiver_id):
+                return Response({"detail": "User is blocked."}, status=status.HTTP_204_NO_CONTENT,)
+            else:
+                return Response({"detail": "User is not blocked."}, status=status.HTTP_204_NO_CONTENT,)
+        except Exception as e:
+            print(str(e))
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ListingHandler:
