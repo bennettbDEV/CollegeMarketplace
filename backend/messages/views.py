@@ -52,16 +52,17 @@ class MessageView:
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"error": "Message with that id from that User is not found."}, status=status.HTTP_404_NOT_FOUND)
     #retrieve all message for one user
-    def retrieve_all_messages(self, request):
+    def retrieve_all_messages(self, request, pk):
         """Retrieves all messages received by a User.
         Args:
-            request (Request): DRF request object, must have user id
+            request (Request): DRF request object
             pk (int, optional): The id of the User.
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
-        #finish this later
-        messages = MessageMediator.retrieve_message(MessageMediator, request)
+        # Gets all messages and return it -> could be modified later to be filtered
+        messages = MessageMediator.retrieve_all_messages(MessageMediator, request, pk)
+        return [Message(**message) for message in messages]
     #delete a message from a user(who retrieved it) given message id and user
     def delete_message(self, request, pk):
         """Deletes the specified Message.
