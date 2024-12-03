@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS UserFavoriteListing (
     FOREIGN KEY (listing_id) REFERENCES Listing(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE,
     PRIMARY KEY (listing_id, user_id)
-    )
+);
 
 -- UserBlock
 CREATE TABLE IF NOT EXISTS UserBlock (
@@ -54,7 +54,13 @@ CREATE TABLE IF NOT EXISTS UserBlock (
     PRIMARY KEY (blocker_id, blocked_id)
 );
 
--- TODO: Make tables for messages
+-- Make Message table
+CREATE TABLE IF NOT EXISTS Message (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender INTEGER NOT NULL,
+    receiver INTEGER NOT NULL,
+    content TEXT
+);
 
 
 DROP TABLE Listing
