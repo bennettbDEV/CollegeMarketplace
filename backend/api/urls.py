@@ -33,7 +33,7 @@ with urlpatterns = format_suffix_patterns([
 router = DefaultRouter()
 router.register(r"users", views.UserViewSet, basename="user")
 router.register(r"listings", views.ListingViewSet, basename="listing")
-router.register(r"user-messages", message_views.MessageViewSet, basename="message")
+router.register(r"messages", message_views.MessageViewSet, basename="message")
 """ The router creates the following urlpatterns:
 - listings/,  name='listing-list'
 - listings/<int:pk>/, name='listing-detail'

@@ -1,11 +1,9 @@
 #api/views.py
 from db_utils.db_factory import DBFactory, DBType
 from db_utils.queries import SQLiteDBQuery
-from django.shortcuts import render
 from rest_framework import status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenObtainPairView
 
 #imports
 from .message_mediators import MessageMediator
@@ -40,8 +38,9 @@ class MessageViewSet(viewsets.GenericViewSet):
             return response
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
     #retrieve message for one user
-    def retrieve_message(self, request, pk):
+    def retrieve(self, request, pk=None):
         """Retrieves the specified Message.
         Args:
             request (Request): DRF request object, must have message id
@@ -54,8 +53,9 @@ class MessageViewSet(viewsets.GenericViewSet):
             serializer = Message(message.id, message.sender, message.receiver, message.content)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"error": "Message with that id from that User is not found."}, status=status.HTTP_404_NOT_FOUND)
+    
     #retrieve all message for one user
-    def retrieve_all_messages(self, request, pk):
+    def list(self, request, pk=None):
         """Retrieves all messages received by a User.
         Args:
             request (Request): DRF request object
@@ -67,7 +67,7 @@ class MessageViewSet(viewsets.GenericViewSet):
         messages = self.message_mediator.retrieve_all_messages(MessageMediator, request)
         return messages
     #delete a message from a user(who retrieved it) given message id and user
-    def delete_message(self, request, pk):
+    def destroy(self, request, pk):
         """Deletes the specified Message.
 
         Args:
