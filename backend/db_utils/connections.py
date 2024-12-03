@@ -12,25 +12,41 @@ class DBConnection(ABC):
         pass
 
     @abstractmethod
+    def disconnect(self):
+        pass
+    
+    @abstractmethod
     def execute_query(self, query, params=None):
         pass
 
     @abstractmethod
-    def disconnect(self):
+    def __enter__(self):
+        pass
+    
+    @abstractmethod
+    def __exit__(self, exc_type, exc_value, traceback):
         pass
 
 
 class SQLiteConnection(DBConnection):
     def connect(self):
         try:
-            self.connection = sqlite3.connect(self.db_config["NAME"])
+            if not self.connection:
+                self.connection = sqlite3.connect(self.db_config["NAME"])
         except sqlite3.Error as e:
             print(f"Error connecting to SQLite: {e}")
             raise
 
+    def disconnect(self):
+        if self.connection:
+            self.connection.close()
+            self.connection = None
+
     def execute_query(self, query, params=None):
         try:
+            self.connect()
             self.connection.row_factory = sqlite3.Row  # Enables accessing columns by name
+            
             cursor = self.connection.cursor()
             if params:
                 cursor.execute(query, params)
@@ -47,6 +63,9 @@ class SQLiteConnection(DBConnection):
             print(f"An error occurred during query execution: {e}")
             raise
 
-    def disconnect(self):
-        if self.connection:
-            self.connection.close()
+    def __enter__(self):
+        self.connect()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.disconnect()

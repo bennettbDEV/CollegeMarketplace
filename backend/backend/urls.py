@@ -17,14 +17,14 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from api.views import LoginView, ServeImageView, to_homepage
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework_simplejwt.views import TokenRefreshView
-#for homepage
-from api.views import LoginView, to_homepage 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('media/<path:image_path>/', ServeImageView.as_view(), name='serve_image'),
     # Authentication
     # api/token/ is used for logging in, token/refresh/ is used to refresh access token
     path("api/token/", LoginView.as_view(), name="get_token"),
@@ -32,4 +32,8 @@ urlpatterns = [
     # Main api urls
     path("api/", include("api.urls")),
     path('', to_homepage, name="home"),  # Root URL for the homepage
-]
+] #+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+#if settings.DEBUG:
+#   urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

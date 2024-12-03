@@ -6,6 +6,7 @@ function ListingFeed({ listings }) {
   if (!Array.isArray(listings) || listings.length === 0) {
     console.error("listings is not an array:", listings);
     listings = [];
+    // TODO: Add loading circle or something instead of "no listings available"
     return <div>No listings available</div>;
   }
   return (

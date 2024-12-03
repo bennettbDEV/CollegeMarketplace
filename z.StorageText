@@ -1,0 +1,37 @@
+
+#Chase - api/views.py
+@action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def favorite_listing(self, request, pk=None):
+        """Adds a listing to the user's saved/favorite listings list.
+
+        Args:
+            request (Request): DRF request object.
+            pk (int, optional): The id of the Listing. Defaults to None.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+        """
+
+        # TODO: Write necessary code to add to user_favorite_listing
+        user_id = request.user.id
+        response = ListingHandler.add_favorite_listing(ListingHandler, user_id, pk)
+
+        return response
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def remove_favorite_listing(self, request, pk=None):
+        """Removes a listing from the user's saved/favorite listings list.
+
+        Args:
+            request (Request): DRF request object.
+            pk (int, optional): The id of the Listing. Defaults to None.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+        """
+
+        # TODO: Write necessary code to add to user_favorite_listing
+
+        # response = ListingHandler.remove_favorite_listing(ListingHandler, user_id, listing_id)
+        
+        pass

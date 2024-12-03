@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS User (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
-    location TEXT
+    location TEXT,
+    image TEXT
 );
 
 -- Make Listing table
@@ -14,6 +15,8 @@ CREATE TABLE IF NOT EXISTS Listing (
     description TEXT NOT NULL,
     price REAL NOT NULL,
     image TEXT NOT NULL,
+    likes INTEGER DEFAULT 0 NOT NULL,
+    dislikes INTEGER DEFAULT 0 NOT NULL,
     author_id INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
@@ -33,14 +36,25 @@ CREATE TABLE IF NOT EXISTS ListingTag (
     PRIMARY KEY (listing_id, tag_id)
 );
 
--- Make Message table
-CREATE TABLE IF NOT EXISTS Message (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    sender INTEGER NOT NULL,
-    receiver INTEGER NOT NULL,
-    content TEXT
+-- UserFavoriteListing 
+CREATE TABLE IF NOT EXISTS UserFavoriteListing (
+    listing_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY (listing_id) REFERENCES Listing(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE,
+    PRIMARY KEY (listing_id, user_id)
+    )
+
+-- UserBlock
+CREATE TABLE IF NOT EXISTS UserBlock (
+    blocker_id INTEGER NOT NULL,
+    blocked_id INTEGER NOT NULL,
+    FOREIGN KEY (blocker_id) REFERENCES User(id) ON DELETE CASCADE,
+    FOREIGN KEY (blocked_id) REFERENCES User(id) ON DELETE CASCADE,
+    PRIMARY KEY (blocker_id, blocked_id)
 );
 
+-- TODO: Make tables for messages
 
 
 DROP TABLE Listing
