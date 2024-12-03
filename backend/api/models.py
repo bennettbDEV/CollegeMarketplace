@@ -29,29 +29,6 @@ class User:
     def check_password(self, password):
         return check_password(password, self.password)
 
-
-"""
-CLASS: Message
-"""
-class Message:
-    # We cant use django model stuff due to our custom db implementation
-    # message_text = models.TextField()
-
-    # Functions
-    def __init__(self, id):
-        self.id = id
-
-
-"""
-SUB-CLASS: SMS Message
-"""
-class SMSMessage(Message):
-    # SMS-specific fields
-    # Functions
-    def __init__(self, id):
-        self.id = id
-
-
 """
 CLASS: Listing
 """

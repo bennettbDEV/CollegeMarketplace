@@ -15,8 +15,11 @@ from .serializers import MessageSerializer
 # Initialize specific query object
 db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
 
-class MessageView:
-    
+class MessageViewSet(viewsets.GenericViewSet):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.message_mediator = MessageMediator()
     #check if person is the sender or retriever
     def check_permissions(self):
         pass
@@ -33,7 +36,7 @@ class MessageView:
         serializer = Message(0, pk, request.receiver.id, request.content)
         #check if data is valid
         if serializer.is_valid():
-            response = MessageMediator.send_message(MessageMediator, request, pk)
+            response = self.message_mediator.send_message(MessageMediator, request, pk)
             return response
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -46,7 +49,7 @@ class MessageView:
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
-        message = MessageMediator.retrieve_message(MessageMediator, request, pk)
+        message = self.message_mediator.retrieve_message(MessageMediator, request, pk)
         if message:
             serializer = Message(message.id, message.sender, message.receiver, message.content)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -61,8 +64,8 @@ class MessageView:
             Response: A DRF Response object with an HTTP status.
         """
         # Gets all messages and return it -> could be modified later to be filtered
-        messages = MessageMediator.retrieve_all_messages(MessageMediator, request, pk)
-        return [Message(**message) for message in messages]
+        messages = self.message_mediator.retrieve_all_messages(MessageMediator, request)
+        return messages
     #delete a message from a user(who retrieved it) given message id and user
     def delete_message(self, request, pk):
         """Deletes the specified Message.
@@ -75,7 +78,7 @@ class MessageView:
             Response: A DRF Response object with an HTTP status.
         """
         try:
-            response = MessageMediator.delete_user(MessageMediator, request.id, pk)
+            response = self.message_mediator.delete_user(MessageMediator, request.id, pk)
             return response
         except Exception as e:
             print(str(e))

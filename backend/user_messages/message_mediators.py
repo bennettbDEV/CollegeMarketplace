@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 
 from .serializers import MessageSerializer
 from .models import Message
-from ..api.models import User
+from api.models import User
 
 # Initialize specific query object
 db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
@@ -34,9 +34,10 @@ class Mediator(ABC):
 #message mediator class
 class MessageMediator(Mediator):
     #retrieve all messages from a given user(request given, get user from that)
-    def retrieve_all_messages(self, request, pk):
+    def retrieve_all_messages(self, request):
         #no reason to check user, will use the requesting users id anyways
-        return db_query.get_all_messages(int(request.user.id))
+        messages = db_query.retrieve_all_messages(int(request.user.id))
+        return [Message(**message) for message in messages]
     
     #retrieve a message from a given user(request given, get user from that)
     def retrieve_message(self, request, pk):

@@ -8,6 +8,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 import api.views as views
+import user_messages.views as message_views
 from . views import LoginView
 
 # Alternatively we can do
@@ -32,6 +33,7 @@ with urlpatterns = format_suffix_patterns([
 router = DefaultRouter()
 router.register(r"users", views.UserViewSet, basename="user")
 router.register(r"listings", views.ListingViewSet, basename="listing")
+router.register(r"user-messages", message_views.MessageViewSet, basename="message")
 """ The router creates the following urlpatterns:
 - listings/,  name='listing-list'
 - listings/<int:pk>/, name='listing-detail'
