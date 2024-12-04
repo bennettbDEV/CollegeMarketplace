@@ -1,7 +1,12 @@
-# api/views.py
+#api/views.py
+'''
+CLASSES: 
+LoginView, StandardResultsSetPagination, UserViewSet, ListingViewSet, 
+ServeImageView, 
+'''
+
 import mimetypes
 import os
-
 from django.conf import settings
 from django.http import FileResponse
 from django.shortcuts import render
@@ -36,7 +41,9 @@ class LoginView(TokenObtainPairView):
         # If the serializer is invalid, return errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+'''
+CLASS: StandardResultsSetPagination
+'''
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = "page_size"
@@ -463,10 +470,5 @@ class ServeImageView(View):
 Non-class Related Functions 
 '''
 # Function to return to the generate the homepage
-def to_homepage(request):
-    # If the user is authenticated, redirect to another page or display a welcome message
-    context = {
-        "is_authenticated": request.user.is_authenticated,
-        "user": request.user if request.user.is_authenticated else None,
-    }
-    return render(request, 'api/homepage.html', context)
+def to_backend(request):
+    return render(request, 'api/backend.html')

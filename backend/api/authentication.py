@@ -1,11 +1,16 @@
+#api/authentication.py
 from db_utils.db_factory import DBFactory, DBType
 from db_utils.queries import SQLiteDBQuery
 from django.contrib.auth.hashers import check_password
 from jwt import InvalidTokenError
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
 from api.models import User
+
+'''
+CLASSES: 
+CustomJWTAuthentication, 
+'''
 
 # Initialize specific query object
 db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))

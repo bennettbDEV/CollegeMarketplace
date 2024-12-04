@@ -1,7 +1,7 @@
 #handlers/py
+
 import os
 import uuid
-
 from db_utils.db_factory import DBFactory, DBType
 from db_utils.queries import SQLiteDBQuery
 from django.conf import settings
@@ -9,9 +9,7 @@ from django.contrib.auth.hashers import make_password
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
 from api.serializers import ListingSerializer, UserSerializer
-
 from .models import User
 
 

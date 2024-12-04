@@ -1,12 +1,7 @@
 #api/urls.py
-'''
-EDIT_OUT:
-(TO_CHANGE)
-'''
 
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-
 import api.views as views
 import user_messages.views as message_views
 from . views import LoginView
@@ -42,7 +37,6 @@ router.register(r"messages", message_views.MessageViewSet, basename="message")
 """
 
 urlpatterns = [
-    path('', views.to_homepage, name='home'),  #the main homepage
-    #path('login/', LoginView.as_view(template_name='api\login.html'), name='login'),
+    path('', views.to_backend, name='home'),  #the main homepage for backend
     path('', include(router.urls)),
 ]

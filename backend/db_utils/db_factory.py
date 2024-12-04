@@ -1,3 +1,7 @@
+'''
+CLASSES: 
+DBType, DBFactory
+'''
 from enum import Enum
 from db_utils.connections import SQLiteConnection
 
@@ -6,7 +10,6 @@ class DBType(Enum):
     SQLITE = "sqlite"
     MYSQL = "mysql"
     POSTGRES = "postgres"
-
 db_configs = {
     DBType.SQLITE: {
         "NAME": "db.sqlite3",

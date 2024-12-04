@@ -1,8 +1,10 @@
 #db_utils/queries.py
+'''
+CLASSES: 
+DBQuery, SQLiteDBQuery
+'''
 from abc import ABC, abstractmethod
-
 from django.conf import settings
-
 
 class DBQuery(ABC):
     _instance = None
