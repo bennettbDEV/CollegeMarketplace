@@ -1,6 +1,9 @@
 import sqlite3
 from abc import ABC, abstractmethod
-
+'''
+CLASSES: 
+DBConnection, SQLiteConnection
+'''
 
 class DBConnection(ABC):
     def __init__(self, db_config):
