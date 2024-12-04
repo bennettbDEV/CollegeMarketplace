@@ -424,7 +424,12 @@ class ListingViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    # Like and dislike listing
+
+    '''
+    Like/Dislike actions
+    '''
+
+    #Function: "likes" the listing
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def like_listing(self, request, pk=None):
         listing = self.listing_handler.get_listing(pk)
@@ -434,6 +439,7 @@ class ListingViewSet(viewsets.GenericViewSet):
             return response
         return Response({"error": "Listing with that id not found."}, status=status.HTTP_404_NOT_FOUND)
 
+    #Function: "dislikes" the listing
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def dislike_listing(self, request, pk=None):
         listing = self.listing_handler.get_listing(pk)

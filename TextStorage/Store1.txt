@@ -1,0 +1,41 @@
+'''
+CLASS: (test) LikeListing
+-Chase Test 1
+-run: python manage.py test api.tests.LikeListingTestCase.test_like_listing
+'''
+class LikeListingTestCase(APITestCase):
+    def setUp(self):
+        """
+        Set up a test listing and initialize the like endpoint.
+        """
+        # Create a test listing using the handler
+        self.test_listing = {
+            "id": 1,
+            "title": "Test Listing",
+            "condition": "New",
+            "description": "A sample test listing",
+            "price": 999.0,
+            "likes": 0,
+            "dislikes": 0,
+            "author_id": 1,  # Replace with a valid user ID if needed
+        }
+        ListingHandler.create_listing(self.test_listing)
+
+        # Define the like endpoint
+        self.like_url = reverse("listing-like-listing", kwargs={"pk": self.test_listing["id"]})
+
+    def test_like_listing(self):
+        """
+        Test liking a listing and incrementing the like count.
+        """
+        # Send a POST request to like the listing
+        response = self.client.post(self.like_url)
+
+        # Assert the response status is 204 No Content
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Retrieve the updated listing
+        updated_listing = ListingHandler.get_listing(self.test_listing["id"])
+
+        # Assert the like count has incremented by 1
+        self.assertEqual(updated_listing["likes"], 1)

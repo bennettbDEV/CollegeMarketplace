@@ -28,6 +28,9 @@ http://127.0.0.1:8000/api/users/<id>/delete/
 python manage.py runserver
     *runs the server. You can exit by pressing CTRL+C 
 
+python manage.py show_urls
+    *shows the urls. (need extension)
+
 python -m venv NAME_OF_ENVIROMENT
     *this creates a django enviroment. You should follow this by activating the enviroment.
 
