@@ -1,4 +1,8 @@
 #handlers/py
+'''
+CLASSES: 
+UserHandler, ListingHandler
+'''
 
 import os
 import uuid
@@ -16,7 +20,9 @@ from .models import User
 # Initialize specific query object
 db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
 
-
+'''
+CLASS: UserHandler
+'''
 class UserHandler:
     def login(self, user_data):
         if user_data:
@@ -221,6 +227,9 @@ class UserHandler:
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+'''
+CLASS: ListingHandler
+'''
 class ListingHandler:
     def list_listings(self):
         # Public info so no checks needed, just retrieve listings from db
@@ -340,7 +349,6 @@ class ListingHandler:
             status=status.HTTP_204_NO_CONTENT
         )
 
-
     # Function: handler logic listing all a user's 'favorites'
     def list_favorite_listings(self, user_id):
         """
@@ -361,6 +369,10 @@ class ListingHandler:
         #return
         return Response({"favorites": favorite_listings},status=status.HTTP_200_OK)
 
+
+    '''
+    Like/Dislike Listing actions:
+    '''
     # Like and dislike listing
     def like_listing(self, listing_id, likes):
         try:
