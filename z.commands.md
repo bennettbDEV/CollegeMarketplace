@@ -1,6 +1,16 @@
 # Helpful Commands
 -------------------
 -------------------
+# HOW TO: backend
+python manage.py runserver
+
+# HOW TO: frontend
+npm run dev
+
+
+
+
+
 ## Websites ## (server must be running)
 http://127.0.0.1:8000/
 http://127.0.0.1:8000/api/login/
@@ -8,9 +18,6 @@ http://127.0.0.1:8000/api/users/
 http://127.0.0.1:8000/api/token/
 http://127.0.0.1:8000/api/users/<id>/delete/
 
-http://127.0.0.1:8000/admin/login/?next=/admin/ 
-    U = ChaseTesting
-    P = ChaseTesting
 
 # Github tips
 - Always remember to pull from main when you start working on the project
@@ -63,11 +70,6 @@ npm run dev
     *runs the front-end development server. You can exit by pressing CTRL+C
 
 
-
-# Helpful Commands
--------------------
--------------------
--------------------
 # Commands: General Navigation
 cd .. 
     *this moves us back a directory
