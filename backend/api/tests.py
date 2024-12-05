@@ -1,4 +1,5 @@
 # api/tests.py
+import os
 from io import BytesIO
 from unittest.mock import patch
 
@@ -13,6 +14,7 @@ from rest_framework.test import APIClient, APITestCase, CoreAPIClient, RequestsC
 from api.handlers import ListingHandler, UserHandler
 from api.models import Listing
 from api.serializers import ListingSerializer, LoginSerializer, UserSerializer
+from backend.settings import BASE_DIR
 
 
 class AuthenticatedAPITestCase(APITestCase):
@@ -60,7 +62,7 @@ class AuthenticatedAPITestCase(APITestCase):
 
 
 # Create your tests here.
-@override_settings(MEDIA_ROOT="/tmp/test_media/")
+@override_settings(MEDIA_ROOT=os.path.join(BASE_DIR, "tmp/test_media/"))
 class ListListingsAPITestCase(AuthenticatedAPITestCase):
     def _generate_test_image(self):
         img = Image.new(
@@ -78,22 +80,21 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self.listing_handler = ListingHandler()
         self.list_listings_url = reverse("listing-list")
         self.listing1_id = None
+        self.test_title = "TestListingOne"
 
         # Create test listings here
         test_image = self._generate_test_image()
 
         data = {
-            "title": "TestListingOne",
+            "title": self.test_title,
             "description": "This is a test description.",
             "price": "999.99",
             "image": test_image,
             "tags": ["Test", "Testing", "Development"],
             "condition": "Well Worn",
         }
-        # serializer = ListingSerializer(data=data)
         response = None
 
-        # if serializer.is_valid():
         response = self.client.post(self.list_listings_url, data, format="multipart")
         if response.status_code == 201:
             self.listing1_id = response.data.get("id")
@@ -105,7 +106,8 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         response = self.client.delete(url)
         super().tearDown()
 
-    def test_get_listings(self):
+    # Test to see if the listing created in setup exists when requesting GET listings
+    def test_authenticated_get_listings(self):
         found_listing = False
         page = 1
         max_pages = 100
@@ -120,8 +122,8 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
 
             # Check if the listing on the current page
             if any(
-                item.get("title") == "TestListingOne"
-                for item in response.data.get("results")
+                listing.get("title") == self.test_title
+                for listing in response.data.get("results")
             ):
                 found_listing = True
                 break
@@ -133,9 +135,45 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
 
             page += 1
 
-        # Assert that the listing was found
+        # Assert that the listing was found, return string with better description if not
         self.assertTrue(
-            found_listing, "TestListingOne was not found in any of the pages."
+            found_listing, f"{self.test_title} was not found in any of the pages."
+        )
+
+    def test_unauthenticated_get_listings(self):
+        # Stop including any credentials
+        self.client.credentials()
+
+        found_listing = False
+        page = 1
+        max_pages = 100
+
+        while page <= max_pages:
+            # Construct the URL for the current page
+            url = f"{self.list_listings_url}?page={page}"
+
+            # Send GET request for current page
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+            # Check if the listing is on the current page
+            if any(
+                listing.get("title") == self.test_title
+                for listing in response.data.get("results")
+            ):
+                found_listing = True
+                break
+
+            # If no listing found and we have reached the last page, break
+            # No "next" link means we are at the last page
+            if not response.data.get("links").get("next"):
+                break
+
+            page += 1
+
+        # Assert that the listing was found, return string with better description if not
+        self.assertTrue(
+            found_listing, f"{self.test_title} was not found in any of the pages."
         )
 
 
@@ -166,6 +204,8 @@ TEST CLASS: LikeListingTestCase
 -Chase Test 1
 -run: python manage.py test api.tests.LikeListingTestCase.test_like_listing
 """
+
+
 # TEST: like listing
 class LikeListingTestCase(APITestCase):
     """
