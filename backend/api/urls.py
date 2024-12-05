@@ -1,12 +1,7 @@
 #api/urls.py
-'''
-EDIT_OUT:
-(TO_CHANGE)
-'''
 
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-
 import api.views as views
 import user_messages.views as message_views
 from . views import LoginView
@@ -33,7 +28,7 @@ with urlpatterns = format_suffix_patterns([
 router = DefaultRouter()
 router.register(r"users", views.UserViewSet, basename="user")
 router.register(r"listings", views.ListingViewSet, basename="listing")
-router.register(r"user-messages", message_views.MessageViewSet, basename="message")
+router.register(r"messages", message_views.MessageViewSet, basename="message")
 """ The router creates the following urlpatterns:
 - listings/,  name='listing-list'
 - listings/<int:pk>/, name='listing-detail'
@@ -42,7 +37,6 @@ router.register(r"user-messages", message_views.MessageViewSet, basename="messag
 """
 
 urlpatterns = [
-    path('', views.to_homepage, name='home'),  #the main homepage
-    #path('login/', LoginView.as_view(template_name='api\login.html'), name='login'),
+    path('', views.to_backend, name='home'),  #the main homepage for backend
     path('', include(router.urls)),
 ]

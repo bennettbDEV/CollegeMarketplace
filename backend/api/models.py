@@ -1,12 +1,12 @@
+#api/models
 from django.contrib.auth.hashers import check_password
+'''
+CLASSES: 
+User, Listing
+'''
 
-"""
-CONTAINS:
--Classes: User, Message, SMS Message, Listing
 
-"""
 
-# Create your models here.
 """
 CLASS: User
 """

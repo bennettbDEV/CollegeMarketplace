@@ -1,4 +1,8 @@
 # api/serializers.py
+'''
+CLASSES: 
+LoginSerializer, UserSerializer, ListingSerializer
+'''
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -23,8 +27,8 @@ class UserSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     username = serializers.CharField(max_length=50)
     password = serializers.CharField(write_only=True)  # Wont be revealed in reads
-    location = serializers.CharField(max_length=50, allow_null=True)
-    image = serializers.ImageField(use_url=True, allow_null=True)
+    location = serializers.CharField(max_length=50, allow_null=True, default="")
+    image = serializers.ImageField(use_url=True, allow_null=True, default=None)
 
     # Override default to_representation
     def to_representation(self, instance):

@@ -12,13 +12,11 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-#imports
 from .message_mediators import MessageMediator
 from .models import Message
 from .serializers import MessageSerializer
 
 class MessageViewSet(viewsets.GenericViewSet):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.message_mediator = MessageMediator()
