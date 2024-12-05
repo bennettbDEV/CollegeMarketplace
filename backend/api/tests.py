@@ -2,7 +2,6 @@
 import os
 from io import BytesIO
 from unittest.mock import patch
-
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
@@ -10,13 +9,15 @@ from django.urls import reverse
 from PIL import Image
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase, CoreAPIClient, RequestsClient
-
 from api.handlers import ListingHandler, UserHandler
 from api.models import Listing
 from api.serializers import ListingSerializer, LoginSerializer, UserSerializer
 from backend.settings import BASE_DIR
 
 
+"""
+Functions to help setup Tests
+"""
 class AuthenticatedAPITestCase(APITestCase):
     def setUp(self):
         self.user_handler = UserHandler()
@@ -61,7 +62,10 @@ class AuthenticatedAPITestCase(APITestCase):
         response = self.client.delete(url)
 
 
-# Create your tests here.
+'''
+Create Tests Here
+'''
+
 @override_settings(MEDIA_ROOT=os.path.join(BASE_DIR, "tmp/test_media/"))
 class ListListingsAPITestCase(AuthenticatedAPITestCase):
     def _generate_test_image(self):
@@ -201,52 +205,126 @@ class ListingSerializerTestCase(TestCase):
 
 """
 TEST CLASS: LikeListingTestCase
--Chase Test 1
+-Chase Test 
 -run: python manage.py test api.tests.LikeListingTestCase.test_like_listing
 """
-
-
 # TEST: like listing
-class LikeListingTestCase(APITestCase):
+class LikeListingTestCase(AuthenticatedAPITestCase):
     """
-    Test class for testing the like functionality of a listing.
+    Test case for testing the like functionality of a listing.
     """
 
-    def setUp(self):
-        """
-        Set up a test listing and initialize the like endpoint.
-        """
-        # Create a test listing using the handler
-        self.test_listing = {
-            "title": "Test Listing",
-            "condition": "New",
-            "description": "A sample test listing",
-            "price": 999.0,
-            "likes": 0,
-            "dislikes": 0,
-        }
-        self.user_id = 29  # Replace with a valid user ID if needed
-
-        # Create the listing
-        ListingHandler().create_listing(
-            validated_data=self.test_listing, user_id=self.user_id
+    #Function: setup a test image for a test listing
+    def generate_test_image(self):
+        img = Image.new(
+            "RGB", (100, 100), color=(255, 0, 0)
+        )  # Create a 100x100 red image
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG")
+        buffer.seek(0)
+        return SimpleUploadedFile(
+            "test_image.jpg", buffer.read(), content_type="image/jpeg"
         )
 
-        # Define the like endpoint
-        self.like_url = reverse("listing-like-listing", kwargs={"pk": 1})
+    #Function: setup data (user and listing)
+    def setUp(self):
+        """
+        Set up the test environment
+        """
+        super().setUp()
+        test_image = self.generate_test_image()
 
+        #create a test listing
+        self.test_listing_data = {
+            "title": "Test Listing",
+            "condition": "New",
+            "description": "A sample test listing for testing like functionality.",
+            "image": test_image,
+            "price": 999.0,
+            "likes": 0, 
+            "dislikes": 0,  
+            "tags": ["Test", "Sample"], 
+        }
+
+        # Retrieve the authenticated user's ID
+        self.user_id = self.user_handler.get_user_by_username("TestUsername").id
+
+        # Create the listing and retrieve its ID from the response
+        response = ListingHandler().create_listing(
+            validated_data=self.test_listing_data, user_id=self.user_id
+        )
+
+        # Debugging: Print the response data
+        #print(f"Create Listing Response: {response.data}")
+
+        # Check that the response is successful and contains the listing ID
+        assert response.status_code == 201, f"Failed to create listing: {response.data}"
+        self.listing_id = response.data.get("id")
+        assert self.listing_id is not None, "Listing ID was not returned in the response."
+
+        # Define the like endpoint for the created listing
+        self.like_url = reverse("listing-like-listing", kwargs={"pk": self.listing_id})
+
+    #Function: the actual test 
     def test_like_listing(self):
         """
-        Test liking a listing and incrementing the like count.
+        Test liking a listing and verify that the like count increments.
         """
-        # Send a POST request to like the listing
+        # Send a POST request to the like endpoint
         response = self.client.post(self.like_url)
 
-        # Assert the response status is 204 No Content
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        # Verify the response status is 204 No Content (success)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_204_NO_CONTENT,
+            f"Expected status 204, got {response.status_code}.",
+        )
 
-        # Retrieve the updated listing
-        updated_listing = ListingHandler().get_listing(1)
+        # Fetch the updated listing data to verify the like count
+        updated_listing = ListingHandler().get_listing(self.listing_id)
 
-        # Assert the like count has incremented by 1
-        self.assertEqual(updated_listing["likes"], 1)
+        # Assert the like count is incremented by 1
+        self.assertEqual(updated_listing["likes"],1,f"Expected 1 like, got {updated_listing['likes']}.",)
+
+    #Function: delete this test data
+    def tearDown(self):
+        """
+        Tear down the test environment by deleting the test listing and cleaning up resources.
+        """
+        # Check if the listing ID is set
+        if self.listing_id:
+            # Construct the endpoint for deleting the listing
+            url = reverse("listing-detail", args=[self.listing_id])
+
+            # Send a DELETE request using the authenticated client
+            response = self.client.delete(url)
+
+        # Call the parent teardown for user cleanup
+        super().tearDown()
+
+
+"""
+TEST CLASS: x
+-Chase Test 2
+-run: x
+"""
+# TEST: x
+class x(AuthenticatedAPITestCase):
+    """
+    Test case for x
+    """
+    #Function: setup data 
+    def setUp(self):
+        """
+        Set up the test environment by creating a test listing.
+        """
+        super().setUp()
+
+
+    #Function: delete this test data
+    def tearDown(self):
+        """
+        Tear down the test environment by deleting the test listing and cleaning up resources.
+        """
+        # Call the parent teardown for user cleanup
+        super().tearDown()
