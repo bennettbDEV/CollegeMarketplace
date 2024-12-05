@@ -1,7 +1,12 @@
-# api/views.py
+#api/views.py
+'''
+CLASSES: 
+LoginView, StandardResultsSetPagination, UserViewSet, ListingViewSet, 
+ServeImageView, 
+'''
+
 import mimetypes
 import os
-
 from django.conf import settings
 from django.http import FileResponse
 from django.shortcuts import render
@@ -24,19 +29,25 @@ class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user_handler = UserHandler()
+
     # Login request
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         # If valid credentials
         if serializer.is_valid():
             user_data = serializer.validated_data
-            response = UserHandler.login(UserHandler, user_data)
+            response = self.user_handler.login(user_data)
             return response
 
         # If the serializer is invalid, return errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+'''
+CLASS: StandardResultsSetPagination
+'''
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = "page_size"
@@ -110,7 +121,6 @@ class UserViewSet(viewsets.GenericViewSet):
 
         # Serialize/Validate data
         serializer = self.get_serializer(data=request.data)
-
         if serializer.is_valid():
             validated_data = serializer.validated_data
 
@@ -417,7 +427,12 @@ class ListingViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    # Like and dislike listing
+
+    '''
+    Like/Dislike actions
+    '''
+
+    #Function: "likes" the listing
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def like_listing(self, request, pk=None):
         listing = self.listing_handler.get_listing(pk)
@@ -427,6 +442,7 @@ class ListingViewSet(viewsets.GenericViewSet):
             return response
         return Response({"error": "Listing with that id not found."}, status=status.HTTP_404_NOT_FOUND)
 
+    #Function: "dislikes" the listing
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def dislike_listing(self, request, pk=None):
         listing = self.listing_handler.get_listing(pk)
@@ -463,10 +479,5 @@ class ServeImageView(View):
 Non-class Related Functions 
 '''
 # Function to return to the generate the homepage
-def to_homepage(request):
-    # If the user is authenticated, redirect to another page or display a welcome message
-    context = {
-        "is_authenticated": request.user.is_authenticated,
-        "user": request.user if request.user.is_authenticated else None,
-    }
-    return render(request, 'api/homepage.html', context)
+def to_backend(request):
+    return render(request, 'api/backend.html')

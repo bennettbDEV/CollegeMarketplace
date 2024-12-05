@@ -1,8 +1,10 @@
 #db_utils/queries.py
+'''
+CLASSES: 
+DBQuery, SQLiteDBQuery
+'''
 from abc import ABC, abstractmethod
-
 from django.conf import settings
-
 
 class DBQuery(ABC):
     _instance = None
@@ -205,6 +207,7 @@ class SQLiteDBQuery(DBQuery):
 
             # Save change
             db.connection.commit()
+            return listing_id
 
     def get_listing_by_id(self, listing_id):
         query = """
@@ -504,7 +507,7 @@ class SQLiteDBQuery(DBQuery):
         # The query returns a list of user rows, so return actual user instance
         if user:
             user = user[0]
-        return user
+        return dict(user)
 
     def partial_update_user(self, user_id, new_data):
         # Exclude "id" key:value pair. We should not modify user's id
@@ -525,3 +528,57 @@ class SQLiteDBQuery(DBQuery):
         params = (user_id,)
         with self.db_connection as db:
             db.execute_query(query, params)
+        self.db_connection.connect()
+        self.db_connection.execute_query(query, params)
+        self.db_connection.disconnect()
+
+    # --------------------------------------------------------------------------------
+    # Message functions
+
+    #create message creates a message given sender, receiver, and content, then returns message id
+    def create_message(self, sender_id, receiver_id, content):
+        #create query and parameters
+        query = """
+        INSERT INTO message (sender, receiver, content) 
+        VALUES (?, ?, ?)
+        """
+        params = (sender_id, receiver_id, content)
+        #execute query
+        self.db_connection.connect()
+        self.db_connection.execute_query(query, params)
+        self.db_connection.disconnect()
+        #attempt get new message ID without too much hassle and return it
+    
+    #delete message using message_id and receiver_id
+    def delete_message(self, message_id, receiver_id):
+        #query and param initialization
+        query = "DELETE FROM message WHERE receiverID = ? AND messageID = ?"
+        params = (receiver_id, message_id)
+        #do query
+
+    #get message from message_id and receiver_id
+    def get_message(self, message_id, receiver_id):
+        #make query and parameters
+        query = "SELECT * FROM message WHERE receiverID = ? and messageID = ? LIMIT 1"
+        params = (receiver_id, message_id)
+        #execute query
+        self.db_connection.connect()
+        message = self.db_connection.execute_query(query, params)
+        self.db_connection.disconnect()
+        
+        # The query returns a list of message rows, so return actual message instance
+        if message:
+            message = message[0]
+        return message
+    
+    #gets all messages received by the user
+    def get_all_messages(self, user_id):
+        #make query and parameters
+        query = "SELECT * FROM message WHERE receiverID = ?"
+        params = (user_id)
+        #do query
+        self.db_connection.connect()
+        messages = self.db_connection.execute_query(query, params)
+        self.db_connection.disconnect()
+        #return messages
+        return messages

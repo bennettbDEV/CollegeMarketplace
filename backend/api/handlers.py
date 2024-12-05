@@ -1,7 +1,11 @@
 #handlers/py
+'''
+CLASSES: 
+UserHandler, ListingHandler
+'''
+
 import os
 import uuid
-
 from db_utils.db_factory import DBFactory, DBType
 from db_utils.queries import SQLiteDBQuery
 from django.conf import settings
@@ -9,16 +13,16 @@ from django.contrib.auth.hashers import make_password
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
 from api.serializers import ListingSerializer, UserSerializer
-
 from .models import User
 
 
 # Initialize specific query object
 db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
 
-
+'''
+CLASS: UserHandler
+'''
 class UserHandler:
     def login(self, user_data):
         if user_data:
@@ -87,6 +91,10 @@ class UserHandler:
 
     def get_user(self, id):
         user_data = db_query.get_user_by_id(id)
+        return User(**user_data)
+
+    def get_user_by_username(self, username):
+        user_data = db_query.get_user_by_username(username)
         return User(**user_data)
 
     def partial_update_user(self, request, id):
@@ -223,6 +231,9 @@ class UserHandler:
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+'''
+CLASS: ListingHandler
+'''
 class ListingHandler:
     def list_listings(self):
         # Public info so no checks needed, just retrieve listings from db
@@ -242,7 +253,8 @@ class ListingHandler:
             else:
                 return Response({'error': 'Image is required'}, status=status.HTTP_400_BAD_REQUEST)
             
-            db_query.create_listing(validated_data, user_id)
+            listing_id = db_query.create_listing(validated_data, user_id)
+            validated_data["id"] = listing_id
             return Response(validated_data, status=status.HTTP_201_CREATED)
         except Exception as e:
             print(str(e))
@@ -292,7 +304,7 @@ class ListingHandler:
         listing = db_query.get_listing_by_id(id)
         if not listing:
             return Response({"error": "Listing not found."}, status=status.HTTP_404_NOT_FOUND)
-        
+
         # Ensure user is deleting their own listing
         if request.user.id == int(listing["author_id"]):
             db_query.delete_listing(id)
@@ -342,7 +354,6 @@ class ListingHandler:
             status=status.HTTP_204_NO_CONTENT
         )
 
-
     # Function: handler logic listing all a user's 'favorites'
     def list_favorite_listings(self, user_id):
         """
@@ -363,6 +374,10 @@ class ListingHandler:
         #return
         return Response({"favorites": favorite_listings},status=status.HTTP_200_OK)
 
+
+    '''
+    Like/Dislike Listing actions:
+    '''
     # Like and dislike listing
     def like_listing(self, listing_id, likes):
         try:
