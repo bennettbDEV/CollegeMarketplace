@@ -206,13 +206,13 @@ class ListingSerializerTestCase(TestCase):
 """
 TEST CLASS: LikeListingTestCase
 -Chase Test 
--run: python manage.py test api.tests.LikeListingTestCase.test_like_listing
+-run:
+python manage.py test api.tests.LikeListingTestCase.test_like_listing
+python manage.py test api.tests.LikeListingTestCase.test_like_nonexistent_listing
+python manage.py test api.tests.LikeListingTestCase.test_like_deleted_listing
 """
 # TEST: like listing
 class LikeListingTestCase(AuthenticatedAPITestCase):
-    """
-    Test case for testing the like functionality of a listing.
-    """
 
     #Function: setup a test image for a test listing
     def generate_test_image(self):
@@ -265,27 +265,6 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
         # Define the like endpoint for the created listing
         self.like_url = reverse("listing-like-listing", kwargs={"pk": self.listing_id})
 
-    #Function: the actual test 
-    def test_like_listing(self):
-        """
-        Test liking a listing and verify that the like count increments.
-        """
-        # Send a POST request to the like endpoint
-        response = self.client.post(self.like_url)
-
-        # Verify the response status is 204 No Content (success)
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_204_NO_CONTENT,
-            f"Expected status 204, got {response.status_code}.",
-        )
-
-        # Fetch the updated listing data to verify the like count
-        updated_listing = ListingHandler().get_listing(self.listing_id)
-
-        # Assert the like count is incremented by 1
-        self.assertEqual(updated_listing["likes"],1,f"Expected 1 like, got {updated_listing['likes']}.",)
-
     #Function: delete this test data
     def tearDown(self):
         """
@@ -302,11 +281,48 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
         # Call the parent teardown for user cleanup
         super().tearDown()
 
+    '''
+    Unit Test Cases
+    '''
+    #Case: a normal liking a listing
+    def test_like_listing(self):
+        # Send a POST request to the like endpoint
+        response = self.client.post(self.like_url)
+
+        # Verify the response status is 204 No Content (success)
+        self.assertEqual(response.status_code,status.HTTP_204_NO_CONTENT,f"Expected status 204, got {response.status_code}.")
+
+        # Fetch the updated listing data to verify the like count
+        updated_listing = ListingHandler().get_listing(self.listing_id)
+
+        # evaluate
+        self.assertEqual(updated_listing["likes"],1,f"Expected 1 like, got {updated_listing['likes']}.",)
+
+    #Case: liking a non-existent listing
+    def test_like_nonexistent_listing(self):
+        invalid_url = reverse("listing-like-listing", kwargs={"pk": -100})
+        response = self.client.post(invalid_url)
+
+        #evaluate
+        self.assertEqual(response.status_code,status.HTTP_404_NOT_FOUND,f"Expected status 404, got {response.status_code}.",)
+
+    #Case: liking a listing that has been deleted.
+    def test_like_deleted_listing(self):
+        # Delete the listing
+        url = reverse("listing-detail", args=[self.listing_id])
+        self.client.delete(url)
+
+        # Try liking the deleted listing
+        response = self.client.post(self.like_url)
+
+        #evaluate
+        self.assertEqual(response.status_code,status.HTTP_404_NOT_FOUND,f"Expected status 404, got {response.status_code}.",)
+
 
 """
 TEST CLASS: x
 -Chase Test 2
--run: x
+-run:
 """
 # TEST: x
 class x(AuthenticatedAPITestCase):
