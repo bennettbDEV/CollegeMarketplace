@@ -13,9 +13,6 @@ const Navbar = () => {
   <div className="navbar-center">
     <ul className="nav-links">
       <li>
-        <a href="/filter">Filter/Search</a>
-      </li>
-      <li>
         <a href="/saved">Saved</a>
       </li>
       <li>
