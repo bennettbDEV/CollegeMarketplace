@@ -29,13 +29,17 @@ class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user_handler = UserHandler()
+
     # Login request
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         # If valid credentials
         if serializer.is_valid():
             user_data = serializer.validated_data
-            response = UserHandler.login(UserHandler, user_data)
+            response = self.user_handler.login(user_data)
             return response
 
         # If the serializer is invalid, return errors
@@ -117,7 +121,6 @@ class UserViewSet(viewsets.GenericViewSet):
 
         # Serialize/Validate data
         serializer = self.get_serializer(data=request.data)
-
         if serializer.is_valid():
             validated_data = serializer.validated_data
 

@@ -93,6 +93,10 @@ class UserHandler:
         user_data = db_query.get_user_by_id(id)
         return User(**user_data)
 
+    def get_user_by_username(self, username):
+        user_data = db_query.get_user_by_username(username)
+        return User(**user_data)
+
     def partial_update_user(self, request, id):
         user = db_query.get_user_by_id(id)
         if not user:
@@ -249,7 +253,8 @@ class ListingHandler:
             else:
                 return Response({'error': 'Image is required'}, status=status.HTTP_400_BAD_REQUEST)
             
-            db_query.create_listing(validated_data, user_id)
+            listing_id = db_query.create_listing(validated_data, user_id)
+            validated_data["id"] = listing_id
             return Response(validated_data, status=status.HTTP_201_CREATED)
         except Exception as e:
             print(str(e))

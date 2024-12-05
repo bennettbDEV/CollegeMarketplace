@@ -207,6 +207,7 @@ class SQLiteDBQuery(DBQuery):
 
             # Save change
             db.connection.commit()
+            return listing_id
 
     def get_listing_by_id(self, listing_id):
         query = """
@@ -506,7 +507,7 @@ class SQLiteDBQuery(DBQuery):
         # The query returns a list of user rows, so return actual user instance
         if user:
             user = user[0]
-        return user
+        return dict(user)
 
     def partial_update_user(self, user_id, new_data):
         # Exclude "id" key:value pair. We should not modify user's id
