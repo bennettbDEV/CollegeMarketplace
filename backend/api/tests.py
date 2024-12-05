@@ -166,8 +166,6 @@ TEST CLASS: LikeListingTestCase
 -Chase Test 1
 -run: python manage.py test api.tests.LikeListingTestCase.test_like_listing
 """
-
-
 # TEST: like listing
 class LikeListingTestCase(APITestCase):
     """
