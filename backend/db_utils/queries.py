@@ -148,10 +148,11 @@ class SQLiteDBQuery(DBQuery):
                 "created_at",
             ]
             if field_name.lower() in valid_fields:
-                query += f" ORDER BY {ordering}"
-                if not descending:
+                query += f" ORDER BY {field_name}"
+                if descending:
+                    query += " DESC"
+                else:
                     query += " ASC"
-                # Descending by default
 
         with self.db_connection as db:
             rows = db.execute_query(query, params)

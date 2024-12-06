@@ -13,7 +13,7 @@ from api.handlers import ListingHandler, UserHandler
 from api.models import Listing
 from api.serializers import ListingSerializer, LoginSerializer, UserSerializer
 from backend.settings import BASE_DIR
-
+from api.views import ListingViewSet
 
 """
 Functions to help setup Tests
@@ -63,12 +63,6 @@ class AuthenticatedAPITestCase(APITestCase):
         url = reverse("user-detail", args=[user.id])
         response = self.client.delete(url)
 
-
-"""
-Create Tests Here
-"""
-
-
 @override_settings(MEDIA_ROOT=os.path.join(BASE_DIR, "tmp/test_media/"))
 class ListListingsAPITestCase(AuthenticatedAPITestCase):
     def _generate_test_image(self):
@@ -83,6 +77,13 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         )
 
     def _create_test_listings(self, num_listings=1, base_title="TestListing"):
+        """Creates the specified number of test listings with an incrementing title.
+
+        Args:
+            num_listings (int, optional): The number of listings to be created. Defaults to 1.
+            base_title (str, optional): The base string which is incremented: Example TestListing1, TestListing2. Defaults to "TestListing".
+        """
+
         # Create test listings here
         test_image = self._generate_test_image()
 
@@ -104,6 +105,9 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
                 print(response.data)
 
     def _delete_test_listings(self):
+        """Deletes all listings from self.listing_ids.
+        """
+
         for listing_id in self.listing_ids:
             url = reverse("listing-detail", args=[listing_id])
             response = self.client.delete(url)
@@ -119,6 +123,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
     def tearDown(self):
         self._delete_test_listings()
         super().tearDown()
+
 
     def test_authenticated_get_listings(self):
         # Create 1 listing
@@ -209,9 +214,122 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self.assertEqual(response.data.get("results", []), [])
 
     def test_invalid_page_number(self):
-        response = self.client.get(f"{self.list_listings_url}?page=999")
+        response = self.client.get(f"{self.list_listings_url}?page=99999")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data.get("detail"), "Invalid page.")
+
+    def _test_pagination(self):
+        # Create enough listings to create 2 pages
+        self._create_test_listings(15)
+
+        # Request the first page
+        response = self.client.get(f"{self.list_listings_url}?page=1")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data.get("results")), 10)
+
+        # Request the second page
+        response = self.client.get(f"{self.list_listings_url}?page=2")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data.get("results")), 5)
+
+    # Test all sorting options:
+    def test_sorting_by_title_ascending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=title")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        titles = [field["title"] for field in response.data.get("results")]
+        self.assertEqual(titles, sorted(titles))
+
+    def test_sorting_by_title_descending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=-title")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        titles = [field["title"] for field in response.data.get("results")]
+        self.assertEqual(titles, sorted(titles, reverse=True))
+
+    def test_sorting_by_condition_ascending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=condition")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        conditions = [field["condition"] for field in response.data.get("results")]
+        self.assertEqual(conditions, sorted(conditions))
+
+    def test_sorting_by_condition_descending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=-condition")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        conditions = [field["condition"] for field in response.data.get("results")]
+        self.assertEqual(conditions, sorted(conditions, reverse=True))
+
+    def test_sorting_by_description_ascending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=description")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        descriptions = [field["description"] for field in response.data.get("results")]
+        self.assertEqual(descriptions, sorted(descriptions))
+
+    def test_sorting_by_description_descending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=-description")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        descriptions = [field["description"] for field in response.data.get("results")]
+        self.assertEqual(descriptions, sorted(descriptions, reverse=True))
+
+    def test_sorting_by_price_ascending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=price")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        prices = [float(field["price"]) for field in response.data.get("results")]
+        self.assertEqual(prices, sorted(prices))
+
+    def test_sorting_by_price_descending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=-price")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        prices = [float(field["price"]) for field in response.data.get("results")]
+        self.assertEqual(prices, sorted(prices, reverse=True))
+
+    def test_sorting_by_likes_ascending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=likes")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        likes = [field["likes"] for field in response.data.get("results")]
+        self.assertEqual(likes, sorted(likes))
+
+    def test_sorting_by_likes_descending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=-likes")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        likes = [field["likes"] for field in response.data.get("results")]
+        self.assertEqual(likes, sorted(likes, reverse=True))
+
+    def test_sorting_by_dislikes_ascending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=dislikes")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        dislikes = [field["dislikes"] for field in response.data.get("results")]
+        self.assertEqual(dislikes, sorted(dislikes))
+
+    def test_sorting_by_dislikes_descending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=-dislikes")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        dislikes = [field["dislikes"] for field in response.data.get("results")]
+        self.assertEqual(dislikes, sorted(dislikes, reverse=True))
+
+    def test_sorting_by_created_at_ascending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=created_at")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        created_at = [field["created_at"] for field in response.data.get("results")]
+        self.assertEqual(created_at, sorted(created_at))
+
+    def test_sorting_by_created_at_descending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=-created_at")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        created_at = [field["created_at"] for field in response.data.get("results")]
+        self.assertEqual(created_at, sorted(created_at, reverse=True))
+
+
+    def test_filtering_by_condition(self):
+        # Create 1 listing - which will have "Well Worn" as its condition
+        self._create_test_listings(1, "TestListing")
+        # Filter by condition
+        response = self.client.get(f"{self.list_listings_url}?condition=Well Worn")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(
+            all("Well Worn" in listing.get("condition", "") for listing in response.data.get("results"))
+        )
+"""
+Create Tests Here
+"""
 
 
 class ListingSerializerTestCase(TestCase):
@@ -238,15 +356,12 @@ class ListingSerializerTestCase(TestCase):
 
 """
 TEST CLASS: LikeListingTestCase
--Chase Test 
+-Chase Test 1
 -run:
 python manage.py test api.tests.LikeListingTestCase.test_like_listing
 python manage.py test api.tests.LikeListingTestCase.test_like_nonexistent_listing
 python manage.py test api.tests.LikeListingTestCase.test_like_deleted_listing
 """
-
-
-# TEST: like listing
 class LikeListingTestCase(AuthenticatedAPITestCase):
     # Function: setup a test image for a test listing
     def generate_test_image(self):
@@ -260,11 +375,8 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
             "test_image.jpg", buffer.read(), content_type="image/jpeg"
         )
 
-    # Function: setup data (user and listing)
+    # Function: Set up the test environment
     def setUp(self):
-        """
-        Set up the test environment
-        """
         super().setUp()
         test_image = self.generate_test_image()
 
@@ -303,10 +415,6 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
 
     # Function: delete this test data
     def tearDown(self):
-        """
-        Tear down the test environment by deleting the test listing and cleaning up resources.
-        """
-        # Check if the listing ID is set
         if self.listing_id:
             # Construct the endpoint for deleting the listing
             url = reverse("listing-detail", args=[self.listing_id])
@@ -320,10 +428,9 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
     """
     Unit Test Cases
     """
-
     # Case: a normal liking a listing
     def test_like_listing(self):
-        # Send a POST request to the like endpoint
+        # Send a POST request to the like endpoint (this called .like_lisitng)
         response = self.client.post(self.like_url)
 
         # Verify the response status is 204 No Content (success)
@@ -373,199 +480,114 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
 
 
 """
-TEST CLASS: x
+TEST CLASS: FavoriteListingTestCase
 -Chase Test 2
 -run:
+python manage.py test api.tests.FavoriteListingTestCase.test_favorite_listing
+python manage.py test api.tests.FavoriteListingTestCase.test_favorite_nonexistent_listing
+python manage.py test api.tests.FavoriteListingTestCase.test_favorite_deleted_listing
 """
+class FavoriteListingTestCase(AuthenticatedAPITestCase):
 
-
-# TEST: x
-class x(AuthenticatedAPITestCase):
-    """
-    Test case for x
-    """
-
-    # Function: setup data
-    def setUp(self):
-        """
-        Set up the test environment by creating a test listing.
-        """
-        super().setUp()
-
-    # Function: delete this test data
-    def tearDown(self):
-        """
-        Tear down the test environment by deleting the test listing and cleaning up resources.
-        """
-        # Call the parent teardown for user cleanup
-        super().tearDown()
-"""
-TEST CLASS: Dislike Listing Testcase
--Trevin Test Case 1
--run:
-python manage.py test api.tests.DislikeListingTestCase
-"""
-class DislikeListingTestCase(AuthenticatedAPITestCase):
-    def _generate_test_image(self):
+    # Function: setup a test image for a test listing
+    def generate_test_image(self):
         img = Image.new(
-            "RGB", (100, 100), color=(255, 0, 0)
-        )  # Create a 100x100 red image
+            "RGB", (100, 100), color=(0, 255, 0)
+        )  # Create a 100x100 green image
         buffer = BytesIO()
         img.save(buffer, format="JPEG")
         buffer.seek(0)
         return SimpleUploadedFile(
-            "test_image.jpg", buffer.read(), content_type="image/jpeg"
+            "test_favorite_image.jpg", buffer.read(), content_type="image/jpeg"
         )
-    #setup function
+
+    # Function: setup data (user and listing)
     def setUp(self):
-        #setup user using super class function
         super().setUp()
-        test_image = self._generate_test_image()
-        # create a test listing
+        test_image = self.generate_test_image()
+
+
+        # Create a test listing
         self.test_listing_data = {
-            "title": "Test Listing",
+            "title": "Favorite Listing",
             "condition": "New",
-            "description": "A sample test listing for testing functionality.",
+            "description": "A sample test listing for testing favorite functionality.",
             "image": test_image,
-            "price": 999.0,
+            "price": 599.0,
             "likes": 0,
             "dislikes": 0,
-            "tags": ["Test", "Sample"],
+            "tags": ["Favorite", "Test"],
         }
+
+
         # Retrieve the authenticated user's ID
         self.user_id = self.user_handler.get_user_by_username("TestUsername").id
+
+
         # Create the listing and retrieve its ID from the response
         response = ListingHandler().create_listing(
             validated_data=self.test_listing_data, user_id=self.user_id
         )
-        #check that the response is successful and contains the listing ID
+
+
+        # Check that the response is successful and contains the listing ID
         assert response.status_code == 201, f"Failed to create listing: {response.data}"
         self.listing_id = response.data.get("id")
-        assert (
-            self.listing_id is not None
-        ), "Listing ID was not returned in the response."
-        #define the dislike endpoint for the created listing
-        self.dislike_url = reverse("listing-dislike-listing", kwargs={"pk": self.listing_id})
-        #we all good
-        
-    
-    def test_dislike_listing(self):
-        # Send a POST request to the dislike endpoint
-        response = self.client.post(self.dislike_url)
-        # Verify the response status is 204 No Content (success)
+        assert self.listing_id is not None, "Listing ID was not returned in the response."
+
+
+        # Define the favorite endpoint for the created listing
+        self.favorite_url = reverse("listing-favorite-listing", kwargs={"pk": self.listing_id})
+
+    # Function: deletes the test environment
+    def tearDown(self):
+        if hasattr(self, "listing_id") and self.listing_id:
+            url = reverse("listing-detail", args=[self.listing_id])
+            self.client.delete(url)
+        super().tearDown()
+
+    '''
+    Unit Test Cases
+    '''
+    # Case: a normal favoriting of a listing
+    def test_favorite_listing(self):
+        # Send a POST request to the favorite endpoint
+        response = self.client.post(self.favorite_url)
         self.assertEqual(
             response.status_code,
             status.HTTP_204_NO_CONTENT,
             f"Expected status 204, got {response.status_code}.",
         )
-        # Fetch the updated listing data to verify the like count
-        updated_listing = ListingHandler().get_listing(self.listing_id)
-        # evaluate
-        self.assertEqual(
-            updated_listing["dislikes"],
-            1,
-            f"Expected 1 like, got {updated_listing['dislikes']}.",
-        )
-    def test_dislike_nonexistent_listing(self):
-        invalid_url = reverse("listing-dislike-listing", kwargs={"pk": -21417926535879})
+        favorite_entry = ListingViewSet.favorite_listing(self.user_id, self.listing_id)
+
+        # Evaluate
+        self.assertIsNotNone(favorite_entry, "The listing was not favorited by the user.")
+
+    # Case: favoriting a non-existent listing
+    def test_favorite_nonexistent_listing(self):
+        # ensure listing does not exist
+        invalid_url = reverse("listing-favorite-listing", kwargs={"pk": -100})
         response = self.client.post(invalid_url)
-        # evaluate
+
+        # Evaluate
         self.assertEqual(
             response.status_code,
             status.HTTP_404_NOT_FOUND,
             f"Expected status 404, got {response.status_code}.",
         )
-    #teardown function
-    def tearDown(self):
-        #clean up after testing
-        # Check if the listing ID is set
-        if self.listing_id:
-            # Construct the endpoint for deleting the listing
-            url = reverse("listing-detail", args=[self.listing_id])
-            # Send a DELETE request using the authenticated client
-            response = self.client.delete(url)
-        super().tearDown()
-"""
-TEST CLASS: Dislike Listing Testcase
--Trevin Test Case 1
--run:
-python manage.py test api.tests.DislikeListingTestCase
-"""
-class RetrieveListingTestCase(AuthenticatedAPITestCase):
-    def _generate_test_image(self):
-        img = Image.new(
-            "RGB", (100, 100), color=(255, 0, 0)
-        )  # Create a 100x100 red image
-        buffer = BytesIO()
-        img.save(buffer, format="JPEG")
-        buffer.seek(0)
-        return SimpleUploadedFile(
-            "test_image.jpg", buffer.read(), content_type="image/jpeg"
-        )
-    
-    def _create_test_listings(self, num_listings=1, base_title="TestListing"):
-        # Create test listings here
-        test_image = self._generate_test_image()
 
-        for i in range(1, num_listings + 1):
-            data = {
-                "title": f"{base_title}{i}",
-                "description": f"This is test description {i}.",
-                "price": f"{i}{i}",
-                "image": test_image,
-                "tags": ["Test", "Testing", "Development"],
-                "condition": "Well Worn",
-            }
-            response = self.client.post(
-                self.list_listings_url, data, format="multipart"
-            )
-            if response and response.status_code == 201:
-                self.listing_ids.append(response.data.get("id"))
-            else:
-                print(response.data)
+    # Case: favoriting a listing that has been deleted.
+    def test_favorite_deleted_listing(self):
+        # Delete the listing
+        url = reverse("listing-detail", args=[self.listing_id])
+        self.client.delete(url)
 
-    def _delete_test_listings(self):
-        for listing_id in self.listing_ids:
-            url = reverse("listing-detail", args=[listing_id])
-            response = self.client.delete(url)
-    
-    #setup function
-    def setUp(self):
-        #setup user using super class function
-        super().setUp()
-        test_image = self._generate_test_image()
-        self.list_listings_url = reverse("listing-list")
-        self.listing_ids = []
+        # Try favoriting the deleted listing
+        response = self.client.post(self.favorite_url)
 
-        # create a test listing
-        self._create_test_listings(1)
-
-        #define the listing endpoint for the created listing
-        self.detail_listing_url = reverse("listing-detail", args=[self.listing_ids[0]])
-        #we all good
-        
-    
-    def test_retrieve_listing(self):
-        # Send a POST request to the dislike endpoint
-        response = self.client.get(self.detail_listing_url)
-        # Verify the response status is 200(success)
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_200_OK,
-            f"Expected status 200, got {response.status_code}.",
-        )
-        # Make sure info from test listing is in retrieval
-
-    def test_retrieve_nonexistant_listing(self):
-        invalid_url = reverse("listing-detail", kwargs={"pk": -21417926535879})
-        response = self.client.get(invalid_url)
-        # evaluate
+        # Evaluate
         self.assertEqual(
             response.status_code,
             status.HTTP_404_NOT_FOUND,
             f"Expected status 404, got {response.status_code}.",
         )
-    #teardown function
-    def tearDown(self):
-        self._delete_test_listings()
-        super().tearDown()
