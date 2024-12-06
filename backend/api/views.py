@@ -356,7 +356,6 @@ class ListingViewSet(viewsets.GenericViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
-        print(pk)
         listing = self.listing_handler.get_listing(pk)
         if listing:
             serializer = self.get_serializer(listing)
