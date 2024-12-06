@@ -330,9 +330,9 @@ class ListingViewSet(viewsets.GenericViewSet):
         # Field validation
         for param, value in request.query_params.items():
             if param not in valid_params:
-                return Response({"error": "Invalid filter parameter"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Invalid parameter."}, status=status.HTTP_400_BAD_REQUEST)
             if param == "ordering" and value.lstrip("-") not in valid_ordering_fields:
-                return Response({"error": "Invalid ordering parameter"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Invalid ordering parameter."}, status=status.HTTP_400_BAD_REQUEST)
 
         queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
