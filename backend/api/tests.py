@@ -256,11 +256,8 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
             "test_image.jpg", buffer.read(), content_type="image/jpeg"
         )
 
-    # Function: setup data (user and listing)
+    # Function: Set up the test environment
     def setUp(self):
-        """
-        Set up the test environment
-        """
         super().setUp()
         test_image = self.generate_test_image()
 
@@ -299,10 +296,6 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
 
     # Function: delete this test data
     def tearDown(self):
-        """
-        Tear down the test environment by deleting the test listing and cleaning up resources.
-        """
-        # Check if the listing ID is set
         if self.listing_id:
             # Construct the endpoint for deleting the listing
             url = reverse("listing-detail", args=[self.listing_id])
@@ -375,7 +368,6 @@ python manage.py test api.tests.FavoriteListingTestCase.test_favorite_listing
 python manage.py test api.tests.FavoriteListingTestCase.test_favorite_nonexistent_listing
 python manage.py test api.tests.FavoriteListingTestCase.test_favorite_deleted_listing
 """
-# TEST: favorite listing
 class FavoriteListingTestCase(AuthenticatedAPITestCase):
 
     # Function: setup a test image for a test listing
@@ -389,7 +381,6 @@ class FavoriteListingTestCase(AuthenticatedAPITestCase):
         return SimpleUploadedFile(
             "test_favorite_image.jpg", buffer.read(), content_type="image/jpeg"
         )
-
 
     # Function: setup data (user and listing)
     def setUp(self):
@@ -429,7 +420,6 @@ class FavoriteListingTestCase(AuthenticatedAPITestCase):
         # Define the favorite endpoint for the created listing
         self.favorite_url = reverse("listing-favorite-listing", kwargs={"pk": self.listing_id})
 
-
     # Function: deletes the test environment
     def tearDown(self):
         if hasattr(self, "listing_id") and self.listing_id:
@@ -454,7 +444,6 @@ class FavoriteListingTestCase(AuthenticatedAPITestCase):
         # Evaluate
         self.assertIsNotNone(favorite_entry, "The listing was not favorited by the user.")
 
-
     # Case: favoriting a non-existent listing
     def test_favorite_nonexistent_listing(self):
         # ensure listing does not exist
@@ -467,7 +456,6 @@ class FavoriteListingTestCase(AuthenticatedAPITestCase):
             status.HTTP_404_NOT_FOUND,
             f"Expected status 404, got {response.status_code}.",
         )
-
 
     # Case: favoriting a listing that has been deleted.
     def test_favorite_deleted_listing(self):
