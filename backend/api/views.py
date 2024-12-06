@@ -459,14 +459,13 @@ class ListingViewSet(viewsets.GenericViewSet):
     '''
     Like/Dislike actions
     '''
-
-    #Function: "likes" the listing
+   #Function: "likes" the listing
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def like_listing(self, request, pk=None):
         listing = self.listing_handler.get_listing(pk)
-        print(type(listing))
         if listing:
-            response = self.listing_handler.like_listing(pk, listing["likes"])
+            # Use dot notation to access 'likes' if 'listing' is an object
+            response = self.listing_handler.like_listing(pk, listing.likes)
             return response
         return Response({"error": "Listing with that id not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -475,7 +474,7 @@ class ListingViewSet(viewsets.GenericViewSet):
     def dislike_listing(self, request, pk=None):
         listing = self.listing_handler.get_listing(pk)
         if listing:
-            response = self.listing_handler.dislike_listing(pk, listing["dislikes"])
+            response = self.listing_handler.dislike_listing(pk, listing.dislikes)
             return response
         return Response({"error": "Listing with that id not found."}, status=status.HTTP_404_NOT_FOUND)
 
