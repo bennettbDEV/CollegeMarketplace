@@ -502,48 +502,59 @@ class RetrieveListingTestCase(AuthenticatedAPITestCase):
         return SimpleUploadedFile(
             "test_image.jpg", buffer.read(), content_type="image/jpeg"
         )
+    
+    def _create_test_listings(self, num_listings=1, base_title="TestListing"):
+        # Create test listings here
+        test_image = self._generate_test_image()
+
+        for i in range(1, num_listings + 1):
+            data = {
+                "title": f"{base_title}{i}",
+                "description": f"This is test description {i}.",
+                "price": f"{i}{i}",
+                "image": test_image,
+                "tags": ["Test", "Testing", "Development"],
+                "condition": "Well Worn",
+            }
+            response = self.client.post(
+                self.list_listings_url, data, format="multipart"
+            )
+            if response and response.status_code == 201:
+                self.listing_ids.append(response.data.get("id"))
+            else:
+                print(response.data)
+
+    def _delete_test_listings(self):
+        for listing_id in self.listing_ids:
+            url = reverse("listing-detail", args=[listing_id])
+            response = self.client.delete(url)
+    
     #setup function
     def setUp(self):
         #setup user using super class function
         super().setUp()
         test_image = self._generate_test_image()
+        self.list_listings_url = reverse("listing-list")
+        self.listing_ids = []
+
         # create a test listing
-        self.test_listing_data = {
-            "title": "Test Listing",
-            "condition": "New",
-            "description": "A sample test listing for testing functionality.",
-            "image": test_image,
-            "price": 999.0,
-            "likes": 0,
-            "dislikes": 0,
-            "tags": ["Test", "Sample"],
-        }
-        # Retrieve the authenticated user's ID
-        self.user_id = self.user_handler.get_user_by_username("TestUsername").id
-        # Create the listing and retrieve its ID from the response
-        response = ListingHandler().create_listing(
-            validated_data=self.test_listing_data, user_id=self.user_id
-        )
-        #check that the response is successful and contains the listing ID
-        assert response.status_code == 201, f"Failed to create listing: {response.data}"
-        self.listing_id = response.data.get("id")
-        assert (
-            self.listing_id is not None
-        ), "Listing ID was not returned in the response."
+        self._create_test_listings(1)
+
         #define the listing endpoint for the created listing
-        self.listing_url = reverse("listing-detail", args=[self.listing_id])
+        self.detail_listing_url = reverse("listing-detail", args=[self.listing_ids[0]])
         #we all good
         
     
     def test_retrieve_listing(self):
         # Send a POST request to the dislike endpoint
-        response = self.client.get(self.listing_url)
+        response = self.client.get(self.detail_listing_url)
         # Verify the response status is 200(success)
         self.assertEqual(
             response.status_code,
             status.HTTP_200_OK,
             f"Expected status 200, got {response.status_code}.",
         )
+        # Make sure info from test listing is in retrieval
 
     def test_retrieve_nonexistant_listing(self):
         invalid_url = reverse("listing-detail", kwargs={"pk": -21417926535879})
@@ -556,11 +567,5 @@ class RetrieveListingTestCase(AuthenticatedAPITestCase):
         )
     #teardown function
     def tearDown(self):
-        #clean up after testing
-        # Check if the listing ID is set
-        if self.listing_id:
-            # Construct the endpoint for deleting the listing
-            url = reverse("listing-detail", args=[self.listing_id])
-            # Send a DELETE request using the authenticated client
-            response = self.client.delete(url)
+        self._delete_test_listings()
         super().tearDown()

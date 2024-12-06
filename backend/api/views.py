@@ -330,9 +330,13 @@ class ListingViewSet(viewsets.GenericViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
+        print(pk)
         listing = self.listing_handler.get_listing(pk)
+        print(listing)
+        listing = Listing(**listing)
         if listing:
             serializer = self.get_serializer(listing)
+            
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"error": "Listing with that id not found."}, status=status.HTTP_404_NOT_FOUND)
 
