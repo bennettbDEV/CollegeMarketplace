@@ -399,3 +399,204 @@ class x(AuthenticatedAPITestCase):
         """
         # Call the parent teardown for user cleanup
         super().tearDown()
+
+
+"""
+TEST CLASS: Dislike Listing Testcase
+-Trevin Test Case 1
+-run:
+python manage.py test api.tests.DislikeListingTestCase
+"""
+class DislikeListingTestCase(AuthenticatedAPITestCase):
+    def _generate_test_image(self):
+        img = Image.new(
+            "RGB", (100, 100), color=(255, 0, 0)
+        )  # Create a 100x100 red image
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG")
+        buffer.seek(0)
+        return SimpleUploadedFile(
+            "test_image.jpg", buffer.read(), content_type="image/jpeg"
+        )
+    #setup function
+    def setUp(self):
+        #setup user using super class function
+        super().setUp()
+        test_image = self._generate_test_image()
+
+        # create a test listing
+        self.test_listing_data = {
+            "title": "Test Listing",
+            "condition": "New",
+            "description": "A sample test listing for testing functionality.",
+            "image": test_image,
+            "price": 999.0,
+            "likes": 0,
+            "dislikes": 0,
+            "tags": ["Test", "Sample"],
+        }
+
+        # Retrieve the authenticated user's ID
+        self.user_id = self.user_handler.get_user_by_username("TestUsername").id
+
+        # Create the listing and retrieve its ID from the response
+        response = ListingHandler().create_listing(
+            validated_data=self.test_listing_data, user_id=self.user_id
+        )
+
+        #check that the response is successful and contains the listing ID
+        assert response.status_code == 201, f"Failed to create listing: {response.data}"
+        self.listing_id = response.data.get("id")
+        assert (
+            self.listing_id is not None
+        ), "Listing ID was not returned in the response."
+
+        #define the dislike endpoint for the created listing
+        self.dislike_url = reverse("listing-dislike-listing", kwargs={"pk": self.listing_id})
+        #we all good
+        
+    
+    def test_dislike_listing(self):
+        # Send a POST request to the dislike endpoint
+        response = self.client.post(self.dislike_url)
+
+        # Verify the response status is 204 No Content (success)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_204_NO_CONTENT,
+            f"Expected status 204, got {response.status_code}.",
+        )
+
+        # Fetch the updated listing data to verify the like count
+        updated_listing = ListingHandler().get_listing(self.listing_id)
+
+        # evaluate
+        self.assertEqual(
+            updated_listing["dislikes"],
+            1,
+            f"Expected 1 like, got {updated_listing['dislikes']}.",
+        )
+
+    def test_dislike_nonexistent_listing(self):
+        invalid_url = reverse("listing-dislike-listing", kwargs={"pk": -21417926535879})
+        response = self.client.post(invalid_url)
+
+        # evaluate
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+            f"Expected status 404, got {response.status_code}.",
+        )
+
+
+    #teardown function
+    def tearDown(self):
+        #clean up after testing
+        # Check if the listing ID is set
+        if self.listing_id:
+            # Construct the endpoint for deleting the listing
+            url = reverse("listing-detail", args=[self.listing_id])
+
+            # Send a DELETE request using the authenticated client
+            response = self.client.delete(url)
+        super().tearDown()
+
+"""
+TEST CLASS: Dislike Listing Testcase
+-Trevin Test Case 1
+-run:
+python manage.py test api.tests.DislikeListingTestCase
+"""
+class RetrieveListingTestCase(AuthenticatedAPITestCase):
+    def _generate_test_image(self):
+        img = Image.new(
+            "RGB", (100, 100), color=(255, 0, 0)
+        )  # Create a 100x100 red image
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG")
+        buffer.seek(0)
+        return SimpleUploadedFile(
+            "test_image.jpg", buffer.read(), content_type="image/jpeg"
+        )
+    #setup function
+    def setUp(self):
+        #setup user using super class function
+        super().setUp()
+        test_image = self._generate_test_image()
+
+        # create a test listing
+        self.test_listing_data = {
+            "title": "Test Listing",
+            "condition": "New",
+            "description": "A sample test listing for testing functionality.",
+            "image": test_image,
+            "price": 999.0,
+            "likes": 0,
+            "dislikes": 0,
+            "tags": ["Test", "Sample"],
+        }
+
+        # Retrieve the authenticated user's ID
+        self.user_id = self.user_handler.get_user_by_username("TestUsername").id
+
+        # Create the listing and retrieve its ID from the response
+        response = ListingHandler().create_listing(
+            validated_data=self.test_listing_data, user_id=self.user_id
+        )
+
+        #check that the response is successful and contains the listing ID
+        assert response.status_code == 201, f"Failed to create listing: {response.data}"
+        self.listing_id = response.data.get("id")
+        assert (
+            self.listing_id is not None
+        ), "Listing ID was not returned in the response."
+
+        #define the dislike endpoint for the created listing
+        self.dislike_url = reverse("listing-dislike-listing", kwargs={"pk": self.listing_id})
+        #we all good
+        
+    
+    def test_retrieve_listing(self):
+        # Send a POST request to the dislike endpoint
+        response = self.client.post(self.dislike_url)
+
+        # Verify the response status is 204 No Content (success)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_204_NO_CONTENT,
+            f"Expected status 204, got {response.status_code}.",
+        )
+
+        # Fetch the updated listing data to verify the like count
+        updated_listing = ListingHandler().get_listing(self.listing_id)
+
+        # evaluate
+        self.assertEqual(
+            updated_listing["dislikes"],
+            1,
+            f"Expected 1 like, got {updated_listing['dislikes']}.",
+        )
+
+    def test_dislike_nonexistent_listing(self):
+        invalid_url = reverse("listing-dislike-listing", kwargs={"pk": -21417926535879})
+        response = self.client.post(invalid_url)
+
+        # evaluate
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+            f"Expected status 404, got {response.status_code}.",
+        )
+
+
+    #teardown function
+    def tearDown(self):
+        #clean up after testing
+        # Check if the listing ID is set
+        if self.listing_id:
+            # Construct the endpoint for deleting the listing
+            url = reverse("listing-detail", args=[self.listing_id])
+
+            # Send a DELETE request using the authenticated client
+            response = self.client.delete(url)
+        super().tearDown()
