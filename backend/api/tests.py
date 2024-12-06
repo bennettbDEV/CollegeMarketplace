@@ -530,31 +530,24 @@ class RetrieveListingTestCase(AuthenticatedAPITestCase):
         assert (
             self.listing_id is not None
         ), "Listing ID was not returned in the response."
-        #define the dislike endpoint for the created listing
-        self.dislike_url = reverse("listing-dislike-listing", kwargs={"pk": self.listing_id})
+        #define the listing endpoint for the created listing
+        self.listing_url = reverse("listing-detail", args=[self.listing_id])
         #we all good
         
     
     def test_retrieve_listing(self):
         # Send a POST request to the dislike endpoint
-        response = self.client.post(self.dislike_url)
-        # Verify the response status is 204 No Content (success)
+        response = self.client.get(self.listing_url)
+        # Verify the response status is 200(success)
         self.assertEqual(
             response.status_code,
-            status.HTTP_204_NO_CONTENT,
-            f"Expected status 204, got {response.status_code}.",
+            status.HTTP_200_OK,
+            f"Expected status 200, got {response.status_code}.",
         )
-        # Fetch the updated listing data to verify the like count
-        updated_listing = ListingHandler().get_listing(self.listing_id)
-        # evaluate
-        self.assertEqual(
-            updated_listing["dislikes"],
-            1,
-            f"Expected 1 like, got {updated_listing['dislikes']}.",
-        )
-    def test_dislike_nonexistent_listing(self):
-        invalid_url = reverse("listing-dislike-listing", kwargs={"pk": -21417926535879})
-        response = self.client.post(invalid_url)
+
+    def test_retrieve_nonexistant_listing(self):
+        invalid_url = reverse("listing-detail", kwargs={"pk": -21417926535879})
+        response = self.client.get(invalid_url)
         # evaluate
         self.assertEqual(
             response.status_code,
