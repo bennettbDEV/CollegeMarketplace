@@ -212,3 +212,41 @@ class LikeListingTestCase(APITestCase):
 
         # Assert the like count has incremented by 1
         self.assertEqual(updated_listing["likes"], 1)
+
+
+#Jake test case: Create Listing
+class CreateListingTest(AuthenticatedAPITestCase):
+    def setup(self):
+        super.setup()
+        test_img = self._generate_test_image()
+        self.test_listing = {
+            "title": "Test Listing",
+            "condition": "Factory New",
+            "description": "A sample test listing",
+            "price": 999.0,
+            "image": test_img,
+            "tags" : ["English", "Writing"]
+        }
+
+    def test_create_valid_listing(self):
+        url = "listings/"
+        response = self.client.post(url, data = self.test_listing, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        for key,value in self.test_listing.items():
+            self.assertEqual(response.data.get(key), value)
+        
+    def test_create_invalid_listing_title_value():
+        url = "listings/"
+        
+
+    
+    def _generate_test_image(self):
+        img = Image.new(
+            "RGB", (100, 100), color=(255, 0, 0)
+        )  # Create a 100x100 red image
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG")
+        buffer.seek(0)
+        return SimpleUploadedFile(
+            "test_image.jpg", buffer.read(), content_type="image/jpeg"
+        )
