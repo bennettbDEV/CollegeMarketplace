@@ -878,9 +878,9 @@ class DislikeListingTestCase(AuthenticatedAPITestCase):
         # evaluate
         print("yippee")
         self.assertEqual(
-            updated_listing["dislikes"],
+            updated_listing.dislikes,
             1,
-            f"Expected 1 like, got {updated_listing['dislikes']}.",
+            f"Expected 1 like, got {updated_listing.dislikes}.",
         )
     def test_dislike_nonexistent_listing(self):
         invalid_url = reverse("listing-dislike-listing", kwargs={"pk": -21417926535879})
