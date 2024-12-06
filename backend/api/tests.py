@@ -83,6 +83,13 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         )
 
     def _create_test_listings(self, num_listings=1, base_title="TestListing"):
+        """Creates the specified number of test listings with an incrementing title.
+
+        Args:
+            num_listings (int, optional): The number of listings to be created. Defaults to 1.
+            base_title (str, optional): The base string which is incremented: Example TestListing1, TestListing2. Defaults to "TestListing".
+        """
+
         # Create test listings here
         test_image = self._generate_test_image()
 
@@ -104,6 +111,9 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
                 print(response.data)
 
     def _delete_test_listings(self):
+        """Deletes all listings from self.listing_ids.
+        """
+
         for listing_id in self.listing_ids:
             url = reverse("listing-detail", args=[listing_id])
             response = self.client.delete(url)

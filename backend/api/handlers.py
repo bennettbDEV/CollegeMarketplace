@@ -288,7 +288,14 @@ class ListingHandler:
             if serializer.is_valid():
                 image = serializer.validated_data.get("image")
                 if image:
-                    valid_path = self.save_image(image, image_type="listings")
+                    try:
+                        # Delete the associated image
+                        delete_image(listing["image"])
+                    except Exception as e:
+                        print(str(e))
+                        return Response({"error": "An error occurred while deleting the old listing image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR,)
+
+                    valid_path = save_image(image, image_type="listings")
                     serializer.validated_data["image"] = valid_path
                 
                 db_query.partial_update_listing(id, serializer.validated_data)
@@ -305,10 +312,18 @@ class ListingHandler:
         if not listing:
             return Response({"error": "Listing not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Ensure user is deleting their own listing
+        # Ensure the user is deleting their own listing
         if request.user.id == int(listing["author_id"]):
-            db_query.delete_listing(id)
-            return Response({"detail": "Listing deleted successfully."}, status=status.HTTP_204_NO_CONTENT,)
+            try:
+                # Delete the associated image
+                delete_image(listing["image"])
+
+                # Delete the listing from the database
+                db_query.delete_listing(id)
+                return Response({"detail": "Listing deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+            except Exception as e:
+                print(str(e))
+                return Response({"error": "An error occurred while deleting the listing."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -396,7 +411,7 @@ class ListingHandler:
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# Helper method for saving an image
+# Helper methods for saving/deleting an image
 @staticmethod
 def save_image(image, image_type):
     # Generate random name
@@ -411,4 +426,15 @@ def save_image(image, image_type):
     with open(image_path, "wb+") as destination:
         for chunk in image.chunks():
             destination.write(chunk)
-    return f"{image_type}/{image_name}"
+    relative_path = os.path.join(image_type, image_name)
+    # Ensure stored paths use "/""
+    return relative_path.replace("\\", "/")
+
+@staticmethod
+def delete_image(path):
+    # Delete the associated image
+    relative_path = path.lstrip("/media/")
+    image_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+    
+    if os.path.exists(image_path):
+        os.remove(image_path)
