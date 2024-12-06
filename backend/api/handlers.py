@@ -434,7 +434,7 @@ def save_image(image, image_type):
 def delete_image(path):
     # Delete the associated image
     relative_path = path.lstrip("/media/")
+
     image_path = os.path.join(settings.MEDIA_ROOT, relative_path)
-    
     if os.path.exists(image_path):
         os.remove(image_path)

@@ -124,6 +124,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self._delete_test_listings()
         super().tearDown()
 
+
     def test_authenticated_get_listings(self):
         # Create 1 listing
         listing_title = "TestListing1"
@@ -213,11 +214,45 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self.assertEqual(response.data.get("results", []), [])
 
     def test_invalid_page_number(self):
-        response = self.client.get(f"{self.list_listings_url}?page=999")
+        response = self.client.get(f"{self.list_listings_url}?page=99999")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data.get("detail"), "Invalid page.")
 
+    def _test_pagination(self):
+        # Create enough listings to create 2 pages
+        self._create_test_listings(15)
 
+        # Request the first page
+        response = self.client.get(f"{self.list_listings_url}?page=1")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data.get("results")), 10)
+
+        # Request the second page
+        response = self.client.get(f"{self.list_listings_url}?page=2")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data.get("results")), 5)
+
+    def test_sorting_by_price_accending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=price")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        prices = [float(item["price"]) for item in response.data.get("results")]
+        self.assertEqual(prices, sorted(prices))
+    
+    def test_sorting_by_price_descending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=-price")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        prices = [float(item["price"]) for item in response.data.get("results")]
+        self.assertEqual(prices, sorted(prices, reverse=True))
+
+    def test_filtering_by_condition(self):
+        # Create 1 listing - which will have "Well Worn" as its condition
+        self._create_test_listings(1, "TestListing")
+        # Filter by condition
+        response = self.client.get(f"{self.list_listings_url}?condition=Well Worn")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(
+            all("Well Worn" in listing.get("condition", "") for listing in response.data.get("results"))
+        )
 """
 Create Tests Here
 """
