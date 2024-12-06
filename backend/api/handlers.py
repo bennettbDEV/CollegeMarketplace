@@ -14,7 +14,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from api.serializers import ListingSerializer, UserSerializer
-from .models import User
+from .models import User, Listing
 
 
 # Initialize specific query object
@@ -241,7 +241,8 @@ class ListingHandler:
     
     def list_filtered_listings(self, filters=None, search_term=None, ordering=None):
         # Public info so no checks needed, just retrieve listings from db
-        return db_query.get_filtered_listings(filters, search_term, ordering)
+        listings = db_query.get_filtered_listings(filters, search_term, ordering)
+        return [Listing(**listing) for listing in listings]
 
     def create_listing(self, validated_data, user_id):
         # Create listing with reference to calling user's id
@@ -261,7 +262,8 @@ class ListingHandler:
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get_listing(self, id):
-        return db_query.get_listing_by_id(id)
+        listing_data = db_query.get_listing_by_id(id)
+        return Listing(**listing_data)
 
     def partial_update_listing(self, request, id):
         listing = db_query.get_listing_by_id(id)

@@ -302,7 +302,7 @@ class ListingViewSet(viewsets.GenericViewSet):
         listings = self.listing_handler.list_filtered_listings(filters, search_term, ordering)
 
         # Return listings as Listing instances
-        return [Listing(**listing) for listing in listings]
+        return listings
 
     '''
     CRUD actions for ListingViewSet
@@ -358,6 +358,7 @@ class ListingViewSet(viewsets.GenericViewSet):
 
     def retrieve(self, request, pk=None):
         listing = self.listing_handler.get_listing(pk)
+
         if listing:
             serializer = self.get_serializer(listing)
             return Response(serializer.data, status=status.HTTP_200_OK)
