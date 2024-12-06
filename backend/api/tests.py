@@ -232,17 +232,91 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(response.data.get("results")), 5)
 
-    def test_sorting_by_price_accending(self):
+    # Test all sorting options:
+    def test_sorting_by_title_ascending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=title")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        titles = [field["title"] for field in response.data.get("results")]
+        self.assertEqual(titles, sorted(titles))
+
+    def test_sorting_by_title_descending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=-title")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        titles = [field["title"] for field in response.data.get("results")]
+        self.assertEqual(titles, sorted(titles, reverse=True))
+
+    def test_sorting_by_condition_ascending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=condition")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        conditions = [field["condition"] for field in response.data.get("results")]
+        self.assertEqual(conditions, sorted(conditions))
+
+    def test_sorting_by_condition_descending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=-condition")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        conditions = [field["condition"] for field in response.data.get("results")]
+        self.assertEqual(conditions, sorted(conditions, reverse=True))
+
+    def test_sorting_by_description_ascending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=description")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        descriptions = [field["description"] for field in response.data.get("results")]
+        self.assertEqual(descriptions, sorted(descriptions))
+
+    def test_sorting_by_description_descending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=-description")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        descriptions = [field["description"] for field in response.data.get("results")]
+        self.assertEqual(descriptions, sorted(descriptions, reverse=True))
+
+    def test_sorting_by_price_ascending(self):
         response = self.client.get(f"{self.list_listings_url}?ordering=price")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        prices = [float(item["price"]) for item in response.data.get("results")]
+        prices = [float(field["price"]) for field in response.data.get("results")]
         self.assertEqual(prices, sorted(prices))
-    
+
     def test_sorting_by_price_descending(self):
         response = self.client.get(f"{self.list_listings_url}?ordering=-price")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        prices = [float(item["price"]) for item in response.data.get("results")]
+        prices = [float(field["price"]) for field in response.data.get("results")]
         self.assertEqual(prices, sorted(prices, reverse=True))
+
+    def test_sorting_by_likes_ascending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=likes")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        likes = [field["likes"] for field in response.data.get("results")]
+        self.assertEqual(likes, sorted(likes))
+
+    def test_sorting_by_likes_descending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=-likes")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        likes = [field["likes"] for field in response.data.get("results")]
+        self.assertEqual(likes, sorted(likes, reverse=True))
+
+    def test_sorting_by_dislikes_ascending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=dislikes")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        dislikes = [field["dislikes"] for field in response.data.get("results")]
+        self.assertEqual(dislikes, sorted(dislikes))
+
+    def test_sorting_by_dislikes_descending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=-dislikes")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        dislikes = [field["dislikes"] for field in response.data.get("results")]
+        self.assertEqual(dislikes, sorted(dislikes, reverse=True))
+
+    def test_sorting_by_created_at_ascending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=created_at")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        created_at = [field["created_at"] for field in response.data.get("results")]
+        self.assertEqual(created_at, sorted(created_at))
+
+    def test_sorting_by_created_at_descending(self):
+        response = self.client.get(f"{self.list_listings_url}?ordering=-created_at")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        created_at = [field["created_at"] for field in response.data.get("results")]
+        self.assertEqual(created_at, sorted(created_at, reverse=True))
+
 
     def test_filtering_by_condition(self):
         # Create 1 listing - which will have "Well Worn" as its condition
