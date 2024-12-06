@@ -13,7 +13,7 @@ from api.handlers import ListingHandler, UserHandler
 from api.models import Listing
 from api.serializers import ListingSerializer, LoginSerializer, UserSerializer
 from backend.settings import BASE_DIR
-
+from api.views import ListingViewSet
 
 """
 Functions to help setup Tests
@@ -62,12 +62,6 @@ class AuthenticatedAPITestCase(APITestCase):
         user = self.user_handler.get_user_by_username("TestUsername")
         url = reverse("user-detail", args=[user.id])
         response = self.client.delete(url)
-
-
-"""
-Create Tests Here
-"""
-
 
 @override_settings(MEDIA_ROOT=os.path.join(BASE_DIR, "tmp/test_media/"))
 class ListListingsAPITestCase(AuthenticatedAPITestCase):
@@ -224,6 +218,11 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self.assertEqual(response.data.get("detail"), "Invalid page.")
 
 
+"""
+Create Tests Here
+"""
+
+
 class ListingSerializerTestCase(TestCase):
     def test_valid_data(self):
         data = {
@@ -248,15 +247,12 @@ class ListingSerializerTestCase(TestCase):
 
 """
 TEST CLASS: LikeListingTestCase
--Chase Test 
+-Chase Test 1
 -run:
 python manage.py test api.tests.LikeListingTestCase.test_like_listing
 python manage.py test api.tests.LikeListingTestCase.test_like_nonexistent_listing
 python manage.py test api.tests.LikeListingTestCase.test_like_deleted_listing
 """
-
-
-# TEST: like listing
 class LikeListingTestCase(AuthenticatedAPITestCase):
     # Function: setup a test image for a test listing
     def generate_test_image(self):
@@ -270,11 +266,8 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
             "test_image.jpg", buffer.read(), content_type="image/jpeg"
         )
 
-    # Function: setup data (user and listing)
+    # Function: Set up the test environment
     def setUp(self):
-        """
-        Set up the test environment
-        """
         super().setUp()
         test_image = self.generate_test_image()
 
@@ -313,10 +306,6 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
 
     # Function: delete this test data
     def tearDown(self):
-        """
-        Tear down the test environment by deleting the test listing and cleaning up resources.
-        """
-        # Check if the listing ID is set
         if self.listing_id:
             # Construct the endpoint for deleting the listing
             url = reverse("listing-detail", args=[self.listing_id])
@@ -330,10 +319,9 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
     """
     Unit Test Cases
     """
-
     # Case: a normal liking a listing
     def test_like_listing(self):
-        # Send a POST request to the like endpoint
+        # Send a POST request to the like endpoint (this called .like_lisitng)
         response = self.client.post(self.like_url)
 
         # Verify the response status is 204 No Content (success)
@@ -383,29 +371,114 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
 
 
 """
-TEST CLASS: x
+TEST CLASS: FavoriteListingTestCase
 -Chase Test 2
 -run:
+python manage.py test api.tests.FavoriteListingTestCase.test_favorite_listing
+python manage.py test api.tests.FavoriteListingTestCase.test_favorite_nonexistent_listing
+python manage.py test api.tests.FavoriteListingTestCase.test_favorite_deleted_listing
 """
+class FavoriteListingTestCase(AuthenticatedAPITestCase):
 
+    # Function: setup a test image for a test listing
+    def generate_test_image(self):
+        img = Image.new(
+            "RGB", (100, 100), color=(0, 255, 0)
+        )  # Create a 100x100 green image
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG")
+        buffer.seek(0)
+        return SimpleUploadedFile(
+            "test_favorite_image.jpg", buffer.read(), content_type="image/jpeg"
+        )
 
-# TEST: x
-class x(AuthenticatedAPITestCase):
-    """
-    Test case for x
-    """
-
-    # Function: setup data
+    # Function: setup data (user and listing)
     def setUp(self):
-        """
-        Set up the test environment by creating a test listing.
-        """
         super().setUp()
+        test_image = self.generate_test_image()
 
-    # Function: delete this test data
+
+        # Create a test listing
+        self.test_listing_data = {
+            "title": "Favorite Listing",
+            "condition": "New",
+            "description": "A sample test listing for testing favorite functionality.",
+            "image": test_image,
+            "price": 599.0,
+            "likes": 0,
+            "dislikes": 0,
+            "tags": ["Favorite", "Test"],
+        }
+
+
+        # Retrieve the authenticated user's ID
+        self.user_id = self.user_handler.get_user_by_username("TestUsername").id
+
+
+        # Create the listing and retrieve its ID from the response
+        response = ListingHandler().create_listing(
+            validated_data=self.test_listing_data, user_id=self.user_id
+        )
+
+
+        # Check that the response is successful and contains the listing ID
+        assert response.status_code == 201, f"Failed to create listing: {response.data}"
+        self.listing_id = response.data.get("id")
+        assert self.listing_id is not None, "Listing ID was not returned in the response."
+
+
+        # Define the favorite endpoint for the created listing
+        self.favorite_url = reverse("listing-favorite-listing", kwargs={"pk": self.listing_id})
+
+    # Function: deletes the test environment
     def tearDown(self):
-        """
-        Tear down the test environment by deleting the test listing and cleaning up resources.
-        """
-        # Call the parent teardown for user cleanup
+        if hasattr(self, "listing_id") and self.listing_id:
+            url = reverse("listing-detail", args=[self.listing_id])
+            self.client.delete(url)
         super().tearDown()
+
+    '''
+    Unit Test Cases
+    '''
+    # Case: a normal favoriting of a listing
+    def test_favorite_listing(self):
+        # Send a POST request to the favorite endpoint
+        response = self.client.post(self.favorite_url)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_204_NO_CONTENT,
+            f"Expected status 204, got {response.status_code}.",
+        )
+        favorite_entry = ListingViewSet.favorite_listing(self.user_id, self.listing_id)
+
+        # Evaluate
+        self.assertIsNotNone(favorite_entry, "The listing was not favorited by the user.")
+
+    # Case: favoriting a non-existent listing
+    def test_favorite_nonexistent_listing(self):
+        # ensure listing does not exist
+        invalid_url = reverse("listing-favorite-listing", kwargs={"pk": -100})
+        response = self.client.post(invalid_url)
+
+        # Evaluate
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+            f"Expected status 404, got {response.status_code}.",
+        )
+
+    # Case: favoriting a listing that has been deleted.
+    def test_favorite_deleted_listing(self):
+        # Delete the listing
+        url = reverse("listing-detail", args=[self.listing_id])
+        self.client.delete(url)
+
+        # Try favoriting the deleted listing
+        response = self.client.post(self.favorite_url)
+
+        # Evaluate
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+            f"Expected status 404, got {response.status_code}.",
+        )
