@@ -19,7 +19,6 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .handlers import ListingHandler, UserHandler
-from .models import Listing, User
 from .serializers import ListingSerializer, LoginSerializer, UserSerializer
 
 '''
@@ -302,12 +301,39 @@ class ListingViewSet(viewsets.GenericViewSet):
         listings = self.listing_handler.list_filtered_listings(filters, search_term, ordering)
 
         # Return listings as Listing instances
-        return [Listing(**listing) for listing in listings]
+        return listings
 
     '''
     CRUD actions for ListingViewSet
     '''
     def list(self, request):
+        valid_params = [
+            "search",
+            "ordering",
+            "min_price",
+            "max_price",
+            "min_likes",
+            "max_dislikes",
+            "condition",
+            "page"
+        ]
+        valid_ordering_fields = [
+            "title",
+            "condition",
+            "description",
+            "price",
+            "likes",
+            "dislikes",
+            "created_at",
+        ]
+
+        # Field validation
+        for param, value in request.query_params.items():
+            if param not in valid_params:
+                return Response({"error": "Invalid parameter."}, status=status.HTTP_400_BAD_REQUEST)
+            if param == "ordering" and value.lstrip("-") not in valid_ordering_fields:
+                return Response({"error": "Invalid ordering parameter."}, status=status.HTTP_400_BAD_REQUEST)
+
         queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
 
@@ -331,6 +357,7 @@ class ListingViewSet(viewsets.GenericViewSet):
 
     def retrieve(self, request, pk=None):
         listing = self.listing_handler.get_listing(pk)
+
         if listing:
             serializer = self.get_serializer(listing)
             return Response(serializer.data, status=status.HTTP_200_OK)

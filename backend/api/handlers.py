@@ -14,7 +14,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from api.serializers import ListingSerializer, UserSerializer
-from .models import User
+from .models import User, Listing
 
 
 # Initialize specific query object
@@ -241,7 +241,8 @@ class ListingHandler:
     
     def list_filtered_listings(self, filters=None, search_term=None, ordering=None):
         # Public info so no checks needed, just retrieve listings from db
-        return db_query.get_filtered_listings(filters, search_term, ordering)
+        listings = db_query.get_filtered_listings(filters, search_term, ordering)
+        return [Listing(**listing) for listing in listings]
 
     def create_listing(self, validated_data, user_id):
         # Create listing with reference to calling user's id
@@ -261,7 +262,8 @@ class ListingHandler:
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get_listing(self, id):
-        return db_query.get_listing_by_id(id)
+        listing_data = db_query.get_listing_by_id(id)
+        return Listing(**listing_data)
 
     def partial_update_listing(self, request, id):
         listing = db_query.get_listing_by_id(id)
@@ -288,7 +290,14 @@ class ListingHandler:
             if serializer.is_valid():
                 image = serializer.validated_data.get("image")
                 if image:
-                    valid_path = self.save_image(image, image_type="listings")
+                    try:
+                        # Delete the associated image
+                        delete_image(listing["image"])
+                    except Exception as e:
+                        print(str(e))
+                        return Response({"error": "An error occurred while deleting the old listing image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR,)
+
+                    valid_path = save_image(image, image_type="listings")
                     serializer.validated_data["image"] = valid_path
                 
                 db_query.partial_update_listing(id, serializer.validated_data)
@@ -305,10 +314,18 @@ class ListingHandler:
         if not listing:
             return Response({"error": "Listing not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Ensure user is deleting their own listing
+        # Ensure the user is deleting their own listing
         if request.user.id == int(listing["author_id"]):
-            db_query.delete_listing(id)
-            return Response({"detail": "Listing deleted successfully."}, status=status.HTTP_204_NO_CONTENT,)
+            try:
+                # Delete the associated image
+                delete_image(listing["image"])
+
+                # Delete the listing from the database
+                db_query.delete_listing(id)
+                return Response({"detail": "Listing deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+            except Exception as e:
+                print(str(e))
+                return Response({"error": "An error occurred while deleting the listing."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -396,7 +413,7 @@ class ListingHandler:
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# Helper method for saving an image
+# Helper methods for saving/deleting an image
 @staticmethod
 def save_image(image, image_type):
     # Generate random name
@@ -411,4 +428,15 @@ def save_image(image, image_type):
     with open(image_path, "wb+") as destination:
         for chunk in image.chunks():
             destination.write(chunk)
-    return f"{image_type}/{image_name}"
+    relative_path = os.path.join(image_type, image_name)
+    # Ensure stored paths use "/""
+    return relative_path.replace("\\", "/")
+
+@staticmethod
+def delete_image(path):
+    # Delete the associated image
+    relative_path = path.lstrip("/media/")
+
+    image_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+    if os.path.exists(image_path):
+        os.remove(image_path)

@@ -20,15 +20,19 @@ Including another URLconf
 from api.views import LoginView, ServeImageView, to_backend
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import RedirectView
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('media/<path:image_path>/', ServeImageView.as_view(), name='serve_image'),
+    path("favicon.ico", RedirectView.as_view(url="/static/favicon.ico")),
+
     # Authentication
     # api/token/ is used for logging in, token/refresh/ is used to refresh access token
     path("api/token/", LoginView.as_view(), name="get_token"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh"),
+    
     # Main api urls
     path("api/", include("api.urls")),
     path('', to_backend, name="home"),  # Root URL for the homepage

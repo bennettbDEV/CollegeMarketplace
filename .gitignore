@@ -2,4 +2,5 @@
 **migrations
 **env
 **node_modules
+**tmp
 .env
