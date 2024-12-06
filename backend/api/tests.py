@@ -71,6 +71,12 @@ Create Tests Here
 
 @override_settings(MEDIA_ROOT=os.path.join(BASE_DIR, "tmp/test_media/"))
 class ListListingsAPITestCase(AuthenticatedAPITestCase):
+    """Unit tests for listing-list request. Includes test for Use cases: Retrieve Listings, Search for Listings, and Filter Search Results
+
+    Args:
+        AuthenticatedAPITestCase (APITestCase): Parent class that creates and deletes an authenticated user for use in testing - using the setUp() and tearDown() methods. 
+    """
+    
     def _generate_test_image(self):
         img = Image.new(
             "RGB", (100, 100), color=(255, 0, 0)
@@ -146,6 +152,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self._delete_test_listings()
         super().tearDown()
 
+    # Retrieve Listings Use case - test all retrieval methods -> including pagination
     def test_authenticated_get_listings(self):
         response = self.client.get(f"{self.list_listings_url}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -184,7 +191,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data.get("detail"), "Invalid page.")
 
-    def _test_pagination(self):
+    def test_pagination(self):
         # Create enough listings to create 2 pages
         self._create_test_listings(15)
 
@@ -198,7 +205,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(response.data.get("results")), 5)
 
-    # Test all sorting options:
+    # Test all sorting options
     def test_sorting_by_title_ascending(self):
         response = self.client.get(f"{self.list_listings_url}?ordering=title")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -293,7 +300,40 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data.get("error"), "Invalid ordering parameter.")
 
-    # Test all filtering options
+    # Search for Listings Use case - Test searching possibilites
+    def test_searching_valid_term(self):
+        # Create 1 listing - which will be called Interesting textbook
+        self._create_test_listings(1, base_title="Interesting Textbook")
+
+        # Search for book:
+        response = self.client.get(f"{self.list_listings_url}?search=book")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Assert that all returned listings have 'book' in title, description, or tags
+        self.assertTrue(
+            all(
+                "book"
+                in (
+                    listing.get("title", "").lower()
+                    + listing.get("description", "").lower()
+                    + " ".join(listing.get("tags", [])).lower()
+                )
+                for listing in response.data.get("results")
+            )
+        )
+
+    def test_searching_invalid_term(self):
+        # Create 1 listing - which will be called Interesting textbook
+        self._create_test_listings(1, base_title="Interesting Textbook")
+
+        # Search for insane term:
+        response = self.client.get(f"{self.list_listings_url}?search=----------------$$$$$$$$$$$$$$$$$$$$_------------432756489125621657849653924......43.r..vf...fdsv..fd.v..r.vfds.")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Assert that no listings have the given tag
+        self.assertEqual(len(response.data.get("results")), 0)
+
+    # Filter Search Results Use case - Test all filtering options
     def test_filtering_by_condition_factory_new(self):
         # Create 1 listing - which will have "Factory New" as its condition
         self._create_test_listings(1, "TestListing", condition="Factory New")
