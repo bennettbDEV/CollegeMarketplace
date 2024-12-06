@@ -773,3 +773,210 @@ class FavoriteListingTestCase(AuthenticatedAPITestCase):
             status.HTTP_404_NOT_FOUND,
             f"Expected status 404, got {response.status_code}.",
         )
+
+"""
+TEST CLASS: Dislike Listing Testcase
+-Trevin Test Case 1
+-run:
+python manage.py test api.tests.DislikeListingTestCase
+"""
+class DislikeListingTestCase(AuthenticatedAPITestCase):
+    def _generate_test_image(self):
+        img = Image.new(
+            "RGB", (100, 100), color=(255, 0, 0)
+        )  # Create a 100x100 red image
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG")
+        buffer.seek(0)
+        return SimpleUploadedFile(
+            "test_image.jpg", buffer.read(), content_type="image/jpeg"
+        )
+
+    def _create_test_listings(self, num_listings=1, base_title="TestListing"):
+        """Creates the specified number of test listings with an incrementing title.
+
+        Args:
+            num_listings (int, optional): The number of listings to be created. Defaults to 1.
+            base_title (str, optional): The base string which is incremented: Example TestListing1, TestListing2. Defaults to "TestListing".
+        """
+
+        # Create test listings here
+        test_image = self._generate_test_image()
+
+        for i in range(1, num_listings + 1):
+            data = {
+                "title": f"{base_title}{i}",
+                "description": f"This is test description {i}.",
+                "price": f"{i}{i}",
+                "image": test_image,
+                "tags": ["Test", "Testing", "Development"],
+                "condition": "Well Worn",
+            }
+            response = self.client.post(
+                self.list_listings_url, data, format="multipart"
+            )
+            if response and response.status_code == 201:
+                self.listing_ids.append(response.data.get("id"))
+            else:
+                print(response.data)
+
+    def _delete_test_listings(self):
+        """Deletes all listings from self.listing_ids.
+        """
+
+        for listing_id in self.listing_ids:
+            url = reverse("listing-detail", args=[listing_id])
+            response = self.client.delete(url)
+
+    # Before
+    def setUp(self):
+        super().setUp()
+        self.listing_handler = ListingHandler()
+        self.listing_ids = []
+        self.list_listings_url = reverse("listing-list")
+        self._create_test_listings(1)
+
+    # After
+    def tearDown(self):
+        self._delete_test_listings()
+        super().tearDown()
+        
+    
+    def test_dislike_listing(self):
+        # Send a POST request to the dislike endpoint
+        self.dislike_url = reverse("listing-dislike-listing", kwargs={"pk": self.listing_ids[0]})
+        response = self.client.post(self.dislike_url)
+        # Verify the response status is 204 No Content (success)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_204_NO_CONTENT,
+            f"Expected status 204, got {response.status_code}.",
+        )
+        # Fetch the updated listing data to verify the like count
+        updated_listing = ListingHandler().get_listing(self.listing_ids[0])
+        # evaluate
+        print("yippee")
+        self.assertEqual(
+            updated_listing.dislikes,
+            1,
+            f"Expected 1 like, got {updated_listing.dislikes}.",
+        )
+    def test_dislike_nonexistent_listing(self):
+        invalid_url = reverse("listing-dislike-listing", kwargs={"pk": -21417926535879})
+        response = self.client.post(invalid_url)
+        # evaluate
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+            f"Expected status 404, got {response.status_code}.",
+        )
+"""
+TEST CLASS: Retrieve Listing Testcase
+-Trevin Test Case 2
+-run:
+python manage.py test api.tests.RetrieveListingTestCase
+"""
+class RetrieveListingTestCase(AuthenticatedAPITestCase):
+    def _generate_test_image(self):
+        img = Image.new(
+            "RGB", (100, 100), color=(255, 0, 0)
+        )  # Create a 100x100 red image
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG")
+        buffer.seek(0)
+        return SimpleUploadedFile(
+            "test_image.jpg", buffer.read(), content_type="image/jpeg"
+        )
+
+    def _create_test_listings(self, num_listings=1, base_title="TestListing"):
+        """Creates the specified number of test listings with an incrementing title.
+
+        Args:
+            num_listings (int, optional): The number of listings to be created. Defaults to 1.
+            base_title (str, optional): The base string which is incremented: Example TestListing1, TestListing2. Defaults to "TestListing".
+        """
+
+        # Create test listings here
+        test_image = self._generate_test_image()
+
+        for i in range(1, num_listings + 1):
+            data = {
+                "title": f"{base_title}{i}",
+                "description": f"This is test description {i}.",
+                "price": f"{i}{i}",
+                "image": test_image,
+                "tags": ["Test", "Testing", "Development"],
+                "condition": "Well Worn",
+            }
+            response = self.client.post(
+                self.list_listings_url, data, format="multipart"
+            )
+            if response and response.status_code == 201:
+                self.listing_ids.append(response.data.get("id"))
+            else:
+                print(response.data)
+
+    def _delete_test_listings(self):
+        """Deletes all listings from self.listing_ids.
+        """
+
+        for listing_id in self.listing_ids:
+            url = reverse("listing-detail", args=[listing_id])
+            response = self.client.delete(url)
+    
+    #setup function
+    def setUp(self):
+        #setup user using super class function
+        super().setUp()
+        test_image = self._generate_test_image()
+        self.list_listings_url = reverse("listing-list")
+        self.listing_ids = []
+
+        # create a test listing
+        self._create_test_listings(2)
+
+        #define the listing endpoint for the created listing
+        self.detail_listing_url = reverse("listing-detail", args=[self.listing_ids[0]])
+        #we all good
+        
+    
+    def test_retrieve_listing(self):
+        # Send a POST request to the dislike endpoint
+        response = self.client.get(self.detail_listing_url)
+        # Verify the response status is 200(success)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+            f"Expected status 200, got {response.status_code}.",
+        )
+        # Make sure info from test listing is in retrieval
+
+    def test_retrieve_nonexistant_listing(self):
+        invalid_url = reverse("listing-detail", args=[-21417926535879])
+        print("gets through here")
+        response = self.client.get(invalid_url)
+        # evaluate
+        print("yippee")
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+            f"Expected status 404, got {response.status_code}.",
+        )
+    def test_retrieve_deleted_listing(self):
+        deletion_url = reverse("listing-detail", args=[self.listing_ids[0]])
+        self.client.delete(deletion_url)
+
+        # Try retrieving the deleted listing
+        response = self.client.get(deletion_url)
+
+        # Evaluate that its equal to what its supposed to
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+            f"Expected status 404, got {response.status_code}.",
+        )
+
+    #teardown function
+    def tearDown(self):
+        self._delete_test_listings()
+        super().tearDown()
