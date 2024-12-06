@@ -19,7 +19,6 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .handlers import ListingHandler, UserHandler
-from .models import Listing, User
 from .serializers import ListingSerializer, LoginSerializer, UserSerializer
 
 '''
