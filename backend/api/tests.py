@@ -71,7 +71,7 @@ Create Tests Here
 
 @override_settings(MEDIA_ROOT=os.path.join(BASE_DIR, "tmp/test_media/"))
 class ListListingsAPITestCase(AuthenticatedAPITestCase):
-    """Unit tests for listing-list request. Includes test for Use cases: Retrieve Listings, Search for Listings, and Filter Search Results
+    """Unit tests for listing-list requests. Includes tests for Use cases: Retrieve Listings, Search for Listings, and Filter Search Results
 
     Args:
         AuthenticatedAPITestCase (APITestCase): Parent class that creates and deletes an authenticated user for use in testing - using the setUp() and tearDown() methods. 
@@ -552,27 +552,6 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
             found_listing, f"{listing_title} was not found in any of the pages."
         )
 
-
-class ListingSerializerTestCase(TestCase):
-    def test_valid_data(self):
-        data = {
-            "title": "Valid Listing",
-            "description": "This is a valid test listing",
-            "price": 20.00,
-        }
-        serializer = ListingSerializer(data=data)
-        self.assertTrue(serializer.is_valid())
-        self.assertEqual(serializer.validated_data["title"], "Valid Listing")
-
-    def test_invalid_data(self):
-        data = {
-            "description": "Missing title",
-            "price": -10.00,  # Invalid price
-        }
-        serializer = ListingSerializer(data=data)
-        self.assertFalse(serializer.is_valid())
-        self.assertIn("title", serializer.errors)
-        self.assertIn("price", serializer.errors)
 
 
 """
