@@ -32,15 +32,15 @@ class CustomJWTAuthentication(JWTAuthentication):
             raise AuthenticationFailed("User not found.")
         return User(**user_data)
 
+    @staticmethod
+    def validate_user_credentials(username, password):
+        # get user from db
+        try:
+            user_data = db_query.get_user_by_username(username)
+        except IndexError:
+            # User doesn't exist
+            return None
 
-def validate_user_credentials(username, password):
-    # get user from db
-    try:
-        user_data = db_query.get_user_by_username(username)
-    except IndexError:
-        # User doesn't exist
-        return None
-
-    # Check password
-    if user_data and check_password(password, user_data["password"]):
-        return User(**user_data)
+        # Check password
+        if user_data and check_password(password, user_data["password"]):
+            return User(**user_data)

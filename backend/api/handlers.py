@@ -91,7 +91,10 @@ class UserHandler:
 
     def get_user(self, id):
         user_data = db_query.get_user_by_id(id)
-        return User(**user_data)
+        if user_data:
+            return User(**user_data)
+        else:
+            return None
 
     def get_user_by_username(self, username):
         user_data = db_query.get_user_by_username(username)
@@ -261,9 +264,13 @@ class ListingHandler:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    #Function: get listing
     def get_listing(self, id):
         listing_data = db_query.get_listing_by_id(id)
-        return Listing(**listing_data)
+        if not listing_data:
+            return None  
+        else:
+            return Listing(**listing_data)
 
     def partial_update_listing(self, request, id):
         listing = db_query.get_listing_by_id(id)

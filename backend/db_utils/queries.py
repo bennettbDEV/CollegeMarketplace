@@ -492,11 +492,12 @@ class SQLiteDBQuery(DBQuery):
         params = (user_id,)
         with self.db_connection as db:
             user = db.execute_query(query, params)
-
         # The query returns a list of user rows, so return actual user instance
         if user:
             user = user[0]
-        return dict(user)
+            return dict(user)
+        else:
+            return None
 
     def get_user_by_username(self, username):
         query = "SELECT * FROM User WHERE username = ? LIMIT 1"
