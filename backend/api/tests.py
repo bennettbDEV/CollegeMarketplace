@@ -576,7 +576,7 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
         return SimpleUploadedFile(
             "test_image.jpg", buffer.read(), content_type="image/jpeg"
         )
-
+    
     # Function: Set up the test environment
     def setUp(self):
         super().setUp()
@@ -600,9 +600,7 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
         )
         assert response.status_code == 201, f"Failed to create listing: {response.data}"
         self.listing_id = response.data.get("id")
-        assert (
-            self.listing_id is not None
-        ), "Listing ID was not returned in the response."
+        assert self.listing_id is not None, "Listing ID was not returned in the response."
         # Define the like endpoint for the created listing
         self.like_url = reverse("listing-like-listing", kwargs={"pk": self.listing_id})
 
@@ -619,7 +617,6 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
     """
     Unit Test Cases
     """
-
     # Case: a normal liking a listing and incrementing the like count.
     def test_like_listing(self):
         # Send a POST request to the like endpoint
@@ -631,7 +628,7 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
         )
         # Fetch the updated listing data to verify the like count
         updated_listing = ListingHandler().get_listing(self.listing_id)
-        # Evaluate
+        # Evaluate 
         self.assertEqual(
             updated_listing.likes,
             1,
@@ -644,7 +641,7 @@ class LikeListingTestCase(AuthenticatedAPITestCase):
         invalid_url = reverse("listing-like-listing", kwargs={"pk": -100})
         # Send a POST request to the invalid URL
         response = self.client.post(invalid_url)
-        # Evaluate
+        # Evaluate 
         self.assertEqual(
             response.status_code,
             status.HTTP_404_NOT_FOUND,
@@ -718,13 +715,9 @@ class FavoriteListingTestCase(AuthenticatedAPITestCase):
         # Check that the response is successful and contains the listing ID
         assert response.status_code == 201, f"Failed to create listing: {response.data}"
         self.listing_id = response.data.get("id")
-        assert (
-            self.listing_id is not None
-        ), "Listing ID was not returned in the response."
+        assert self.listing_id is not None, "Listing ID was not returned in the response."
         # Define the favorite endpoint for the created listing
-        self.favorite_url = reverse(
-            "listing-favorite-listing", kwargs={"pk": self.listing_id}
-        )
+        self.favorite_url = reverse("listing-favorite-listing", kwargs={"pk": self.listing_id})
 
     # Function: deletes the test environment
     def tearDown(self):
@@ -733,10 +726,9 @@ class FavoriteListingTestCase(AuthenticatedAPITestCase):
             self.client.delete(url)
         super().tearDown()
 
-    """
+    '''
     Unit Test Cases
-    """
-
+    '''
     # Case: a normal favoriting of a listing
     def test_favorite_listing(self):
         # Send a POST request to the favorite endpoint
@@ -748,10 +740,9 @@ class FavoriteListingTestCase(AuthenticatedAPITestCase):
         )
         favorite_entry = ListingViewSet.favorite_listing(self.user_id, self.listing_id)
 
+
         # Evaluate
-        self.assertIsNotNone(
-            favorite_entry, "The listing was not favorited by the user."
-        )
+        self.assertIsNotNone(favorite_entry, "The listing was not favorited by the user.")
 
     # Case: favoriting a non-existent listing
     def test_favorite_nonexistent_listing(self):
@@ -765,19 +756,19 @@ class FavoriteListingTestCase(AuthenticatedAPITestCase):
             f"Expected status 404, got {response.status_code}.",
         )
 
-    # Case: favoriting a listing that has been deleted.
-    def test_like_deleted_listing(self):
-        # Delete the existing test listing
+    # Case: favoriting a listing that has been deleted - expecting 404
+    def test_favorite_deleted_listing(self):
+        # Delete the listing
         url = reverse("listing-detail", args=[self.listing_id])
         delete_response = self.client.delete(url)
-        # Assert the listing was deleted successfully (status 204 or 200)
+        # Assert that the listing was deleted successfully
         self.assertIn(
             delete_response.status_code,
             [status.HTTP_204_NO_CONTENT, status.HTTP_200_OK],
             f"Expected status 204 or 200 for delete, got {delete_response.status_code}.",
         )
-        # Try liking the deleted listing
-        response = self.client.post(self.like_url)
+        # Try favoriting the deleted listing
+        response = self.client.post(self.favorite_url)
         # Evaluate the response status
         self.assertEqual(
             response.status_code,
