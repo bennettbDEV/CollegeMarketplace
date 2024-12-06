@@ -14,6 +14,7 @@ from api.models import Listing
 from api.serializers import ListingSerializer, LoginSerializer, UserSerializer
 from backend.settings import BASE_DIR
 from api.views import ListingViewSet
+from urllib.parse import urlparse
 
 """
 Functions to help setup Tests
@@ -776,6 +777,40 @@ class FavoriteListingTestCase(AuthenticatedAPITestCase):
             f"Expected status 404, got {response.status_code}.",
         )
 
+#Jake use case: Create Listing
+class CreateListingTest(AuthenticatedAPITestCase):
+    def setUp(self):
+        super().setUp()
+        test_img = self._generate_test_image()
+        self.test_listing = {
+            "title": "Test Listing",
+            "condition": "Factory New",
+            "description": "A sample test listing",
+            "price": 999.0,
+            "image": test_img,
+            "tags" : ["English", "Writing"]
+        }
+
+    def test_create_valid_listing(self):
+        url = reverse("listing-list")
+        response = self.client.post(url, data=self.test_listing, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        #validate other fields
+        for key, value in self.test_listing.items():
+            self.assertEqual(response.data.get(key), value)
+        
+    def test_create_invalid_listing(self):
+        url = reverse("listing-list")
+        self.test_listing["title"] = 500
+        response = self.client.post(url, data=self.test_listing, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
+        #validate other fields
+        for key, value in self.test_listing.items():
+            self.assertEqual(response.data.get(key), value)
+    
+
 
 """
 TEST CLASS: Dislike Listing Testcase
@@ -874,7 +909,6 @@ class DislikeListingTestCase(AuthenticatedAPITestCase):
             status.HTTP_404_NOT_FOUND,
             f"Expected status 404, got {response.status_code}.",
         )
-
 
 """
 TEST CLASS: Retrieve Listing Testcase
