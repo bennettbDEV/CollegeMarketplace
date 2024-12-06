@@ -91,7 +91,10 @@ class UserHandler:
 
     def get_user(self, id):
         user_data = db_query.get_user_by_id(id)
-        return User(**user_data)
+        if user_data:
+            return User(**user_data)
+        else:
+            return None
 
     def get_user_by_username(self, username):
         user_data = db_query.get_user_by_username(username)

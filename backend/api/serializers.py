@@ -7,7 +7,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from api.authentication import validate_user_credentials
+from api.authentication import CustomJWTAuthentication
 
 
 # Authentication serializer - CustomTokenObtainPairSerializer
@@ -16,7 +16,7 @@ class LoginSerializer(TokenObtainPairSerializer):
         username = attrs["username"]
         password = attrs["password"]
 
-        user = validate_user_credentials(username, password)
+        user = CustomJWTAuthentication.validate_user_credentials(username, password)
 
         if user is None:
             raise AuthenticationFailed("Invalid credentials.")
