@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS User (
     username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     location TEXT,
+    email TEXT,
     image TEXT
 );
 

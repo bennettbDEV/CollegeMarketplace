@@ -71,6 +71,7 @@ Create Tests Here
 
 
 # Bennett test case:
+# python manage.py test api.tests.ListListingsAPITestCase
 @override_settings(MEDIA_ROOT=os.path.join(BASE_DIR, "tmp/test_media/"))
 class ListListingsAPITestCase(AuthenticatedAPITestCase):
     """Unit tests for listing-list requests. Includes tests for Use cases: Retrieve Listings, Search for Listings, and Filter Search Results
@@ -334,7 +335,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # Assert that no listings have the given tag
+        # Assert that no listings have the given search term
         self.assertEqual(len(response.data.get("results")), 0)
 
     # Filter Search Results Use case - Test all filtering options

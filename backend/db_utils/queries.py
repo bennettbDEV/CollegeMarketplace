@@ -480,10 +480,10 @@ class SQLiteDBQuery(DBQuery):
 
     def create_user(self, data):
         query = """
-            INSERT INTO User (username, password, location, image) 
-            VALUES (?, ?, ?, ?)
+            INSERT INTO User (username, password, location, email, image) 
+            VALUES (?, ?, ?, ?, ?)
             """
-        params = (data["username"], data["password"], data["location"], data["image"])
+        params = (data["username"], data["password"], data["location"], data["email"], data["image"])
         with self.db_connection as db:
             db.execute_query(query, params)
 
