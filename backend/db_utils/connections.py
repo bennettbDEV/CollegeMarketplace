@@ -59,9 +59,10 @@ class SQLiteConnection(DBConnection):
             if query.strip().upper().startswith("SELECT"):
                 return cursor.fetchall()
             else:
+                object_id = cursor.lastrowid
                 # For INSERT, UPDATE, DELETE queries
                 self.connection.commit()
-                return cursor.rowcount  # Return number of rows affected
+                return object_id
         except sqlite3.Error as e:
             print(f"An error occurred during query execution: {e}")
             raise

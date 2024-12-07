@@ -303,7 +303,6 @@ class SQLiteDBQuery(DBQuery):
         with self.db_connection as db:
             db.execute_query(query, params)
 
-
     '''
     Favorite Listing Content
     '''
@@ -315,7 +314,7 @@ class SQLiteDBQuery(DBQuery):
         params = (user_id, listing_id)
         with self.db_connection as db:
             db.execute_query(query, params)
-            
+    
     #Function: query to remove a favorite listing 
     def remove_favorite_listing(self, user_id, listing_id):
         """
@@ -372,6 +371,90 @@ class SQLiteDBQuery(DBQuery):
 
         return favorite_listings
 
+    '''
+    Like / Dislike Listing Content
+    '''
+    def like_listing(self, listing_id, current_likes):
+        query = "UPDATE Listing SET likes = ? WHERE id = ?"
+        params = (current_likes + 1, listing_id)
+
+        with self.db_connection as db:
+            db.execute_query(query, params)
+
+    def dislike_listing(self, listing_id, current_dislikes):
+        query = "UPDATE Listing SET dislikes = ? WHERE id = ?"
+        params = (current_dislikes + 1, listing_id)
+
+        with self.db_connection as db:
+            db.execute_query(query, params)
+    
+    # --------------------------------------------------------------------------------
+    # User methods
+    def get_all_users(self):
+        query = "SELECT * FROM user"
+
+        with self.db_connection as db:
+            rows = db.execute_query(query)
+
+        # Turn data from rows into a list of dicts
+        users = [{column: row[column] for column in row.keys()} for row in rows]
+        return users
+
+    def create_user(self, data):
+        query = """
+            INSERT INTO User (username, password, location, email, image) 
+            VALUES (?, ?, ?, ?, ?)
+            """
+        params = (data["username"], data["password"], data["location"], data["email"], data["image"])
+        with self.db_connection as db:
+            user_id = db.execute_query(query, params)
+            return user_id
+
+    def get_user_by_id(self, user_id):
+        query = "SELECT * FROM User WHERE id = ? LIMIT 1"
+        params = (user_id,)
+        with self.db_connection as db:
+            user = db.execute_query(query, params)
+        # The query returns a list of user rows, so return actual user instance
+        if user:
+            user = user[0]
+            return dict(user)
+        else:
+            return None
+
+    def get_user_by_username(self, username):
+        query = "SELECT * FROM User WHERE username = ? LIMIT 1"
+        params = (username,)
+
+        with self.db_connection as db:
+            user = db.execute_query(query, params)
+
+        # The query returns a list of user rows, so return actual user instance
+        if user:
+            user = user[0]
+            return dict(user)
+        else:
+            return None
+
+    def partial_update_user(self, user_id, new_data):
+        # Exclude "id" key:value pair. We should not modify user's id
+        new_data = {key: value for key, value in new_data.items() if key != "id"}
+
+        # Dynamically generate a string for each column
+        columns = ", ".join(f"{key} = ?" for key in new_data.keys())
+
+        # Use the generated string to update all specified columns
+        query = f"UPDATE user SET {columns} WHERE id = ?"
+        params = tuple(new_data.values()) + (user_id,)
+
+        with self.db_connection as db:
+            db.execute_query(query, params)
+
+    def delete_user(self, user_id):
+        query = "DELETE FROM user WHERE id = ?"
+        params = (user_id,)
+        with self.db_connection as db:
+            db.execute_query(query, params)
 
     '''
     Block / Unblock Content
@@ -396,8 +479,7 @@ class SQLiteDBQuery(DBQuery):
         params = (blocker_id, blocked_id)
 
         with self.db_connection as db:
-            num_affected_rows = db.execute_query(query, params)
-            return num_affected_rows
+            db.execute_query(query, params)
 
     #Function: unblock a user  
     def unblock_user(self, blocker_id, blocked_id):
@@ -414,7 +496,6 @@ class SQLiteDBQuery(DBQuery):
         query = """
             DELETE FROM UserBlock 
             WHERE blocker_id = ? AND blocked_id = ?
-            ON CONFLICT DO NOTHING
         """
         params = (blocker_id, blocked_id)
 
@@ -444,95 +525,6 @@ class SQLiteDBQuery(DBQuery):
         with self.db_connection as db:
             result = db.execute_query(query, params)
             return bool(result)
-
-
-    '''
-    Like / Dislike Listing Content
-    '''
-
-    #Like and dislike queries:
-    def like_listing(self, listing_id, current_likes):
-        query = "UPDATE Listing SET likes = ? WHERE id = ?"
-        params = (current_likes + 1, listing_id)
-
-        with self.db_connection as db:
-            db.execute_query(query, params)
-
-    def dislike_listing(self, listing_id, current_dislikes):
-        query = "UPDATE Listing SET dislikes = ? WHERE id = ?"
-        params = (current_dislikes + 1, listing_id)
-
-        with self.db_connection as db:
-            db.execute_query(query, params)
-            
-    # --------------------------------------------------------------------------------
-
-    # User methods
-    def get_all_users(self):
-        query = "SELECT * FROM user"
-
-        with self.db_connection as db:
-            rows = db.execute_query(query)
-
-        # Turn data from rows into a list of dicts
-        users = [{column: row[column] for column in row.keys()} for row in rows]
-        return users
-
-    def create_user(self, data):
-        query = """
-            INSERT INTO User (username, password, location, email, image) 
-            VALUES (?, ?, ?, ?, ?)
-            """
-        params = (data["username"], data["password"], data["location"], data["email"], data["image"])
-        with self.db_connection as db:
-            db.execute_query(query, params)
-
-    def get_user_by_id(self, user_id):
-        query = "SELECT * FROM User WHERE id = ? LIMIT 1"
-        params = (user_id,)
-        with self.db_connection as db:
-            user = db.execute_query(query, params)
-        # The query returns a list of user rows, so return actual user instance
-        if user:
-            user = user[0]
-            return dict(user)
-        else:
-            return None
-
-    def get_user_by_username(self, username):
-        query = "SELECT * FROM User WHERE username = ? LIMIT 1"
-        params = (username,)
-
-        with self.db_connection as db:
-            user = db.execute_query(query, params)
-
-        # The query returns a list of user rows, so return actual user instance
-        if user:
-            user = user[0]
-        return dict(user)
-
-    def partial_update_user(self, user_id, new_data):
-        # Exclude "id" key:value pair. We should not modify user's id
-        new_data = {key: value for key, value in new_data.items() if key != "id"}
-
-        # Dynamically generate a string for each column
-        columns = ", ".join(f"{key} = ?" for key in new_data.keys())
-
-        # Use the generated string to update all specified columns
-        query = f"UPDATE user SET {columns} WHERE id = ?"
-        params = tuple(new_data.values()) + (user_id,)
-
-        with self.db_connection as db:
-            db.execute_query(query, params)
-
-    def delete_user(self, user_id):
-        query = "DELETE FROM user WHERE id = ?"
-        params = (user_id,)
-        with self.db_connection as db:
-            db.execute_query(query, params)
-        self.db_connection.connect()
-        self.db_connection.execute_query(query, params)
-        self.db_connection.disconnect()
 
     # --------------------------------------------------------------------------------
     # Message functions
