@@ -17,9 +17,8 @@ from api.views import ListingViewSet
 from urllib.parse import urlparse
 
 """
-Functions to help setup Tests
+Functions/Classes to help setup Tests
 """
-
 
 class AuthenticatedAPITestCase(APITestCase):
     def setUp(self):
@@ -64,17 +63,8 @@ class AuthenticatedAPITestCase(APITestCase):
         url = reverse("user-detail", args=[user.id])
         response = self.client.delete(url)
 
-
-"""
-Create Tests Here
-"""
-
-
-# Bennett test case:
-# python manage.py test api.tests.ListListingsAPITestCase
-@override_settings(MEDIA_ROOT=os.path.join(BASE_DIR, "tmp/test_media/"))
-class ListListingsAPITestCase(AuthenticatedAPITestCase):
-    """Unit tests for listing-list requests. Includes tests for Use cases: Retrieve Listings, Search for Listings, and Filter Search Results
+class AuthenticatedListingAPITestCase(AuthenticatedAPITestCase):
+    """Class with helper methods for listing creation and deletion for testing purposes.
 
     Args:
         AuthenticatedAPITestCase (APITestCase): Parent class that creates and deletes an authenticated user for use in testing - using the setUp() and tearDown() methods.
@@ -91,6 +81,20 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
             "test_image.jpg", buffer.read(), content_type="image/jpeg"
         )
 
+    def _create_test_listing(self, iteration, base_title, condition, price):
+        test_image = self._generate_test_image()
+
+        data = {
+            "title": f"{base_title}{iteration}",
+            "description": f"This is test description {iteration}.",
+            "price": price,
+            "image": test_image,
+            "tags": ["Test", "Testing", "Development"],
+            "condition": condition,
+        }
+        response = self.client.post(self.listing_list_url, data, format="multipart")
+        return response
+
     def _create_test_listings(
         self, num_listings=1, base_title="TestListing", condition="Well Worn", price=10
     ):
@@ -102,31 +106,17 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         """
 
         # Create test listings here
-        test_image = self._generate_test_image()
+        #test_image = self._generate_test_image()
 
         for i in range(1, num_listings + 1):
-            data = {
-                "title": f"{base_title}{i}",
-                "description": f"This is test description {i}.",
-                "price": price,
-                "image": test_image,
-                "tags": ["Test", "Testing", "Development"],
-                "condition": condition,
-            }
-            response = self.client.post(
-                self.list_listings_url, data, format="multipart"
-            )
+            response = self._create_test_listing(i, base_title, condition, price)
+
             if response and response.status_code == 201:
                 self.listing_ids.append(response.data.get("id"))
             elif response.data.get("image")[0] == "The submitted file is empty.":
                 # Try again
-                test_image = self._generate_test_image()
-                img = {"image": test_image}
-                new_data = data | img
+                response = self._create_test_listing(i, base_title, condition, price)
 
-                response = self.client.post(
-                    self.list_listings_url, new_data, format="multipart"
-                )
                 if response and response.status_code == 201:
                     self.listing_ids.append(response.data.get("id"))
                 else:
@@ -145,9 +135,12 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
 
     # Before
     def setUp(self):
+        # Authenticate client
         super().setUp()
+
+        # Setup attributes for creating + deleting listings
         self.listing_handler = ListingHandler()
-        self.list_listings_url = reverse("listing-list")
+        self.listing_list_url = reverse("listing-list")
         self.listing_ids = []
 
     # After
@@ -155,9 +148,31 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self._delete_test_listings()
         super().tearDown()
 
+"""
+Create Tests Here
+"""
+
+# Bennett test case:
+# python manage.py test api.tests.ListListingsAPITestCase
+@override_settings(MEDIA_ROOT=os.path.join(BASE_DIR, "tmp/test_media/"))
+class ListListingsAPITestCase(AuthenticatedListingAPITestCase):
+    """Unit tests for listing-list requests. Includes tests for Use cases: Retrieve Listings, Search for Listings, and Filter Search Results
+
+    Args:
+        AuthenticatedListingAPITestCase (AuthenticatedAPITestCase): Parent class with helper methods for listing creation and deletion for testing purposes.
+    """
+
+    # Before
+    def setUp(self):
+        super().setUp()
+
+    # After
+    def tearDown(self):
+        super().tearDown()
+
     # Retrieve Listings Use case - test all retrieval methods -> including pagination
     def test_authenticated_get_listings(self):
-        response = self.client.get(f"{self.list_listings_url}")
+        response = self.client.get(f"{self.listing_list_url}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(response.data.get("results")), 0)
 
@@ -165,7 +180,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         # Stop including any credentials
         self.client.credentials()  # Clears credentials
 
-        response = self.client.get(f"{self.list_listings_url}")
+        response = self.client.get(f"{self.listing_list_url}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(response.data.get("results")), 0)
 
@@ -174,23 +189,23 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         # Ensure there are no listings in the database
         # Make method in listinghandler to Delete all listings
 
-        response = self.client.get(self.list_listings_url)
+        response = self.client.get(self.listing_list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get("results", []), [])
 
     # Test pagination
     def test_valid_page_number(self):
-        response = self.client.get(f"{self.list_listings_url}?page=1")
+        response = self.client.get(f"{self.listing_list_url}?page=1")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(response.data.get("results")), 0)
 
     def test_too_large_page_number(self):
-        response = self.client.get(f"{self.list_listings_url}?page=99999999")
+        response = self.client.get(f"{self.listing_list_url}?page=99999999")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data.get("detail"), "Invalid page.")
 
     def test_negative_page_number(self):
-        response = self.client.get(f"{self.list_listings_url}?page=-2")
+        response = self.client.get(f"{self.listing_list_url}?page=-2")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data.get("detail"), "Invalid page.")
 
@@ -199,107 +214,107 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self._create_test_listings(15)
 
         # Request the first page
-        response = self.client.get(f"{self.list_listings_url}?page=1")
+        response = self.client.get(f"{self.listing_list_url}?page=1")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 10)
 
         # Request the second page
-        response = self.client.get(f"{self.list_listings_url}?page=2")
+        response = self.client.get(f"{self.listing_list_url}?page=2")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(response.data.get("results")), 5)
 
     # Test all sorting options
     def test_sorting_by_title_ascending(self):
-        response = self.client.get(f"{self.list_listings_url}?ordering=title")
+        response = self.client.get(f"{self.listing_list_url}?ordering=title")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         titles = [field["title"] for field in response.data.get("results")]
         self.assertEqual(titles, sorted(titles))
 
     def test_sorting_by_title_descending(self):
-        response = self.client.get(f"{self.list_listings_url}?ordering=-title")
+        response = self.client.get(f"{self.listing_list_url}?ordering=-title")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         titles = [field["title"] for field in response.data.get("results")]
         self.assertEqual(titles, sorted(titles, reverse=True))
 
     def test_sorting_by_condition_ascending(self):
-        response = self.client.get(f"{self.list_listings_url}?ordering=condition")
+        response = self.client.get(f"{self.listing_list_url}?ordering=condition")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         conditions = [field["condition"] for field in response.data.get("results")]
         self.assertEqual(conditions, sorted(conditions))
 
     def test_sorting_by_condition_descending(self):
-        response = self.client.get(f"{self.list_listings_url}?ordering=-condition")
+        response = self.client.get(f"{self.listing_list_url}?ordering=-condition")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         conditions = [field["condition"] for field in response.data.get("results")]
         self.assertEqual(conditions, sorted(conditions, reverse=True))
 
     def test_sorting_by_description_ascending(self):
-        response = self.client.get(f"{self.list_listings_url}?ordering=description")
+        response = self.client.get(f"{self.listing_list_url}?ordering=description")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         descriptions = [field["description"] for field in response.data.get("results")]
         self.assertEqual(descriptions, sorted(descriptions))
 
     def test_sorting_by_description_descending(self):
-        response = self.client.get(f"{self.list_listings_url}?ordering=-description")
+        response = self.client.get(f"{self.listing_list_url}?ordering=-description")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         descriptions = [field["description"] for field in response.data.get("results")]
         self.assertEqual(descriptions, sorted(descriptions, reverse=True))
 
     def test_sorting_by_price_ascending(self):
-        response = self.client.get(f"{self.list_listings_url}?ordering=price")
+        response = self.client.get(f"{self.listing_list_url}?ordering=price")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         prices = [float(field["price"]) for field in response.data.get("results")]
         self.assertEqual(prices, sorted(prices))
 
     def test_sorting_by_price_descending(self):
-        response = self.client.get(f"{self.list_listings_url}?ordering=-price")
+        response = self.client.get(f"{self.listing_list_url}?ordering=-price")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         prices = [float(field["price"]) for field in response.data.get("results")]
         self.assertEqual(prices, sorted(prices, reverse=True))
 
     def test_sorting_by_likes_ascending(self):
-        response = self.client.get(f"{self.list_listings_url}?ordering=likes")
+        response = self.client.get(f"{self.listing_list_url}?ordering=likes")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         likes = [field["likes"] for field in response.data.get("results")]
         self.assertEqual(likes, sorted(likes))
 
     def test_sorting_by_likes_descending(self):
-        response = self.client.get(f"{self.list_listings_url}?ordering=-likes")
+        response = self.client.get(f"{self.listing_list_url}?ordering=-likes")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         likes = [field["likes"] for field in response.data.get("results")]
         self.assertEqual(likes, sorted(likes, reverse=True))
 
     def test_sorting_by_dislikes_ascending(self):
-        response = self.client.get(f"{self.list_listings_url}?ordering=dislikes")
+        response = self.client.get(f"{self.listing_list_url}?ordering=dislikes")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         dislikes = [field["dislikes"] for field in response.data.get("results")]
         self.assertEqual(dislikes, sorted(dislikes))
 
     def test_sorting_by_dislikes_descending(self):
-        response = self.client.get(f"{self.list_listings_url}?ordering=-dislikes")
+        response = self.client.get(f"{self.listing_list_url}?ordering=-dislikes")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         dislikes = [field["dislikes"] for field in response.data.get("results")]
         self.assertEqual(dislikes, sorted(dislikes, reverse=True))
 
     def test_sorting_by_created_at_ascending(self):
-        response = self.client.get(f"{self.list_listings_url}?ordering=created_at")
+        response = self.client.get(f"{self.listing_list_url}?ordering=created_at")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         created_at = [field["created_at"] for field in response.data.get("results")]
         self.assertEqual(created_at, sorted(created_at))
 
     def test_sorting_by_created_at_descending(self):
-        response = self.client.get(f"{self.list_listings_url}?ordering=-created_at")
+        response = self.client.get(f"{self.listing_list_url}?ordering=-created_at")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         created_at = [field["created_at"] for field in response.data.get("results")]
         self.assertEqual(created_at, sorted(created_at, reverse=True))
 
     def test_sorting_by_invalid_field_ascending(self):
-        response = self.client.get(f"{self.list_listings_url}?ordering=author_id")
+        response = self.client.get(f"{self.listing_list_url}?ordering=author_id")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data.get("error"), "Invalid ordering parameter.")
 
     def test_sorting_by_invalid_field_descending(self):
-        response = self.client.get(f"{self.list_listings_url}?ordering=-author_id")
+        response = self.client.get(f"{self.listing_list_url}?ordering=-author_id")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data.get("error"), "Invalid ordering parameter.")
 
@@ -309,7 +324,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self._create_test_listings(1, base_title="Interesting Textbook")
 
         # Search for book:
-        response = self.client.get(f"{self.list_listings_url}?search=book")
+        response = self.client.get(f"{self.listing_list_url}?search=book")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # Assert that all returned listings have 'book' in title, description, or tags
@@ -331,7 +346,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
 
         # Search for insane term:
         response = self.client.get(
-            f"{self.list_listings_url}?search=----------------$$$$$$$$$$$$$$$$$$$$_------------432756489125621657849653924......43.r..vf...fdsv..fd.v..r.vfds."
+            f"{self.listing_list_url}?search=----------------$$$$$$$$$$$$$$$$$$$$_------------432756489125621657849653924......43.r..vf...fdsv..fd.v..r.vfds."
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -344,7 +359,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self._create_test_listings(1, "TestListing", condition="Factory New")
 
         # Filter by condition
-        response = self.client.get(f"{self.list_listings_url}?condition=Factory New")
+        response = self.client.get(f"{self.listing_list_url}?condition=Factory New")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(
             all(
@@ -358,7 +373,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self._create_test_listings(1, "TestListing", condition="Minimal Wear")
 
         # Filter by condition
-        response = self.client.get(f"{self.list_listings_url}?condition=Minimal Wear")
+        response = self.client.get(f"{self.listing_list_url}?condition=Minimal Wear")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(
             all(
@@ -372,7 +387,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self._create_test_listings(1, "TestListing", condition="Fair")
 
         # Filter by condition
-        response = self.client.get(f"{self.list_listings_url}?condition=Fair")
+        response = self.client.get(f"{self.listing_list_url}?condition=Fair")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(
             all(
@@ -386,7 +401,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self._create_test_listings(1, "TestListing", condition="Well Worn")
 
         # Filter by condition
-        response = self.client.get(f"{self.list_listings_url}?condition=Well Worn")
+        response = self.client.get(f"{self.listing_list_url}?condition=Well Worn")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(
             all(
@@ -400,7 +415,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self._create_test_listings(1, "TestListing", condition="Refurbished")
 
         # Filter by condition
-        response = self.client.get(f"{self.list_listings_url}?condition=Refurbished")
+        response = self.client.get(f"{self.listing_list_url}?condition=Refurbished")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(
             all(
@@ -417,7 +432,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self._create_test_listings(1, "TestListing", price=250)
 
         # Filter by minimum price
-        response = self.client.get(f"{self.list_listings_url}?min_price=200")
+        response = self.client.get(f"{self.listing_list_url}?min_price=200")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(
             all(
@@ -434,7 +449,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         self._create_test_listings(1, "TestListing", price=400)
 
         # Filter by maximum price
-        response = self.client.get(f"{self.list_listings_url}?max_price=300")
+        response = self.client.get(f"{self.listing_list_url}?max_price=300")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(
             all(
@@ -449,7 +464,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         # like the listings
 
         # Filter by minimum likes
-        response = self.client.get(f"{self.list_listings_url}?min_likes=2")
+        response = self.client.get(f"{self.listing_list_url}?min_likes=2")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(
             all(
@@ -463,7 +478,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         # dislike the listings
 
         # Filter by maximum dislikes
-        response = self.client.get(f"{self.list_listings_url}?max_dislikes=5")
+        response = self.client.get(f"{self.listing_list_url}?max_dislikes=5")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(
             all(
@@ -473,7 +488,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
         )
 
     def test_filtering_by_invalid_field(self):
-        response = self.client.get(f"{self.list_listings_url}?free=True")
+        response = self.client.get(f"{self.listing_list_url}?free=True")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data.get("error"), "Invalid parameter.")
 
@@ -490,7 +505,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
 
         while page <= max_pages:
             # Construct the URL for the current page
-            url = f"{self.list_listings_url}?page={page}"
+            url = f"{self.listing_list_url}?page={page}"
 
             # Send GET request for current page
             response = self.client.get(url)
@@ -531,7 +546,7 @@ class ListListingsAPITestCase(AuthenticatedAPITestCase):
 
         while page <= max_pages:
             # Construct the URL for the current page
-            url = f"{self.list_listings_url}?page={page}"
+            url = f"{self.listing_list_url}?page={page}"
 
             # Send GET request for current page
             response = self.client.get(url)
@@ -780,6 +795,17 @@ class FavoriteListingTestCase(AuthenticatedAPITestCase):
 
 #Jake use case: Create Listing
 class CreateListingTest(AuthenticatedAPITestCase):
+    def _generate_test_image(self):
+        img = Image.new(
+            "RGB", (100, 100), color=(255, 0, 0)
+        )  # Create a 100x100 red image
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG")
+        buffer.seek(0)
+        return SimpleUploadedFile(
+            "test_image.jpg", buffer.read(), content_type="image/jpeg"
+        )
+    
     def setUp(self):
         super().setUp()
         test_img = self._generate_test_image()
@@ -894,7 +920,6 @@ class DislikeListingTestCase(AuthenticatedAPITestCase):
         # Fetch the updated listing data to verify the like count
         updated_listing = ListingHandler().get_listing(self.listing_ids[0])
         # evaluate
-        print("yippee")
         self.assertEqual(
             updated_listing.dislikes,
             1,
@@ -992,10 +1017,8 @@ class RetrieveListingTestCase(AuthenticatedAPITestCase):
 
     def test_retrieve_nonexistant_listing(self):
         invalid_url = reverse("listing-detail", args=[-21417926535879])
-        print("gets through here")
         response = self.client.get(invalid_url)
         # evaluate
-        print("yippee")
         self.assertEqual(
             response.status_code,
             status.HTTP_404_NOT_FOUND,
