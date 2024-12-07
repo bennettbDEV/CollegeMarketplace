@@ -196,7 +196,7 @@ class UserHandler:
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
-        
+
         # Call the database query to unblock the user
         try:
             # Check if blocker is trying to unblock themselves
@@ -337,6 +337,9 @@ class ListingHandler:
                 return Response({"error": "An error occurred while deleting the listing."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
+
+    def delete_all_listings(self):
+        db_query.delete_all_listings()
 
     '''
     Favorite/Save Listing actions:

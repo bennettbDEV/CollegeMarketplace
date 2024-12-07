@@ -5,8 +5,6 @@ CLASSES:
 User, Listing
 '''
 
-
-
 """
 CLASS: User
 """

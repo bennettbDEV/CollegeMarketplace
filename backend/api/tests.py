@@ -187,7 +187,7 @@ class ListListingsAPITestCase(AuthenticatedListingAPITestCase):
     # This method should only be run in development env, never in prod because it deletes all listings
     def _test_empty_listings_response(self):
         # Ensure there are no listings in the database
-        # Make method in listinghandler to Delete all listings
+        self.listing_handler.delete_all_listings()
 
         response = self.client.get(self.listing_list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

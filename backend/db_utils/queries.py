@@ -303,6 +303,11 @@ class SQLiteDBQuery(DBQuery):
         with self.db_connection as db:
             db.execute_query(query, params)
 
+    def delete_all_listings(self):
+        query = "DELETE FROM listing"
+        with self.db_connection as db:
+            db.execute_query(query)
+
     '''
     Favorite Listing Content
     '''
