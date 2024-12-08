@@ -14,7 +14,9 @@ function Profile() {
     const [previousPage, setPreviousPage] = useState(null);
     const [loading, setLoading] = useState(false);
     const [userId, setUserId] = useState(null);
-    const [userData, setUserData] = useState(null); 
+    const [userData, setUserData] = useState(null);
+
+    const imageUrl = userData?.image ? `${api.defaults.baseURL}${userData.image}` : testImg;
 
     useEffect(() => {
         const token = localStorage.getItem(ACCESS_TOKEN);
@@ -35,17 +37,27 @@ function Profile() {
         }
     }, [userId]);
 
-    const fetchUserData = (id) => {
-        api
-            .get(`/api/users/${id}/`)
-            .then((response) => response.data)
-            .then((data) => {
+    const fetchUserData = async (id, retries = 3, delay = 1000) => {
+        for (let attempt = 1; attempt <= retries; attempt++) {
+            try {
+                const response = await api.get(`/api/users/${id}/`);
+                const data = response.data;
                 console.log("User Data:", data);
-                setUserData(data); 
-            })
-            .catch((err) => {
-                console.error("Error fetching user data:", err);
-            });
+                setUserData(data);
+                // Exit the function if the API call succeeds
+                return; 
+            } catch (err) {
+                console.error(`Attempt ${attempt} failed:`, err);
+
+                if (attempt < retries) {
+                    console.log(`Retrying in ${delay}ms...`);
+                    // Wait before retrying
+                    await new Promise((resolve) => setTimeout(resolve, delay)); 
+                } else {
+                    console.error("All attempts to fetch user data failed.");
+                }
+            }
+        }
     };
 
     const getListings = (url) => {
@@ -76,7 +88,7 @@ function Profile() {
                     <>
                         <p>Username: {userData.username}</p>
                         <p>Location: {userData.location}</p>
-                        <img src={testImg} width="150" alt="Profile" />
+                        <img src={imageUrl} width="150" alt="Profile" />
                     </>
                 ) : (
                     <p>Loading user data...</p>

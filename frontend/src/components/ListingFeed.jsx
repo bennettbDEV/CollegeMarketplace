@@ -3,7 +3,7 @@ import Listing from "./Listing";
 
 // A function that returns a listing feed
 function ListingFeed({ listings }) {
-  if (!Array.isArray(listings) || listings.length === 0) {
+  if (!Array.isArray(listings)) {
     console.error("listings is not an array:", listings);
     listings = [];
     // TODO: Add loading circle or something instead of "no listings available"

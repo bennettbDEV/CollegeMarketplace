@@ -131,7 +131,6 @@ class UserViewSet(viewsets.GenericViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             validated_data = serializer.validated_data
-
             response = self.user_handler.register_user(validated_data)
             return response
         else:

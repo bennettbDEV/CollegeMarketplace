@@ -469,8 +469,13 @@ class SQLiteDBQuery(DBQuery):
         with self.db_connection as db:
             rows = db.execute_query(query)
 
+        users = []
         # Turn data from rows into a list of dicts
-        users = [{column: row[column] for column in row.keys()} for row in rows]
+        for row in rows:
+            user = {column: row[column] for column in row.keys()}
+            if user["image"]:
+                user["image"] = f"{settings.MEDIA_URL}{user['image']}"
+            users.append(user)
         return users
 
     def create_user(self, data):
@@ -487,10 +492,12 @@ class SQLiteDBQuery(DBQuery):
         query = "SELECT * FROM User WHERE id = ? LIMIT 1"
         params = (user_id,)
         with self.db_connection as db:
-            user = db.execute_query(query, params)
+            row = db.execute_query(query, params)
         # The query returns a list of user rows, so return actual user instance
-        if user:
-            user = user[0]
+        if row:
+            user = dict(row[0])
+            if user["image"]:
+                user["image"] = f"{settings.MEDIA_URL}{user['image']}"
             return dict(user)
         else:
             return None
@@ -500,12 +507,14 @@ class SQLiteDBQuery(DBQuery):
         params = (username,)
 
         with self.db_connection as db:
-            user = db.execute_query(query, params)
+            row = db.execute_query(query, params)
 
         # The query returns a list of user rows, so return actual user instance
-        if user:
-            user = user[0]
-            return dict(user)
+        if row:
+            user = dict(row[0])
+            if user["image"]:
+                user["image"] = f"{settings.MEDIA_URL}{user['image']}"
+            return user
         else:
             return None
 
