@@ -25,7 +25,7 @@ class Mediator(ABC):
         pass
 
     @abstractmethod
-    def delete_message(self, request, message_id):
+    def delete_message(self, user_id, message_id):
         pass
 
     @abstractmethod
@@ -51,9 +51,7 @@ class MessageMediator(Mediator):
         return db_query.get_message(int(request.message.id), int(request.user.id))
     
     #delete message given user id and message id
-    def delete_message(self, request, message_id):
-        # get users id from request
-        user_id = request.user.id
+    def delete_message(self, user_id, message_id):
         # query message
         message = db_query.get_message(message_id, user_id)
         # sanity check for message
@@ -62,7 +60,7 @@ class MessageMediator(Mediator):
                 {"error": "Message not found."}, status=status.HTTP_404_NOT_FOUND
             )
         # making sure person trying to delete the message is the receiver of the message
-        if user_id == int(message.receiver_id):
+        if user_id == int(message['receiver_id']):
             db_query.delete_message(message_id, user_id)
             return Response(
                 {"detail": "Message deleted successfully."},

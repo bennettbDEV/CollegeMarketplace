@@ -551,14 +551,17 @@ class SQLiteDBQuery(DBQuery):
     #delete message using message_id and receiver_id
     def delete_message(self, message_id, receiver_id):
         #query and param initialization
-        query = "DELETE FROM message WHERE receiverID = ? AND messageID = ?"
+        query = "DELETE FROM Message WHERE receiver_id = ? AND id = ?"
         params = (receiver_id, message_id)
         #do query
+        with self.db_connection as db:
+            result = db.execute_query(query, params)
+            return bool(result)
 
     #get message from message_id and receiver_id
     def get_message(self, message_id, receiver_id):
         #make query and parameters
-        query = "SELECT * FROM message WHERE receiverID = ? and messageID = ? LIMIT 1"
+        query = "SELECT * FROM Message WHERE receiver_id = ? and id = ? LIMIT 1"
         params = (receiver_id, message_id)
         #execute query
         self.db_connection.connect()

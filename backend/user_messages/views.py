@@ -75,8 +75,9 @@ class MessageViewSet(viewsets.GenericViewSet):
         """
 
         try:
+            message_id = request.data.get('id')
             response = self.message_mediator.delete_message(
-                MessageMediator, request.id, request.user.id
+                request.user.id, message_id
             )
             return response
         except Exception as e:
