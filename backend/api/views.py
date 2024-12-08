@@ -294,7 +294,7 @@ class ListingViewSet(viewsets.GenericViewSet):
         
         # Add supported filters
         for param, value in self.request.query_params.items():
-            if param in ["min_price", "max_price", "min_likes", "max_dislikes", "condition"]:  # Allowed filters
+            if param in ["min_price", "max_price", "min_likes", "max_dislikes", "condition", "author_id"]:  # Allowed filters
                 filters[param] = value
 
         # Get the filtered and sorted listings
@@ -315,7 +315,8 @@ class ListingViewSet(viewsets.GenericViewSet):
             "min_likes",
             "max_dislikes",
             "condition",
-            "page"
+            "page",
+            "author_id"
         ]
         valid_ordering_fields = [
             "title",
@@ -458,7 +459,7 @@ class ListingViewSet(viewsets.GenericViewSet):
     '''
     Like/Dislike actions
     '''
-   #Function: "likes" the listing
+    #Function: "likes" the listing
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def like_listing(self, request, pk=None):
         listing = self.listing_handler.get_listing(pk)
