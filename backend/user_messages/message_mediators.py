@@ -32,10 +32,6 @@ class Mediator(ABC):
     def send_message(self, validated_data, sender_id):
         pass
 
-    @abstractmethod
-    def query_user(self, user_id):
-        pass
-
 
 # message mediator class
 class MessageMediator(Mediator):
@@ -82,7 +78,8 @@ class MessageMediator(Mediator):
             # Check if receiver exists
             if not db_query.get_user_by_id(receiver_id):
                 return Response({"error": "Receiving user not found."}, status=status.HTTP_404_NOT_FOUND)
-
+            if db_query.is_user_blocked(sender_id, receiver_id):
+                return Response({"error": "Receiving user is blocked."}, status=status.HTTP_204_NO_CONTENT)
             # Receiver is valid so send message
             message_id = db_query.create_message(sender_id, receiver_id, content)
             validated_data["id"] = message_id
@@ -91,13 +88,3 @@ class MessageMediator(Mediator):
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    #query user given user id from the database
-    def query_user(self, user_id):
-        # query user via ID
-        user = db_query.get_user_by_id(user_id)
-        if not user:
-            return Response(
-                {"error": "User not found."}, status=status.HTTP_404_NOT_FOUND
-            )
-        return user
