@@ -25,28 +25,35 @@ class MessageViewSet(viewsets.GenericViewSet):
         self.message_mediator = MessageMediator()
 
     # retrieve message for one user
-    def retrieve(self, request, pk=None):
+    def retrieve(self, request, pk):
         """Retrieves the specified Message.
         Args:
             request (request): DRF request object, must have message id
-            pk (int, optional): The id of the User.
+            pk (int, optional): The id of the message
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
-
-        message = self.message_mediator.retrieve_message(MessageMediator, request)
-        if message:
-            serializer = Message(
-                message.id, message.sender, message.receiver, message.content
-            )
-            if serializer.is_valid():
-                return Response(serializer.data, status=status.HTTP_200_OK)
+        if pk:
+            message = self.message_mediator.retrieve_message(request, pk)
+            if message:
+                serializer = MessageSerializer(
+                    data={'id':message['id'], 'sender_id': message['sender_id'], 'receiver_id': message['receiver_id'], 'content': message['content']}
+                )
+                if serializer.is_valid():
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(
-            {"error": "Message with that id from that User is not found."},
-            status=status.HTTP_404_NOT_FOUND,
-        )
+                return Response(
+                    {"error": "Message with that id from that User is not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        else:
+             return Response(
+                {"error": "Message id not provided in link."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        
 
     # retrieve all message for one user
     def list(self, request):

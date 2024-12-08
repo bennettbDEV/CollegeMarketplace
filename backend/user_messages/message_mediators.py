@@ -17,11 +17,11 @@ db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
 # Mediator Abstract Class
 class Mediator(ABC):
     @abstractmethod
-    def retrieve_all_messages(self, request, pk):
+    def retrieve_all_messages(self, request):
         pass
 
     @abstractmethod
-    def retrieve_message(self, request):
+    def retrieve_message(self, request, message_id):
         pass
 
     @abstractmethod
@@ -29,7 +29,7 @@ class Mediator(ABC):
         pass
 
     @abstractmethod
-    def send_message(self, sender, receiver, content):
+    def send_message(self, validated_data, sender_id):
         pass
 
     @abstractmethod
@@ -46,9 +46,9 @@ class MessageMediator(Mediator):
         return [Message(**message) for message in messages]
     
     #retrieve a message from a given user(request given, get user from that)
-    def retrieve_message(self, request):
+    def retrieve_message(self, request, message_id):
         #no reason to check user, will use the requesting users id anyways
-        return db_query.get_message(int(request.message.id), int(request.user.id))
+        return db_query.get_message(int(message_id), int(request.user.id))
     
     #delete message given user id and message id
     def delete_message(self, user_id, message_id):
