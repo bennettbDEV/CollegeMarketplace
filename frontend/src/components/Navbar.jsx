@@ -1,5 +1,8 @@
 import React from 'react';
 import './styles/Navbar.css';
+import userIcon from '../assets/usericon.png';
+import settingsIcon from '../assets/settingsicon.png';
+import { use } from 'react';
 
 const Navbar = () => {
   return (
@@ -22,10 +25,11 @@ const Navbar = () => {
   </div>
   <div className="navbar-right">
     <a href="/profile" className="profile-icon">
-        //Insert pic here
+        
+        <img src= {userIcon}/>
     </a>
     <a href="/settings" className="settings">
-      //Insert setting gear here
+    <img src= {settingsIcon}/>
     </a>
   </div>
 </nav>

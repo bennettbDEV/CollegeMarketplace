@@ -4,9 +4,9 @@ import { jwtDecode } from "jwt-decode";
 import { useState, useEffect } from "react";
 import api from "../api";
 import LinkedButton from "../components/LinkedButton.jsx";
-import "./styles/Home.css";
-import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
-
+import "./styles/Profile.css";
+import { ACCESS_TOKEN } from "../constants";
+import testImg from "../assets/usericon.png";
 
 function Profile() {
     const [listings, setListings] = useState([]);
@@ -14,8 +14,8 @@ function Profile() {
     const [previousPage, setPreviousPage] = useState(null);
     const [loading, setLoading] = useState(false);
     const [userId, setUserId] = useState(null);
+    const [userData, setUserData] = useState(null); 
 
-    // Extract userID from JWT
     useEffect(() => {
         const token = localStorage.getItem(ACCESS_TOKEN);
         if (token) {
@@ -28,12 +28,25 @@ function Profile() {
         }
     }, []);
 
-
     useEffect(() => {
         if (userId) {
+            fetchUserData(userId);
             getListings(`/api/listings/?author_id=${userId}`);
         }
     }, [userId]);
+
+    const fetchUserData = (id) => {
+        api
+            .get(`/api/users/${id}/`)
+            .then((response) => response.data)
+            .then((data) => {
+                console.log("User Data:", data);
+                setUserData(data); 
+            })
+            .catch((err) => {
+                console.error("Error fetching user data:", err);
+            });
+    };
 
     const getListings = (url) => {
         setLoading(true);
@@ -57,31 +70,41 @@ function Profile() {
     return (
         <div>
             <NavBar />
-            <h1>Profile Page</h1>
-            <p>You are logged in</p>
+            <div className="profile-container">
+                <h1>Profile Page</h1>
+                {userData ? (
+                    <>
+                        <p>Username: {userData.username}</p>
+                        <p>Location: {userData.location}</p>
+                        <img src={testImg} width="150" alt="Profile" />
+                    </>
+                ) : (
+                    <p>Loading user data...</p>
+                )}
 
-            <h2>Your Listings:</h2>
-            {loading ? (
-                <p>Loading...</p>
-            ) : (
-                <>
-                    <ListingFeed listings={listings} />
+                <h2>Your Listings:</h2>
+                {loading ? (
+                    <p>Loading...</p>
+                ) : (
+                    <>
+                        <ListingFeed listings={listings} />
 
-                    <div className="pagination-controls">
-                        <LinkedButton
-                            url={previousPage}
-                            onClick={getListings}
-                            label="Previous"
-                        />
+                        <div className="pagination-controls">
+                            <LinkedButton
+                                url={previousPage}
+                                onClick={getListings}
+                                label="Previous"
+                            />
 
-                        <LinkedButton
-                            url={nextPage}
-                            onClick={getListings}
-                            label="Next"
-                        />
-                    </div>
-                </>
-            )}
+                            <LinkedButton
+                                url={nextPage}
+                                onClick={getListings}
+                                label="Next"
+                            />
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     );
 }
