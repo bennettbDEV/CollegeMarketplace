@@ -1,30 +1,21 @@
-# api/views.py
-# api/views.py
-import mimetypes
-import os
+# user_messages/views.py
 
-from django.conf import settings
-from django.http import FileResponse
-from django.shortcuts import render
-from django.views import View
 from rest_framework import status, viewsets
-from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .message_mediators import MessageMediator
-from .models import Message
 from .serializers import MessageSerializer
 
 
 class MessageViewSet(viewsets.GenericViewSet):
     serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.message_mediator = MessageMediator()
 
-    # retrieve message for one user
     def retrieve(self, request, pk):
         """Retrieves the specified Message.
         Args:
@@ -33,29 +24,27 @@ class MessageViewSet(viewsets.GenericViewSet):
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
+
         if pk:
             message = self.message_mediator.retrieve_message(request, pk)
             if message:
                 serializer = MessageSerializer(
-                    data={'id':message['id'], 'sender_id': message['sender_id'], 'receiver_id': message['receiver_id'], 'content': message['content']}
+                    data={
+                        "id": message["id"],
+                        "sender_id": message["sender_id"],
+                        "receiver_id": message["receiver_id"],
+                        "content": message["content"],
+                    }
                 )
                 if serializer.is_valid():
                     return Response(serializer.data, status=status.HTTP_200_OK)
                 else:
                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response(
-                    {"error": "Message with that id from that User is not found."},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+                return Response({"error": "Message with that id from that User is not found."}, status=status.HTTP_404_NOT_FOUND,)
         else:
-             return Response(
-                {"error": "Message id not provided in link."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        
+            return Response({"error": "Message id not provided in link."}, status=status.HTTP_404_NOT_FOUND,)
 
-    # retrieve all message for one user
     def list(self, request):
         """Retrieves all messages received by the calling user.
         Args:
@@ -69,10 +58,10 @@ class MessageViewSet(viewsets.GenericViewSet):
         serializer = self.get_serializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # delete a message from a user(who retrieved it) given message id and user
     def destroy(self, request, pk=None):
         """Deletes the specified Message.
 
+        delete a message from a user(who retrieved it) given message id and user
         Args:
             request (Request): DRF request object, must have message id.
             pk (int, optional): The id of the User.
@@ -82,19 +71,13 @@ class MessageViewSet(viewsets.GenericViewSet):
         """
 
         try:
-            message_id = request.data.get('id')
-            response = self.message_mediator.delete_message(
-                request.user.id, message_id
-            )
+            message_id = request.data.get("id")
+            response = self.message_mediator.delete_message(request.user.id, message_id)
             return response
         except Exception as e:
             print(str(e))
-            return Response(
-                {"error": "Server error occured."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR,)
 
-    # create and send message from one user to another
     def create(self, request):
         """Creates and sends a message from a sender to a receiver User.
         Args:
@@ -108,7 +91,9 @@ class MessageViewSet(viewsets.GenericViewSet):
         # check if data is valid
         if serializer.is_valid():
             user_id = request.user.id
-            response = self.message_mediator.send_message(serializer.validated_data, user_id)
+            response = self.message_mediator.send_message(
+                serializer.validated_data, user_id
+            )
             return response
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
