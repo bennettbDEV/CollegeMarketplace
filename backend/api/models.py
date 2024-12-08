@@ -5,18 +5,17 @@ CLASSES:
 User, Listing
 '''
 
-
-
 """
 CLASS: User
 """
 class User:
     # Functions
-    def __init__(self, id, username, password=None, location=None, image=None):
+    def __init__(self, id, username, password=None, location=None, email=None, image=None):
         self.id = id
         self.username = username
         self.password = password  # Store hashed password directly
         self.location = location
+        self.email = email
         self.image = image
 
     def __str__(self):

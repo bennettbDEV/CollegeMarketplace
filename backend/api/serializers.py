@@ -28,6 +28,7 @@ class UserSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=50)
     password = serializers.CharField(write_only=True)  # Wont be revealed in reads
     location = serializers.CharField(max_length=50, allow_null=True, default="")
+    email = serializers.EmailField(allow_null=True, default=None)
     image = serializers.ImageField(use_url=True, allow_null=True, default=None)
 
     # Override default to_representation

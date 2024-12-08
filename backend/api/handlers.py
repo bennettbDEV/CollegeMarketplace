@@ -70,11 +70,10 @@ class UserHandler:
             validated_data["image"] = valid_path
         
         # Create user
-        db_query.create_user(validated_data)
+        user_id = db_query.create_user(validated_data)
 
-        # Get users id
-        user = db_query.get_user_by_username(new_username)
-        validated_data["id"] = user["id"]
+        # Assign users id
+        validated_data["id"] = user_id
 
         # Generate JWT token for the new user
         refresh = RefreshToken.for_user(User(**validated_data))
@@ -174,16 +173,13 @@ class UserHandler:
             # Check if blocker is trying to block themselves
             if blocker_id == blocked_id:
                 return Response({"error": "You cannot block yourself."}, status=status.HTTP_400_BAD_REQUEST)
-            
-            # Call the database query to block the user
-            num_affected_rows = db_query.block_user(blocker_id, blocked_id)
 
-            # If 1+ rows affected, then block successful
-            # Otherwise if num is 0, user is already blocked
-            if num_affected_rows > 0:
-                return Response({"detail": "User Blocked successfully."}, status=status.HTTP_204_NO_CONTENT,)
-            else:
+            if db_query.is_user_blocked(blocker_id, blocked_id):
                 return Response({"detail": "User already blocked."}, status=status.HTTP_204_NO_CONTENT,)
+            else:
+                # Call the database query to block the user
+                db_query.block_user(blocker_id, blocked_id)
+                return Response({"detail": "User blocked successfully."}, status=status.HTTP_204_NO_CONTENT,)
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -200,10 +196,16 @@ class UserHandler:
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
+
         # Call the database query to unblock the user
         try:
-            num_affected_rows = db_query.unblock_user(blocker_id, blocked_id)
-            if num_affected_rows > 0:
+            # Check if blocker is trying to unblock themselves
+            if blocker_id == blocked_id:
+                return Response({"error": "You cannot unblock yourself."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if db_query.is_user_blocked(blocker_id, blocked_id):
+                # Call the database query to unblock the user
+                db_query.unblock_user(blocker_id, blocked_id)
                 return Response({"detail": "User unblocked successfully."}, status=status.HTTP_204_NO_CONTENT,)
             else:
                 return Response({"detail": "User already unblocked."}, status=status.HTTP_204_NO_CONTENT,)
@@ -335,6 +337,9 @@ class ListingHandler:
                 return Response({"error": "An error occurred while deleting the listing."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
+
+    def delete_all_listings(self):
+        db_query.delete_all_listings()
 
     '''
     Favorite/Save Listing actions:

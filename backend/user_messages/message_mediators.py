@@ -40,7 +40,7 @@ class Mediator(ABC):
 # message mediator class
 class MessageMediator(Mediator):
     #retrieve all messages from a given user(request given, get user from that)
-    def retrieve_all_messages(self, request, pk):
+    def retrieve_all_messages(self, request):
         #no reason to check user, will use the requesting users id anyways
         messages = db_query.get_all_messages(int(request.user.id))
         return [Message(**message) for message in messages]
@@ -49,6 +49,7 @@ class MessageMediator(Mediator):
     def retrieve_message(self, request):
         #no reason to check user, will use the requesting users id anyways
         return db_query.get_message(int(request.message.id), int(request.user.id))
+    
     #delete message given user id and message id
     def delete_message(self, request, message_id):
         # get users id from request
@@ -71,20 +72,28 @@ class MessageMediator(Mediator):
             return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
         
     #send message with sender(user), receiver(user), and content of the message
-    def send_message(self, sender, receiver, content):
-        receiver_id = receiver.id
-        sender_id = sender.id
-        #0 is a placeholder, id will be generated on message creation
-        serializer = MessageSerializer(0, sender_id, receiver_id, content)
-        if serializer.is_valid():
-            try:
-                message = db_query.create_message(sender_id, receiver_id, content)
-                return Response({"detail": "Message sent successfully."}, status=status.HTTP_201_CREATED)
-            except Exception as e:
-                print(str(e))
-                return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def send_message(self, validated_data, sender_id):
+        receiver_id = validated_data["receiver_id"]
+        content = validated_data["content"]
+
+        try:
+            # Check if sender is sending a message to themself
+            if sender_id == receiver_id:
+                return Response({"error": "You cannot send a message to yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Check if receiver exists
+            if not db_query.get_user_by_id(receiver_id):
+                return Response({"error": "Receiving user not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            # Receiver is valid so send message
+            message_id = db_query.create_message(sender_id, receiver_id, content)
+            validated_data["id"] = message_id
+            return Response(validated_data, status=status.HTTP_201_CREATED)
+        
+        except Exception as e:
+            print(str(e))
+            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     #query user given user id from the database
     def query_user(self, user_id):
         # query user via ID
