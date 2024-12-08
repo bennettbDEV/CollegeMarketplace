@@ -17,23 +17,19 @@ db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
 # Mediator Abstract Class
 class Mediator(ABC):
     @abstractmethod
-    def retrieve_all_messages(self, request, pk):
+    def retrieve_all_messages(self, request):
         pass
 
     @abstractmethod
-    def retrieve_message(self, request):
+    def retrieve_message(self, request, message_id):
         pass
 
     @abstractmethod
-    def delete_message(self, request, message_id):
+    def delete_message(self, user_id, message_id):
         pass
 
     @abstractmethod
-    def send_message(self, sender, receiver, content):
-        pass
-
-    @abstractmethod
-    def query_user(self, user_id):
+    def send_message(self, validated_data, sender_id):
         pass
 
 
@@ -46,14 +42,12 @@ class MessageMediator(Mediator):
         return [Message(**message) for message in messages]
     
     #retrieve a message from a given user(request given, get user from that)
-    def retrieve_message(self, request):
+    def retrieve_message(self, request, message_id):
         #no reason to check user, will use the requesting users id anyways
-        return db_query.get_message(int(request.message.id), int(request.user.id))
+        return db_query.get_message(int(message_id), int(request.user.id))
     
     #delete message given user id and message id
-    def delete_message(self, request, message_id):
-        # get users id from request
-        user_id = request.user.id
+    def delete_message(self, user_id, message_id):
         # query message
         message = db_query.get_message(message_id, user_id)
         # sanity check for message
@@ -62,7 +56,7 @@ class MessageMediator(Mediator):
                 {"error": "Message not found."}, status=status.HTTP_404_NOT_FOUND
             )
         # making sure person trying to delete the message is the receiver of the message
-        if user_id == int(message.receiver_id):
+        if user_id == int(message['receiver_id']):
             db_query.delete_message(message_id, user_id)
             return Response(
                 {"detail": "Message deleted successfully."},
@@ -84,7 +78,8 @@ class MessageMediator(Mediator):
             # Check if receiver exists
             if not db_query.get_user_by_id(receiver_id):
                 return Response({"error": "Receiving user not found."}, status=status.HTTP_404_NOT_FOUND)
-
+            if db_query.is_user_blocked(sender_id, receiver_id):
+                return Response({"error": "Receiving user is blocked."}, status=status.HTTP_204_NO_CONTENT)
             # Receiver is valid so send message
             message_id = db_query.create_message(sender_id, receiver_id, content)
             validated_data["id"] = message_id
@@ -93,13 +88,3 @@ class MessageMediator(Mediator):
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    #query user given user id from the database
-    def query_user(self, user_id):
-        # query user via ID
-        user = db_query.get_user_by_id(user_id)
-        if not user:
-            return Response(
-                {"error": "User not found."}, status=status.HTTP_404_NOT_FOUND
-            )
-        return user
