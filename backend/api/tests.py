@@ -424,6 +424,32 @@ class ListListingsAPITestCase(AuthenticatedListingAPITestCase):
             )
         )
 
+    def test_filtering_by_valid_author_id(self):
+        user = self.user_handler.get_user_by_username("TestUsername")
+
+        # Create 5 listings - which will be made by the test user we retrieved above
+        self._create_test_listings(5, "TestListing")
+
+        # Assert that all of the retieved listings have author_id = the test users id
+        response = self.client.get(f"{self.listing_list_url}?author_id={user.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(
+            all(
+                user.id == listing.get("author_id", "")
+                for listing in response.data.get("results")
+            )
+        )
+
+    def test_filtering_by_invalid_author_id(self):
+        # Create 5 listings - which will be made by the test user we retrieved above
+        self._create_test_listings(5, "TestListing")
+
+        response = self.client.get(f"{self.listing_list_url}?author_id=-1")
+
+        # Assert that there are no listings made by the user with author_id = -1
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("results", []), [])
+
     def test_filtering_by_min_price(self):
         # Create listings with varying prices
         self._create_test_listings(1, "TestListing", price=50)
