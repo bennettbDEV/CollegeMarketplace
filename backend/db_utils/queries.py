@@ -7,6 +7,12 @@ from abc import ABC, abstractmethod
 from django.conf import settings
 
 class DBQuery(ABC):
+    """Abstract Singleton class that is used to outline all the necessary query methods.
+
+    Args:
+        ABC (ABCMeta): Helper class that provides a standard way to create an Abstract class using inheritance.
+    """
+
     _instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -32,7 +38,11 @@ class DBQuery(ABC):
     @abstractmethod
     def get_listing_by_id(self, listing_id):
         pass
-
+    
+    @abstractmethod
+    def get_listing_by_author_id(self, author_id):
+        pass
+    
     @abstractmethod
     def partial_update_listing(self, listing_id, new_data):
         pass
@@ -41,7 +51,32 @@ class DBQuery(ABC):
     def delete_listing(self, listing_id):
         pass
 
-    # User methods
+    @abstractmethod
+    def delete_all_listings(self):
+        pass
+
+    # Favorite Listing queries
+    @abstractmethod
+    def add_favorite_listing(self, user_id, listing_id):
+        pass
+
+    @abstractmethod
+    def remove_favorite_listing(self, user_id, listing_id):
+        pass
+    
+    @abstractmethod
+    def retrieve_favorite_listings(self, user_id):
+        pass
+
+    @abstractmethod
+    def like_listing(self, listing_id, current_likes):
+        pass
+
+    @abstractmethod
+    def dislike_listing(self, listing_id, current_dislikes):
+        pass
+
+    # User queries -------------------------------------------------------------------------
     @abstractmethod
     def get_all_users(self):
         pass
@@ -66,9 +101,43 @@ class DBQuery(ABC):
     def delete_user(self, user_id):
         pass
 
+    # Blocking queries
+    @abstractmethod
+    def block_user(self, blocker_id, blocked_id):
+        pass
 
-# We need to refactor our queries to avoid connecting and disconnecting to the db every time
+    @abstractmethod
+    def unblock_user(self, blocker_id, blocked_id):
+        pass
+
+    @abstractmethod
+    def is_user_blocked(self, sender_id, receiver_id):
+        pass
+
+    # Messaging queries --------------------------------------------------------------------------------
+    @abstractmethod
+    def create_message(self, sender_id, receiver_id, content):
+        pass
+    
+    @abstractmethod
+    def delete_message(self, message_id, receiver_id):
+        pass
+
+    @abstractmethod
+    def get_message(self, message_id, receiver_id):
+        pass
+    
+    @abstractmethod
+    def get_all_messages(self, user_id):
+        pass
+
 class SQLiteDBQuery(DBQuery):
+    """Concrete singleton class that implements all the necessary query methods using SQLite.
+
+    Args:
+        DBQuery (ABC): Abstract Singleton class that is used to outline all the necessary query methods.
+    """
+
     # Listing methods
     def get_all_listings(self):
         query = """
@@ -393,8 +462,7 @@ class SQLiteDBQuery(DBQuery):
         with self.db_connection as db:
             db.execute_query(query, params)
     
-    # --------------------------------------------------------------------------------
-    # User methods
+    # User methods ----------------------------------------------------------------------------------------------------------------------------------------------------------------
     def get_all_users(self):
         query = "SELECT * FROM user"
 
@@ -531,9 +599,7 @@ class SQLiteDBQuery(DBQuery):
             result = db.execute_query(query, params)
             return bool(result)
 
-    # --------------------------------------------------------------------------------
-    # Message functions
-
+    # Message functions ----------------------------------------------------------------------------------------------------------------------------------------------------------------
     #create message creates a message given sender, receiver, and content, then returns message id
     def create_message(self, sender_id, receiver_id, content):
         #create query and parameters

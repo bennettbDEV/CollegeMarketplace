@@ -69,6 +69,15 @@ class StandardResultsSetPagination(PageNumberPagination):
 CLASS: UserViewSet
 '''
 class UserViewSet(viewsets.GenericViewSet):
+    """Handles all API requests related to Users.
+
+    more info...
+
+    Attributes:
+        serializer_class (UserSerializer): A serializer that validates and serializes user data.
+        pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all users into multiple pages.
+    """
+
     serializer_class = UserSerializer
     pagination_class = StandardResultsSetPagination
 
@@ -78,7 +87,7 @@ class UserViewSet(viewsets.GenericViewSet):
 
     def get_permissions(self):
         # User must be authenticated if performing any action other than create/retrieve
-        self.permission_classes = ([AllowAny] if (self.action in ["create", "retrieve"]) else [IsAuthenticated])
+        self.permission_classes = ([AllowAny] if (self.action in ["create", "retrieve", "list"]) else [IsAuthenticated])
         return super().get_permissions()
 
     def get_queryset(self):
@@ -274,6 +283,15 @@ CLASS: ListingViewSet
 '''
 # Listing controller/handler
 class ListingViewSet(viewsets.GenericViewSet):
+    """Handles all API requests related to Listings.
+
+    more info...
+
+    Attributes:
+        serializer_class (ListingSerializer): A serializer that validates and serializes listing data.
+        pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all listings into multiple pages.
+    """
+
     serializer_class = ListingSerializer
     pagination_class = StandardResultsSetPagination
 
@@ -386,7 +404,6 @@ class ListingViewSet(viewsets.GenericViewSet):
     -Router will automatically create a url based on the method name and details in the @action line
     -The url for this method will be listings/{pk}/favorite_listing/
     '''
-
     #Function: add listing to favorites 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def favorite_listing(self, request, pk=None):
@@ -400,6 +417,7 @@ class ListingViewSet(viewsets.GenericViewSet):
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
+
         try:
             user_id = request.user.id
             response = self.listing_handler.add_favorite_listing(user_id, pk)
@@ -420,6 +438,7 @@ class ListingViewSet(viewsets.GenericViewSet):
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
+
         try:
             user_id = request.user.id
             response = self.listing_handler.remove_favorite_listing(user_id, pk)
@@ -440,6 +459,7 @@ class ListingViewSet(viewsets.GenericViewSet):
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
+        
         try:
             user_id = request.user.id
             #Call the handler function to retrieve favorite listings
@@ -483,9 +503,9 @@ class ListingViewSet(viewsets.GenericViewSet):
 CLASS: ServeImageView
 '''
 class ServeImageView(View):
+    """Serve images with correct Content type.
     """
-    Serve images with correct Content type.
-    """
+
     def get(self, request, image_path):
         # Construct the full path to the image
         full_path = os.path.normpath(os.path.join(settings.MEDIA_ROOT, image_path))
