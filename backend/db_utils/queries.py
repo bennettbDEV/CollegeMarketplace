@@ -538,15 +538,15 @@ class SQLiteDBQuery(DBQuery):
     def create_message(self, sender_id, receiver_id, content):
         #create query and parameters
         query = """
-        INSERT INTO message (sender, receiver, content) 
+        INSERT INTO Message (sender_id, receiver_id, content) 
         VALUES (?, ?, ?)
         """
         params = (sender_id, receiver_id, content)
+
         #execute query
-        self.db_connection.connect()
-        self.db_connection.execute_query(query, params)
-        self.db_connection.disconnect()
-        #attempt get new message ID without too much hassle and return it
+        with self.db_connection as db:
+            message_id = db.execute_query(query, params)
+            return message_id
     
     #delete message using message_id and receiver_id
     def delete_message(self, message_id, receiver_id):
@@ -573,11 +573,13 @@ class SQLiteDBQuery(DBQuery):
     #gets all messages received by the user
     def get_all_messages(self, user_id):
         #make query and parameters
-        query = "SELECT * FROM message WHERE receiverID = ?"
-        params = (user_id)
+        query = "SELECT * FROM message WHERE receiver_id = ?"
+        params = (user_id,)
+
         #do query
-        self.db_connection.connect()
-        messages = self.db_connection.execute_query(query, params)
-        self.db_connection.disconnect()
-        #return messages
-        return messages
+        with self.db_connection as db:
+            rows = db.execute_query(query, params)
+
+        # Turn data from rows into a list of dicts
+        users = [{column: row[column] for column in row.keys()} for row in rows]
+        return users

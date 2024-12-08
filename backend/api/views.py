@@ -105,7 +105,7 @@ class UserViewSet(viewsets.GenericViewSet):
         
         # Fallback if pagination is not applicable
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request):
         """Creates a new User.
@@ -343,7 +343,7 @@ class ListingViewSet(viewsets.GenericViewSet):
         
         # Fallback if pagination is not applicable
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request):
         serializer = self.get_serializer(data=request.data)

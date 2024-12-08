@@ -58,12 +58,15 @@ CREATE TABLE IF NOT EXISTS UserBlock (
 -- Make Message table
 CREATE TABLE IF NOT EXISTS Message (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    sender INTEGER NOT NULL,
-    receiver INTEGER NOT NULL,
-    content TEXT
+    sender_id INTEGER NOT NULL,
+    receiver_id INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    FOREIGN KEY (sender_id) REFERENCES User(id) ON DELETE CASCADE,
+    FOREIGN KEY (receiver_id) REFERENCES User(id) ON DELETE CASCADE
 );
 
 
 DROP TABLE Listing
 DROP TABLE Tag
 DROP TABLE ListingTag
+DROP TABLE Message
