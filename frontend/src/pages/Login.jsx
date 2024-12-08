@@ -3,9 +3,9 @@ import NavBar from "../components/Navbar.jsx";
 import "./styles/Login.css";
 
 function Login() {
-    return(
-    <>
-       <NavBar />
+    return (
+        <>
+            <NavBar />
             <div className="login-container">
                 <Form route="/api/token/" method="login" />
             </div>
