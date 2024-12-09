@@ -106,9 +106,6 @@ function Profile() {
                         <br></br>
                         <button onClick={handleLogout}>Logout</button>
                         <br></br>
-                        <button onClick={handleLogout}>Reset Password</button>
-                        <br></br>
-                        <button onClick={handleLogout} className="delete-account-button">Delete Account</button>
                     </>
                 ) : (
                     <p>Loading user data...</p>
