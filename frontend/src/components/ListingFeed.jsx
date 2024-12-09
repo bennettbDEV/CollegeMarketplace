@@ -1,5 +1,7 @@
 import React from 'react';
 import Listing from "./Listing";
+import { Link } from "react-router-dom";
+import "./styles/ListingFeed.css";
 
 // A function that returns a listing feed
 function ListingFeed({ listings }) {
@@ -12,7 +14,9 @@ function ListingFeed({ listings }) {
   return (
     <div className="listing-feed">
       {listings.map((listing, index) => (
-        <Listing key={index} listing={listing} />
+        <Link to={`/listings/${listing.id}`}>
+          <Listing key={index} listing={listing} />
+        </Link>
       ))}
     </div>
   );

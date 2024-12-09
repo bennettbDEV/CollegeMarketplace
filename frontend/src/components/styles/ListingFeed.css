@@ -1,0 +1,6 @@
+a {
+    /* Removes the underline */
+    text-decoration: none;
+    /* Makes the link inherit the color of its parent element */
+    color: inherit;
+}

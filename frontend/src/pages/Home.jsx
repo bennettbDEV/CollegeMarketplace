@@ -3,6 +3,7 @@ import api from "../api";
 import ListingFeed from "../components/ListingFeed";
 import NavBar from "../components/Navbar.jsx";
 import Filters from "../components/Filters.jsx";
+import SearchBar from "../components/SearchBar.jsx";
 import LinkedButton from "../components/LinkedButton.jsx";
 import "./styles/Home.css";
 
@@ -16,6 +17,7 @@ function Home() {
     minPrice: "",
     maxPrice: "",
     condition: "",
+    sortOption: "",
   });
 
   useEffect(() => {
@@ -29,6 +31,7 @@ function Home() {
     if (filters.minPrice) queryParams.append("min_price", filters.minPrice);
     if (filters.maxPrice) queryParams.append("max_price", filters.maxPrice);
     if (filters.condition) queryParams.append("condition", filters.condition);
+    if (filters.sortOption) queryParams.append("ordering", filters.sortOption);
 
     return queryParams.toString();
   };
@@ -41,22 +44,18 @@ function Home() {
       .get(fullUrl)
       .then((response) => response.data)
       .then((data) => {
-        console.log("API Response:", data);
         setListings(data.results);
         setNextPage(data.links.next);
         setPreviousPage(data.links.previous);
       })
-      .catch((err) => {
-        console.error("Error fetching listings:", err);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      .catch((err) => console.error("Error fetching listings:", err))
+      .finally(() => setLoading(false));
   };
 
   const handleFilterChange = (updatedFilters) => {
-    setFilters(updatedFilters);
-    getListings("/api/listings/");
+    // Update all filters using spread operator:
+    // Spread "..." copies all properties from the prevFilters into updated filters
+    setFilters((prevFilters) => ({ ...prevFilters, ...updatedFilters }));
   };
 
   return (
@@ -70,30 +69,28 @@ function Home() {
         <div className="listings-section">
           <h1>Listings</h1>
 
+          <SearchBar onSearch={handleFilterChange} />
+
           {loading ? (
             <p>Loading...</p>
           ) : (
             <>
               <ListingFeed listings={listings} />
-
               <div className="pagination-controls">
                 <LinkedButton
                   url={previousPage}
                   onClick={getListings}
                   label="Previous"
                 />
-
                 <LinkedButton
                   url={nextPage}
                   onClick={getListings}
                   label="Next"
                 />
               </div>
-
             </>
           )}
         </div>
-
       </div>
     </div>
   );
