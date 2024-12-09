@@ -26,21 +26,3 @@
       max-width: 100%; /* Filters take full width on small screens */
     }
   }
-
-/* Style for the Save button within the listing */
-.save-button {
-  position: absolute; /* Positions the button inside its container */
-  bottom: 10px; /* Adjusts spacing from the bottom */
-  right: 10px; /* Adjusts spacing from the right */
-  background-color: #4caf50; /* Green background for the Save button */
-  color: white; /* White text */
-  border: none; /* Removes default border */
-  border-radius: 5px; /* Rounded corners */
-  padding: 8px 12px; /* Adjust padding for better size */
-  cursor: pointer; /* Cursor changes to pointer on hover */
-  font-size: 14px; /* Slightly smaller font size */
-}
-
-.save-button:hover {
-  background-color: #45a049; /* Slightly darker green on hover */
-}
