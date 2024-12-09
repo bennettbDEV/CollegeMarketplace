@@ -10,7 +10,7 @@ function Register() {
         if (file) {
             const reader = new FileReader();
             reader.onload = () => {
-                setImagePreview(reader.result); // Set image preview to the loaded file
+                setImagePreview(reader.result);
             };
             reader.readAsDataURL(file);
         }
@@ -19,7 +19,9 @@ function Register() {
     return (
         <>
             <NavBar />
+            
             <div className="register-container">
+            <h1>Register Account</h1>
                 <form className="form-container">
                     <input
                         className="form-input"
