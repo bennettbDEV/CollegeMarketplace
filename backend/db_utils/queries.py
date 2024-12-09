@@ -9,8 +9,9 @@ from django.conf import settings
 class DBQuery(ABC):
     """Abstract Singleton class that is used to outline all the necessary query methods.
 
-    Args:
-        ABC (ABCMeta): Helper class that provides a standard way to create an Abstract class using inheritance.
+    Attributes:
+        db_connection (DBConnection): Database connection object that is used to connect, disconnect, and execute the specified query on the database.
+        _initialized (Boolean): True if the connection has already been created, False if not. Used to ensure the object is a singleton.
     """
 
     _instance = None
@@ -133,9 +134,6 @@ class DBQuery(ABC):
 
 class SQLiteDBQuery(DBQuery):
     """Concrete singleton class that implements all the necessary query methods using SQLite.
-
-    Args:
-        DBQuery (ABC): Abstract Singleton class that is used to outline all the necessary query methods.
     """
 
     # Listing methods

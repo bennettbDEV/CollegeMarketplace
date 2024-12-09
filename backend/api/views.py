@@ -4,13 +4,14 @@ CLASSES:
 LoginView, StandardResultsSetPagination, UserViewSet, ListingViewSet, 
 ServeImageView, 
 '''
-
 import mimetypes
 import os
+
 from django.conf import settings
 from django.http import FileResponse
 from django.shortcuts import render
 from django.views import View
+from drf_spectacular.utils import OpenApiExample, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -25,6 +26,14 @@ from .serializers import ListingSerializer, LoginSerializer, UserSerializer
 CLASS: LoginView
 '''
 class LoginView(TokenObtainPairView):
+    """Handles API requests for logging in.
+
+    Attributes:
+        serializer_class (LoginSerializer): A serializer that validates and serializes login data.
+        permission_classes (BasePermission): A permission class that dictates what type of user can make login requests.
+        user_handler (UserHandler): A handler class that handles DB interactions related to users.
+    """
+
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]
 
@@ -65,13 +74,86 @@ class StandardResultsSetPagination(PageNumberPagination):
         )
 
 
-'''
-CLASS: UserViewSet
-'''
+@extend_schema_view(
+    list=extend_schema(
+        description="Retrieve a paginated list of all users.",
+        responses={200: UserSerializer(many=True)},
+    ),
+    create=extend_schema(
+        description="Register a user with the given info. Note: To upload an image, ensure the form is submitted as 'multipart/form-data'.",
+        request=UserSerializer,
+        responses={
+            201: OpenApiExample(
+                "Successful Response",
+                value={
+                    "id": 1,
+                    "username": "johndoe",
+                    "location": "New York",
+                    "email": "johndoe@example.com",
+                    "image": "/media/users/johndoe.jpg",  # Representing the relative url of the image on the server
+                },
+                response_only=True,
+            )
+        },
+        examples=[
+            OpenApiExample(
+                "Create User Example",
+                value={
+                    "username": "johndoe",
+                    "password": "password123",  # Note: this is a write-only field
+                    "location": "New York",
+                    "email": "johndoe@example.com",
+                    "image": "johndoe.jpg",  # Representing a file being uploaded
+                },
+                request_only=True,
+            )
+        ],
+    ),
+    retrieve=extend_schema(
+        description="Retrieve a specific user by ID.",
+        responses={200: UserSerializer},
+        parameters=[
+            {
+                "name": "pk",
+                "in": "path",
+                "required": True,
+                "description": "The ID of the user to retrieve.",
+                "schema": {"type": "integer", "example": 1},
+            }
+        ],
+    ),
+    partial_update=extend_schema(
+        description="Partially update a specific user by ID. Only the fields provided in the request will be updated.",
+        request=UserSerializer,
+        responses={
+            200: UserSerializer,  # Successful update will return the updated user data
+        },
+        examples=[
+            OpenApiExample(
+                "Partial Update Example",
+                value={
+                    "username": "john_doe_updated",  # Only updating the username in this example
+                },
+                request_only=True,
+            )
+        ],
+    ),
+    destroy=extend_schema(
+        description="Deletes a specific user by ID.",
+        responses={204: UserSerializer},
+        parameters=[
+            {
+                "name": "pk",
+                "in": "path",
+                "required": True,
+                "description": "The ID of the user to retrieve.",
+                "schema": {"type": "integer", "example": 1},
+            }
+        ],
+    ),
+)
 class UserViewSet(viewsets.GenericViewSet):
     """Handles all API requests related to Users.
-
-    more info...
 
     Attributes:
         serializer_class (UserSerializer): A serializer that validates and serializes user data.
@@ -188,12 +270,40 @@ class UserViewSet(viewsets.GenericViewSet):
         except Exception as e:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
-    '''
-    Block/Unblock Content 
-    '''
-    #Function: block
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+
+    @extend_schema(
+        description="Blocks the specified user. This action prevents the blocked user from messaging the authenticated user.",
+        parameters=[
+            {
+                "name": "pk",
+                "in": "path",
+                "required": True,
+                "description": "The ID of the user to be blocked.",
+                "schema": {"type": "integer"},
+            }
+        ],
+        request=None,  # No request body needed for this POST request
+        responses={
+            200: OpenApiExample(
+                "Successful Block",
+                value={"message": "User blocked successfully."},
+                response_only=True,
+            ),
+            400: OpenApiExample(
+                "Invalid User ID",
+                value={"error": "Invalid user ID."},
+                response_only=True,
+            ),
+            500: OpenApiExample(
+                "Internal Server Error",
+                value={
+                    "error": "An unexpected error occurred while blocking the user."
+                },
+                response_only=True,
+            ),
+        },
+    )
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def block_user(self, request, pk=None):
         """
         Blocks the specified user.
@@ -220,8 +330,39 @@ class UserViewSet(viewsets.GenericViewSet):
             print(f"Error blocking user: {e}")
             return Response({"error": "An unexpected error occurred while blocking the user."},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    #Function: unblock
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @extend_schema(
+        description="Unblocks the specified user, allowing them to interact with the authenticated user again.",
+        parameters=[
+            {
+                "name": "pk",
+                "in": "path",
+                "required": True,
+                "description": "The ID of the user to be unblocked.",
+                "schema": {"type": "integer"},
+            }
+        ],
+        request=None,  # No request body needed for this POST request
+        responses={
+            200: OpenApiExample(
+                "Successful Unblock",
+                value={"message": "User unblocked successfully."},
+                response_only=True,
+            ),
+            400: OpenApiExample(
+                "Invalid User ID",
+                value={"error": "Invalid user ID."},
+                response_only=True,
+            ),
+            500: OpenApiExample(
+                "Internal Server Error",
+                value={
+                    "error": "An unexpected error occurred while unblocking the user."
+                },
+                response_only=True,
+            ),
+        },
+    )
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def unblock_user(self, request, pk=None):
         """
         Unblocks the specified user.
@@ -240,16 +381,54 @@ class UserViewSet(viewsets.GenericViewSet):
             # Call the handler method to unblock the user
             response = self.user_handler.unblock_user(blocker_id, blocked_id)
             return response
-        
-        #if error
+
+        # if error
         except ValueError:
-            return Response({"error": "Invalid user ID."},status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid user ID."}, status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
             print(f"Error unblocking user: {e}")
-            return Response({"error": "An unexpected error occurred while unblocking the user."},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": "An unexpected error occurred while unblocking the user."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
-    #Function: check if a user is blocked
-    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
+    @extend_schema(
+        description="Checks if the authenticated user has been blocked by the specified user.",
+        parameters=[
+            {
+                "name": "pk",
+                "in": "path",
+                "required": True,
+                "description": "The ID of the user to check against.",
+                "schema": {"type": "integer"},
+            }
+        ],
+        request=None,  # No request body needed for this GET request
+        responses={
+            200: OpenApiExample(
+                "Successful Check",
+                value={
+                    "message": "User is blocked."
+                },
+                response_only=True,
+            ),
+            400: OpenApiExample(
+                "Invalid User ID",
+                value={"error": "Invalid user ID."},
+                response_only=True,
+            ),
+            500: OpenApiExample(
+                "Internal Server Error",
+                value={
+                    "error": "An unexpected error occurred while checking block status."
+                },
+                response_only=True,
+            ),
+        },
+    )
+    @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated])
     def is_user_blocked(self, request, pk=None):
         """
         Checks if the authenticated user has been blocked by the specified user.
@@ -281,6 +460,25 @@ class UserViewSet(viewsets.GenericViewSet):
 CLASS: ListingViewSet
 '''
 # Listing controller/handler
+@extend_schema_view(
+    create=extend_schema(
+        request=UserSerializer,
+        examples=[
+            OpenApiExample(
+                "Create Listing Example",
+                value={
+                    "title": "Programming Textbook",
+                    "description": "Modern Programming Lanugages 2nd Edition by Adams Brooks Webber.",
+                    "price": 49.99,
+                    "condition": "Well Worn",
+                    "tags": ["example", "sample", "listing"],
+                    "image": "/media/listings/textbook.jpg",  # Representing the relative url of the image on the server
+                },
+                request_only=True,  # Applies only to requests
+            )
+        ],
+    ),
+)
 class ListingViewSet(viewsets.GenericViewSet):
     """Handles all API requests related to Listings.
 

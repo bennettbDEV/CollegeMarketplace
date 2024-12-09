@@ -23,12 +23,30 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+
         <Route path="/profile" element={
           <ProtectedRoute>
-          <Profile />
+            <Profile />
           </ProtectedRoute>
         } />
-        
+
+        {/*
+        <Route path="/favorite_listing" element={
+          <ProtectedRoute>
+            <FavoriteListing />
+          </ProtectedRoute>
+        } />
+         
+         <Route path="/create_listing" element={
+        <ProtectedRoute>
+        <CreateListing />
+        </ProtectedRoute>
+            } />
+         
+         
+         
+         */}
+
         <Route path="/login" element={<Login />} />
         <Route path="/createlisting" element={<CreateListing />} />
         <Route path="/logout" element={<Logout />} />

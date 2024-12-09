@@ -34,7 +34,9 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": ("api.authentication.CustomJWTAuthentication",),
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "api.authentication.CustomJWTAuthentication",
+    ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
@@ -42,6 +44,7 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",  # Enables the browsable API
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 SIMPLE_JWT = {
@@ -64,6 +67,7 @@ INSTALLED_APPS = [
     # Created Apps
     "api",
     "user_messages",
+    "drf_spectacular"
 ]
 
 MIDDLEWARE = [
