@@ -9,7 +9,6 @@ import Messages from "./pages/Messages"
 import ProtectedRoute from "./components/ProtectedRoute"
 import CreateListing from "./pages/CreateListing"
 import Settings from "./pages/Settings"
-import Messages from "./pages/Messages"
 
 function Logout() {
   localStorage.clear()
