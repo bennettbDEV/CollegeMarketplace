@@ -8,6 +8,7 @@ import Profile from "./pages/Profile"
 import FavoriteListings from "./pages/FavoriteListings" // Import the SavedListings component
 import ProtectedRoute from "./components/ProtectedRoute"
 import CreateListing from "./pages/CreateListing"
+import Settings from "./pages/Settings"
 
 function Logout() {
   localStorage.clear()
@@ -44,6 +45,7 @@ function App() {
         } />
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="/register" element={<RegisterAndLogout />} />
         <Route path="*" element={<NotFound />}></Route>
       </Routes>
