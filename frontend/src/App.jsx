@@ -5,8 +5,7 @@ import Register from "./pages/Register"
 import Home from "./pages/Home"
 import NotFound from "./pages/NotFound"
 import Profile from "./pages/Profile"
-import SingleListing from "./pages/SingleListing";
-import FavoriteListings from "./pages/FavoriteListings" // Import the SavedListings component
+import Messages from "./pages/Messages"
 import ProtectedRoute from "./components/ProtectedRoute"
 import CreateListing from "./pages/CreateListing"
 import Settings from "./pages/Settings"
@@ -52,6 +51,7 @@ function App() {
 
         <Route path="/settings" element={<Settings />} />
         <Route path="/messages" element={<Messages />} />
+
         <Route path="*" element={<NotFound />}></Route>
       </Routes>
     </BrowserRouter>
