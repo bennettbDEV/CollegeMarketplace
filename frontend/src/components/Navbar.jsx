@@ -15,6 +15,9 @@ const Navbar = () => {
   </div>
   <div className="navbar-center">
     <ul className="nav-links">
+    <li>
+        <a href="/createlisting">Create Listing</a>
+      </li>
       <li>
         <a href="/saved">Saved</a>
       </li>
