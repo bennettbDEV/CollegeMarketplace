@@ -8,6 +8,8 @@ import Profile from "./pages/Profile"
 import Messages from "./pages/Messages"
 import ProtectedRoute from "./components/ProtectedRoute"
 import CreateListing from "./pages/CreateListing"
+import Settings from "./pages/Settings"
+import Messages from "./pages/Messages"
 
 function Logout() {
   localStorage.clear()
@@ -47,10 +49,9 @@ function App() {
           </ProtectedRoute>
         } />
 
-        <Route path="/login" element={<Login />} />
-        <Route path="/logout" element={<Logout />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="/messages" element={<Messages />} />
-        <Route path="/register" element={<RegisterAndLogout />} />
+
         <Route path="*" element={<NotFound />}></Route>
       </Routes>
     </BrowserRouter>
