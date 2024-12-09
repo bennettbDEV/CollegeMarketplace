@@ -90,7 +90,7 @@ class StandardResultsSetPagination(PageNumberPagination):
                     "username": "johndoe",
                     "location": "New York",
                     "email": "johndoe@example.com",
-                    "image": "/media/images/johndoe.jpg",  # Representing the relative url of the image on the server
+                    "image": "/media/users/johndoe.jpg",  # Representing the relative url of the image on the server
                 },
                 response_only=True,
             )
@@ -460,8 +460,8 @@ class UserViewSet(viewsets.GenericViewSet):
 CLASS: ListingViewSet
 '''
 # Listing controller/handler
-
-create=extend_schema(
+@extend_schema_view(
+    create=extend_schema(
         request=UserSerializer,
         examples=[
             OpenApiExample(
@@ -472,11 +472,13 @@ create=extend_schema(
                     "price": 49.99,
                     "condition": "Well Worn",
                     "tags": ["example", "sample", "listing"],
+                    "image": "/media/listings/textbook.jpg",  # Representing the relative url of the image on the server
                 },
                 request_only=True,  # Applies only to requests
             )
         ],
     ),
+)
 class ListingViewSet(viewsets.GenericViewSet):
     """Handles all API requests related to Listings.
 
