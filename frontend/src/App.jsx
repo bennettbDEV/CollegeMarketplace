@@ -6,10 +6,11 @@ import Home from "./pages/Home"
 import NotFound from "./pages/NotFound"
 import Profile from "./pages/Profile"
 import Messages from "./pages/Messages"
+import SingleListing from "./pages/SingleListing"
+import FavoriteListings from "./pages/FavoriteListings"
 import ProtectedRoute from "./components/ProtectedRoute"
 import CreateListing from "./pages/CreateListing"
 import Settings from "./pages/Settings"
-import Messages from "./pages/Messages"
 
 function Logout() {
   localStorage.clear()
