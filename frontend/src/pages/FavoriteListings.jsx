@@ -1,9 +1,9 @@
-//FavoriteListings.jsx
-
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom"; // Import Link for navigation
 import NavBar from "../components/Navbar";
 import api from "../api";
 import "./styles/FavoriteListings.css";
+
 function SavedListings() {
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -12,7 +12,7 @@ function SavedListings() {
         fetchFavoriteListings();
     }, []);
 
-    //Const: get all listings
+    // Function: Fetch all favorite listings
     const fetchFavoriteListings = async () => {
         setLoading(true);
         try {
@@ -25,7 +25,7 @@ function SavedListings() {
         }
     };
 
-    //Const: remove from favorites
+    // Function: Remove a listing from favorites
     const handleRemoveFavorite = async (listingId) => {
         try {
             // Send a DELETE request to the backend
@@ -38,7 +38,6 @@ function SavedListings() {
             console.error("Error removing favorite listing:", err);
         }
     };
-    
 
     return (
         <>
@@ -56,10 +55,13 @@ function SavedListings() {
                     <div className="listings-grid">
                         {listings.map((listing) => (
                             <div key={listing.id} className="listing-card">
-                                <img src={listing.image} alt={listing.title} />
-                                <h2>{listing.title}</h2>
-                                <p>{listing.description}</p>
-                                <p>Price: ${listing.price}</p>
+                                {/* Link to the individual listing page */}
+                                <Link to={`/listings/${listing.id}`} className="listing-link">
+                                    <img src={listing.image} alt={listing.title} />
+                                    <h2>{listing.title}</h2>
+                                    <p>{listing.description}</p>
+                                    <p>Price: ${listing.price}</p>
+                                </Link>
                                 <button
                                     className="remove-favorite-button"
                                     onClick={() => handleRemoveFavorite(listing.id)}
