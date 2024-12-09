@@ -5,6 +5,7 @@ import Register from "./pages/Register"
 import Home from "./pages/Home"
 import NotFound from "./pages/NotFound"
 import Profile from "./pages/Profile"
+import FavoriteListings from "./pages/FavoriteListings" // Import the SavedListings component
 import ProtectedRoute from "./components/ProtectedRoute"
 import CreateListing from "./pages/CreateListing"
 
@@ -30,21 +31,21 @@ function App() {
           </ProtectedRoute>
         } />
 
-        {/*
-        <Route path="/favorite_listing" element={
-          <ProtectedRoute>
-            <FavoriteListing />
-          </ProtectedRoute>
-        } />
-         
+        <Route 
+          path="/saved" 
+          element={
+            <ProtectedRoute>
+              <FavoriteListings />
+            </ProtectedRoute>
+          } 
+        />
+            
+         {/*
          <Route path="/create_listing" element={
         <ProtectedRoute>
         <CreateListing />
         </ProtectedRoute>
             } />
-         
-         
-         
          */}
 
         <Route path="/login" element={<Login />} />
