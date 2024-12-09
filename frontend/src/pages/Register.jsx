@@ -1,69 +1,16 @@
 import React, { useState } from "react";
 import NavBar from "../components/Navbar.jsx";
+import RegistrationForm from "../components/RegistrationForm";
 import "./styles/Register.css";
 
 function Register() {
-    const [imagePreview, setImagePreview] = useState(null);
-
-    const handleImageUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                setImagePreview(reader.result); // Set image preview to the loaded file
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
     return (
         <>
             <NavBar />
-            <div className="register-container">
-                <form className="form-container">
-                    <input
-                        className="form-input"
-                        type="text"
-                        placeholder="*Username"
-                        name="username"
-                    />
-                    <input
-                        className="form-input"
-                        type="password"
-                        placeholder="*Password"
-                        name="password"
-                    />
-                    <input
-                        className="form-input"
-                        type="text"
-                        placeholder="Location"
-                        name="location"
-                    />
-                    
-                    <label className="form-input">
-                        Upload profile picture:&nbsp; 
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageUpload}
-                            className="file-input"
-                        />
-                    </label>
-
-                    {imagePreview && (
-                        <input
-                            className="form-submit-image"
-                            type="image"
-                            src={imagePreview}
-                            alt="Submit"
-                        />
-                    )}
-
-                    <button className="form-button" type="submit">
-                        Submit
-                    </button>
-                </form>
+            <div className="registration-container">
+                <RegistrationForm route="/api/users/"/>
             </div>
+            
         </>
     );
 }
