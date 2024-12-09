@@ -1,14 +1,13 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; 
 import NavBar from "../components/Navbar.jsx";
-import RegistrationForm from "../components/RegistrationForm";
 import "./styles/Settings.css";
 
 function Settings() {
-
+    const navigate = useNavigate(); 
     const handleLogout = () => {
         localStorage.clear()
-        //navigate("/login", { replace: true });
-        window.location.reload();
+        navigate("/login", { replace: true });
     };
 
     return (

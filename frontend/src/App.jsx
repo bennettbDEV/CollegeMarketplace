@@ -49,9 +49,16 @@ function App() {
             <CreateListing />
           </ProtectedRoute>
         } />
-
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/messages" element={<Messages />} />
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <Settings /> 
+          </ProtectedRoute>
+        } />
+        <Route path="/messages" element={
+          <ProtectedRoute>
+            <Messages /> 
+          </ProtectedRoute>
+        } />
 
         <Route path="*" element={<NotFound />}></Route>
       </Routes>

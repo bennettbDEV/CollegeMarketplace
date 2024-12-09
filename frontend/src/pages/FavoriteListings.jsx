@@ -25,20 +25,22 @@ function SavedListings() {
     };
 
     return (
-        <div className="saved-listings-container">
-            <NavBar />
-            <h1>Your Saved Listings</h1>
-            {loading ? (
-                <p>Loading...</p>
-            ) : listings.length === 0 ? (
-                <div className="empty-listings-message">
-                    <p>You don't have any saved listings yet.</p>
-                    <p>Browse the marketplace to save your favorite items!</p>
-                </div>
-            ) : (
-                <ListingFeed listings={listings} />
-            )}
-        </div>
+        <><NavBar />
+            <div className="saved-listings-container">
+
+                <h1>Your Saved Listings</h1>
+                {loading ? (
+                    <p>Loading...</p>
+                ) : listings.length === 0 ? (
+                    <div className="empty-listings-message">
+                        <p>You don't have any saved listings yet.</p>
+                        <p>Browse the marketplace to save your favorite items!</p>
+                    </div>
+                ) : (
+                    <ListingFeed listings={listings} />
+                )}
+            </div>
+        </>
     );
 }
 
