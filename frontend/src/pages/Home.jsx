@@ -1,3 +1,4 @@
+//Home.jsx
 import { useState, useEffect } from "react";
 import api from "../api";
 import ListingFeed from "../components/ListingFeed";
@@ -53,9 +54,20 @@ function Home() {
   };
 
   const handleFilterChange = (updatedFilters) => {
-    // Update all filters using spread operator:
-    // Spread "..." copies all properties from the prevFilters into updated filters
     setFilters((prevFilters) => ({ ...prevFilters, ...updatedFilters }));
+  };
+
+  //Const: saves a listings
+  const handleSaveListing = async (listingId) => {
+    try {
+      await api.post(`/api/listings/${listingId}/favorite_listing/`);
+      alert("Listing saved to favorites!");
+    } catch (err) {
+      if (err.response.data.error != 400) {
+        alert("ERROR: This listing is already in your favorites!");
+      } 
+      console.error("Error saving listing:", err);
+    }
   };
 
   return (
@@ -75,7 +87,7 @@ function Home() {
             <p>Loading...</p>
           ) : (
             <>
-              <ListingFeed listings={listings} />
+              <ListingFeed listings={listings} onSaveListing={handleSaveListing} />
               <div className="pagination-controls">
                 <LinkedButton
                   url={previousPage}

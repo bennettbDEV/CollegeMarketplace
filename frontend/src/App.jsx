@@ -6,6 +6,8 @@ import Home from "./pages/Home"
 import NotFound from "./pages/NotFound"
 import Profile from "./pages/Profile"
 import Messages from "./pages/Messages"
+import SingleListing from "./pages/SingleListing"
+import FavoriteListings from "./pages/FavoriteListings"
 import ProtectedRoute from "./components/ProtectedRoute"
 import CreateListing from "./pages/CreateListing"
 import Settings from "./pages/Settings"
@@ -47,9 +49,16 @@ function App() {
             <CreateListing />
           </ProtectedRoute>
         } />
-
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/messages" element={<Messages />} />
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <Settings /> 
+          </ProtectedRoute>
+        } />
+        <Route path="/messages" element={
+          <ProtectedRoute>
+            <Messages /> 
+          </ProtectedRoute>
+        } />
 
         <Route path="*" element={<NotFound />}></Route>
       </Routes>

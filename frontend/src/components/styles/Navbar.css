@@ -1,67 +1,70 @@
-
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: #cc0000; 
-    color: white; /* White text */
-    font-family: 'Nunito', sans-serif; /* Friendly, modern font */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  .navbar a {
-    text-decoration: none;
-    color: white;
-    font-weight: 600;
-    transition: color 0.3s ease;
-  }
-  
-  .navbar a:hover {
-    color: #ffd700; /* Gold hover effect */
-  }
-  
-  .logo {
-    font-size: 24px;
-    font-weight: bold;
-  }
-  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #cc0000; 
+  color: white;
+  font-family: 'Nunito', sans-serif;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.navbar a {
+  text-decoration: none;
+  color: white;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.navbar a:hover {
+  color: #ffd700;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Space between the home icon and text */
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links li {
+  font-size: 18px;
+}
+
+.navbar-right img,
+.navbar-right svg,
+.home-icon {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+
+.profile-icon, .settings {
+  margin-left: 15px;
+  font-size: 18px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
   .nav-links {
-    list-style: none;
-    display: flex;
-    gap: 20px;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .nav-links li {
-    font-size: 18px;
-  }
-  
-  .profile-icon, .settings {
-    margin-left: 15px;
-    font-size: 18px;
-  }
-  
-  .navbar-right img,
-  .navbar-right svg {
-    width: 24px;
-    height: 24px;
-    vertical-align: middle;
-  }
-  
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .nav-links {
       display: none; /* Hide links on small screens */
-    }
-  
-    .navbar {
+  }
+
+  .navbar {
       flex-wrap: wrap;
       justify-content: space-between;
-    }
-  
-    .navbar-right {
-      margin-top: 10px;
-    }
   }
+
+  .navbar-right {
+      margin-top: 10px;
+  }
+}

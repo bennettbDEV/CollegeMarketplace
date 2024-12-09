@@ -53,7 +53,7 @@ function CreateListing() {
             formData.append("price", price);
             formData.append("condition", condition);
             formData.append("description", description);
-            tags.forEach((tag) => formData.append("tags", tag)); 
+            tags.forEach((tag) => formData.append("tags", tag));
             formData.append("image", image);
 
             const res = await api.post("/api/listings/", formData, {
@@ -74,103 +74,108 @@ function CreateListing() {
     return (
         <>
             <NavBar />
-            <div className="createlisting-container">
-                <h1>Create Listing</h1>
-                <form className="form-container" onSubmit={handleSubmit}>
-                    <input
-                        className="form-input"
-                        type="text"
-                        value={title}
-                        onChange={(e) => settitle(e.target.value)}
-                        placeholder="Item Name"
-                        name="title"
-                        required
-                    />
-                    <input
-                        className="form-input"
-                        type="number"
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value)}
-                        placeholder="Price (in USD $)"
-                        name="price"
-                        step="0.01"
-                        min="0"
-                        required
-                    />
+            <div className="centered-container">
+                <div className="createlisting-container">
+                    <h1>Create Listing</h1>
 
-                    <select
-                        className="form-input"
-                        value={condition}
-                        onChange={(e) => setCondition(e.target.value)}
-                        name="condition"
-                        required
-                    >
-                        <option value="Factory New">Factory New</option>
-                        <option value="Minimal Wear">Minimal Wear</option>
-                        <option value="Fair">Fair</option>
-                        <option value="Well Worn">Well Worn</option>
-                        <option value="Refurbished">Refurbished</option>
-                    </select>
+                    <form className="form-container" onSubmit={handleSubmit}>
 
-                    <div className="tags-input-container">
+                        <label htmlFor="title">*Item Title:</label>
                         <input
+                            id="title"
                             className="form-input"
                             type="text"
-                            placeholder="Enter a tag"
-                            name="tags"
-                            value={currentTag}
-                            onChange={handleTagChange}
+                            value={title}
+                            onChange={(e) => settitle(e.target.value)}
+                            placeholder="Enter item name"
+                            required
                         />
-                        <button type="button" className="add-tag-button" onClick={addTag}>
-                            Add Tag
-                        </button>
-                    </div>
 
-                    <div className="tags-container">
-                        {tags.map((tag, index) => (
-                            <div key={index} className="tag">
-                                {tag}
-                                <span className="remove-tag" onClick={() => removeTag(index)}>
-                                    &times;
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-
-                    <textarea
-                        className="form-input"
-                        placeholder="Description"
-                        name="description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        rows="5"
-                        cols="50"
-                        required
-                    ></textarea>
-
-                    <label className="form-input">
-                        Upload item image:&nbsp;
+                        <label htmlFor="price">*Price:</label>
                         <input
+                            id="price"
+                            className="form-input"
+                            type="number"
+                            value={price}
+                            onChange={(e) => setPrice(e.target.value)}
+                            placeholder="Enter price in USD"
+                            step="0.01"
+                            min="0"
+                            required
+                        />
+
+                        <label htmlFor="condition">*Condition:</label>
+                        <select
+                            id="condition"
+                            className="form-input"
+                            value={condition}
+                            onChange={(e) => setCondition(e.target.value)}
+                            required
+                        >
+                            <option value="Factory New">Factory New</option>
+                            <option value="Minimal Wear">Minimal Wear</option>
+                            <option value="Fair">Fair</option>
+                            <option value="Well Worn">Well Worn</option>
+                            <option value="Refurbished">Refurbished</option>
+                        </select>
+
+                        <label htmlFor="description">*Description:</label>
+                        <textarea
+                            id="description"
+                            className="form-input"
+                            placeholder="Enter description"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            rows="5"
+                            cols="50"
+                            required
+                        ></textarea>
+
+                        <label>Tags:</label>
+                        <div className="tags-input-container">
+                            <input
+                                className="form-input"
+                                type="text"
+                                placeholder="Enter a tag"
+                                value={currentTag}
+                                onChange={handleTagChange}
+                            />
+                            <button type="button" className="add-tag-button" onClick={addTag}>
+                                Add Tag
+                            </button>
+                        </div>
+                        <div className="tags-container">
+                            {tags.map((tag, index) => (
+                                <div key={index} className="tag">
+                                    {tag}
+                                    <span className="remove-tag" onClick={() => removeTag(index)}>
+                                        &times;
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <label htmlFor="image">*Upload Item Image:</label>
+                        <input
+                            id="image"
+                            className="form-input file-input"
                             type="file"
                             accept="image/*"
                             onChange={handleImageUpload}
-                            className="file-input"
                             required
                         />
-                    </label>
-
-                    {imagePreview && (
-                        <img
-                            className="form-submit-image"
-                            src={imagePreview}
-                            alt="Item Preview"
-                        />
-                    )}
-
-                    <button className="form-button" type="submit" disabled={loading}>
-                        {loading ? "Submitting..." : "Create Listing"}
-                    </button>
-                </form>
+                        {imagePreview && (
+                            <img
+                                className="form-submit-image"
+                                src={imagePreview}
+                                alt="Item Preview"
+                            />
+                        )}
+                        <button className="form-button" type="submit" disabled={loading}>
+                            {loading ? "Submitting..." : "Create Listing"}
+                        </button>
+                    </form>
+                </div>
             </div>
         </>
     );
