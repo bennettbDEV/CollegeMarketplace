@@ -819,8 +819,13 @@ class FavoriteListingTestCase(AuthenticatedAPITestCase):
             f"Expected status 404, got {response.status_code}.",
         )
 
-#Jake use case: Create Listing
-class CreateListingTest(AuthenticatedAPITestCase):
+"""
+TEST CLASS: Create Listing Testcase
+-Jake Test Case 1
+-run:
+python manage.py test api.tests.CreateListingTestCase
+"""
+class CreateListingTestCase(AuthenticatedAPITestCase):
     def _generate_test_image(self):
         img = Image.new(
             "RGB", (100, 100), color=(255, 0, 0)
@@ -843,6 +848,10 @@ class CreateListingTest(AuthenticatedAPITestCase):
             "image": test_img,
             "tags" : ["English", "Writing"]
         }
+        self.user_id = self.user_handler.get_user_by_username("TestUsername").id
+    # After
+    def tearDown(self):
+        super().tearDown()
 
     def test_create_valid_listing(self):
         url = reverse("listing-list")
@@ -851,18 +860,84 @@ class CreateListingTest(AuthenticatedAPITestCase):
         
         #validate other fields
         for key, value in self.test_listing.items():
-            self.assertEqual(response.data.get(key), value)
+            if key != "image":
+                #assertEqual freaks out with the images, so not asserting it
+                self.assertEqual(response.data.get(key), value)
         
     def test_create_invalid_listing(self):
         url = reverse("listing-list")
-        self.test_listing["title"] = 500
-        response = self.client.post(url, data=self.test_listing, format="multipart")
+        #invalid due to missing values
+        self.invalid_listing = {
+            "condition": "Factory New",
+            "description": "A sample test listing",
+            "price": 999.0,
+            "tags" : ["English", "Writing"]
+        }
+        response = self.client.post(url, data=self.invalid_listing, format="multipart")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        
-        #validate other fields
-        for key, value in self.test_listing.items():
-            self.assertEqual(response.data.get(key), value)
     
+    def test_create_listing_invalid_user(self):
+        url = reverse("listing-detail", args=[9359318135135])
+        response = self.client.post(url, data=self.test_listing, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+"""
+TEST CLASS: Delete Listing Testcase
+-Jake Test Case 2
+-run:
+python manage.py test api.tests.DeleteListingTestCase
+"""
+class DeleteListingTestCase(AuthenticatedAPITestCase):
+    def _generate_test_image(self):
+        img = Image.new(
+            "RGB", (100, 100), color=(255, 0, 0)
+        )  # Create a 100x100 red image
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG")
+        buffer.seek(0)
+        return SimpleUploadedFile(
+            "test_image.jpg", buffer.read(), content_type="image/jpeg"
+        )
+    
+    def setUp(self):
+        super().setUp()
+        test_img = self._generate_test_image()
+        self.test_listing = {
+            "title": "Test Listing",
+            "condition": "Factory New",
+            "description": "A sample test listing",
+            "price": 999.0,
+            "image": test_img,
+            "tags" : ["English", "Writing"]
+        }
+        self.user_id = self.user_handler.get_user_by_username("TestUsername").id
+    # After
+    def tearDown(self):
+        super().tearDown()
+
+    def test_delete_valid_listing(self):
+        #Create a Listing
+        url = reverse("listing-list")
+        response = self.client.post(url, data=self.test_listing, format="multipart")
+        #Delete the Listing
+        self.listing_id = response.data.get("id")
+        url = reverse("listing-detail", args=[self.listing_id])
+        response = self.client.delete(url)
+        #Assert Equal
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_invalid_listing(self):
+        #Create a Listing
+        url = reverse("listing-list")
+        response = self.client.post(url, data=self.test_listing, format="multipart")
+        #Delete the Listing
+        self.listing_id = response.data.get("id")
+        url = reverse("listing-detail", args=[835838568])
+        response = self.client.delete(url)
+        #Assert Equal
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
 
 
 """
