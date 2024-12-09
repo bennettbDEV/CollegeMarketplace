@@ -32,14 +32,8 @@ function App() {
         <Route path="/logout" element={<Logout />} />
         <Route path="/register" element={<RegisterAndLogout />} />
         <Route path="*" element={<NotFound />}></Route>
-        <Route 
-          path="/saved" 
-          element={
-            <ProtectedRoute>
-              <FavoriteListings />
-            </ProtectedRoute>
-          } 
-        />
+        <Route path="/saved" element={<ProtectedRoute><FavoriteListings /></ProtectedRoute>
+          } />
       </Routes>
     </BrowserRouter>
   )
