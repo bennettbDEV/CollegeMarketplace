@@ -5,6 +5,7 @@ import Register from "./pages/Register"
 import Home from "./pages/Home"
 import NotFound from "./pages/NotFound"
 import Profile from "./pages/Profile"
+import SingleListing from "./pages/SingleListing";
 import FavoriteListings from "./pages/FavoriteListings" // Import the SavedListings component
 import ProtectedRoute from "./components/ProtectedRoute"
 import CreateListing from "./pages/CreateListing"
@@ -24,6 +25,10 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/logout" element={<Logout />} />
+        <Route path="/register" element={<RegisterAndLogout />} />
+        <Route path="/listings/:listingId" element={<SingleListing />} />
 
         <Route path="/profile" element={
           <ProtectedRoute>
@@ -42,9 +47,8 @@ function App() {
             <CreateListing />
           </ProtectedRoute>
         } />
-        <Route path="/login" element={<Login />} />
-        <Route path="/logout" element={<Logout />} />
-        <Route path="/register" element={<RegisterAndLogout />} />
+
+
         <Route path="*" element={<NotFound />}></Route>
       </Routes>
     </BrowserRouter>

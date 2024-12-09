@@ -1,12 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import api from "../api";
 import "./styles/Listing.css";
 
 
-function Listing({listing}) {
-    const formattedDate = new Date(listing.created_at).toLocaleDateString("en-US")
+function Listing({ listing }) {
+    const [imageError, setImageError] = useState(false);  // Track if the image fails to load
+    const formattedDate = new Date(listing.created_at).toLocaleDateString("en-US");
 
-    const imageUrl = listing.image ? `${api.defaults.baseURL}${listing.image}` : "default-image.jpg";
+    // Image URL
+    const imageUrl = listing.image ? `${api.defaults.baseURL}${listing.image}` : null;
+    const fallbackImage = "/default-image.jpg";  // Fallback image URL
+
+    const handleImageError = () => {
+        setImageError(true);
+    };
 
     return (
         <div className="listing-container">
@@ -14,14 +21,24 @@ function Listing({listing}) {
             <p className="listing-condition">Condition: {listing.condition}</p>
             <p className="listing-description">Desc: {listing.description}</p>
             <p className="listing-price">Price: ${listing.price}</p>
+
             <div className="listing-image">
-                <img 
-                    src={imageUrl} 
-                    alt={listing.title} 
-                    className="listing-image-file" 
-                    style={{ width: "200px", height: "auto" }} 
-                    onError={(e) => { e.target.src = "fallback-image.jpg"; }} // Fallback for broken images
-                />
+                {imageUrl && !imageError ? (
+                    <img
+                        src={imageUrl}
+                        alt={listing.title}
+                        className="listing-image-file"
+                        style={{ width: "200px", height: "auto" }}
+                        onError={handleImageError}  // Trigger fallback on error
+                    />
+                ) : (
+                    <img
+                        src={fallbackImage}  // Fallback image
+                        alt="Fallback"
+                        className="listing-image-file"
+                        style={{ width: "200px", height: "auto" }}
+                    />
+                )}
             </div>
             <p className="listing-date">Posted on: {formattedDate}</p>
             <div className="listing-tags">

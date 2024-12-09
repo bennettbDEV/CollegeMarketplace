@@ -26,7 +26,7 @@ const SearchBar = ({ onSearch }) => {
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value)}
             >
-                <option value="">Sort by</option>
+                <option value="">Sort by...</option>
                 <option value="price">Price: Low to High</option>
                 <option value="-price">Price: High to Low</option>
                 <option value="title">Title: A to Z</option>
