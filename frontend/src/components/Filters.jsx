@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import "./styles/Filters.css";
 
 const Filters = ({ onFilterChange }) => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [condition, setCondition] = useState("");
@@ -10,7 +9,6 @@ const Filters = ({ onFilterChange }) => {
   const handleFilterChange = () => {
     // Send the filter data back to the parent component
     onFilterChange({
-      searchTerm,
       minPrice,
       maxPrice,
       condition,
@@ -20,19 +18,9 @@ const Filters = ({ onFilterChange }) => {
   return (
     <div className="filters-container">
       <h3>Filter Listings</h3>
+      
       <div className="filter-group">
-        <label htmlFor="searchTerm">Search:</label>
-        <input
-          type="text"
-          id="searchTerm"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search by title or description"
-        />
-      </div>
-
-      <div className="filter-group">
-        <label htmlFor="minPrice">Min Price:</label>
+        <label htmlFor="minPrice">Minimum Price:</label>
         <input
           type="number"
           id="minPrice"
@@ -43,7 +31,7 @@ const Filters = ({ onFilterChange }) => {
       </div>
 
       <div className="filter-group">
-        <label htmlFor="maxPrice">Max Price:</label>
+        <label htmlFor="maxPrice">Maximum Price:</label>
         <input
           type="number"
           id="maxPrice"

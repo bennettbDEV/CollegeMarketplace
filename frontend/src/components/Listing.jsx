@@ -30,7 +30,6 @@ function Listing({listing}) {
                     <span key={index} className="listing-tag">{tag} </span>
                 ))}
             </div>
-            <p className="listing-author">Author ID: {listing.author_id}</p>
         </div>
     );
     //For image: {listing.image && <img src={listing.image} alt={listing.title} className="listing-image" />}
