@@ -79,6 +79,20 @@ function Profile() {
             });
     };
 
+    const handleLogout = () => {
+        localStorage.clear()
+        //navigate("/login", { replace: true });
+        window.location.reload();
+    };
+
+    const handleResetPassword = () => {
+        
+    };
+
+    const handleDeleteAccount = () => {
+        
+    };
+
     return (
         <div>
             <NavBar />
@@ -89,6 +103,12 @@ function Profile() {
                         <p>Username: {userData.username}</p>
                         <p>Location: {userData.location}</p>
                         <img src={imageUrl} width="150" alt="Profile" />
+                        <br></br>
+                        <button onClick={handleLogout}>Logout</button>
+                        <br></br>
+                        <button onClick={handleLogout}>Reset Password</button>
+                        <br></br>
+                        <button onClick={handleLogout} className="delete-account-button">Delete Account</button>
                     </>
                 ) : (
                     <p>Loading user data...</p>

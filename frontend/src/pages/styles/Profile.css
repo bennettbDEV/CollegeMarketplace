@@ -2,3 +2,9 @@
     padding-left: 200px;
     padding-right: 200px;
 }
+
+.delete-account-button {
+    background-color: red; 
+    color: white; 
+    border-radius: 5px;
+}
