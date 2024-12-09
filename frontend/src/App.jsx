@@ -30,26 +30,19 @@ function App() {
             <Profile />
           </ProtectedRoute>
         } />
-
-        <Route 
-          path="/saved" 
-          element={
+        <Route
+          path="/saved" element={
             <ProtectedRoute>
               <FavoriteListings />
             </ProtectedRoute>
-          } 
+          }
         />
-            
-         {/*
-         <Route path="/create_listing" element={
-        <ProtectedRoute>
-        <CreateListing />
-        </ProtectedRoute>
-            } />
-         */}
-
+        <Route path="/createListing" element={
+          <ProtectedRoute>
+            <CreateListing />
+          </ProtectedRoute>
+        } />
         <Route path="/login" element={<Login />} />
-        <Route path="/createlisting" element={<CreateListing />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/register" element={<RegisterAndLogout />} />
         <Route path="*" element={<NotFound />}></Route>
