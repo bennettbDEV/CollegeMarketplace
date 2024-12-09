@@ -2,6 +2,7 @@
 from db_utils.db_factory import DBFactory, DBType
 from db_utils.queries import SQLiteDBQuery
 from django.contrib.auth.hashers import check_password
+from drf_spectacular.extensions import OpenApiAuthenticationExtension
 from jwt import InvalidTokenError
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -44,3 +45,16 @@ class CustomJWTAuthentication(JWTAuthentication):
         # Check password
         if user_data and check_password(password, user_data["password"]):
             return User(**user_data)
+
+
+class CustomJWTAuthenticationExtension(OpenApiAuthenticationExtension):
+    target_class = "api.authentication.CustomJWTAuthentication"
+    name = "CustomJWTAuth"
+
+    def get_security_definition(self, auto_schema):
+        return {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "description": "JWT-based authentication using a Bearer token.",
+        }

@@ -182,7 +182,7 @@ class UserHandler:
                 return Response({"detail": "User blocked successfully."}, status=status.HTTP_204_NO_CONTENT,)
         except Exception as e:
             print(str(e))
-            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "An unexpected error occurred while blocking the user."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     #Function: unblock
     def unblock_user(self, blocker_id, blocked_id):
@@ -211,7 +211,7 @@ class UserHandler:
                 return Response({"detail": "User already unblocked."}, status=status.HTTP_204_NO_CONTENT,)
         except Exception as e:
             print(str(e))
-            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "An unexpected error occurred while checking block status."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     #Function: check if blocked
     def is_user_blocked(self, sender_id, receiver_id):
@@ -233,7 +233,7 @@ class UserHandler:
                 return Response({"detail": "User is not blocked."}, status=status.HTTP_204_NO_CONTENT,)
         except Exception as e:
             print(str(e))
-            return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "An unexpected error occurred while checking block status."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 '''

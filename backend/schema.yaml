@@ -1,0 +1,1254 @@
+openapi: 3.0.3
+info:
+  title: ''
+  version: 0.0.0
+paths:
+  /api/listings/:
+    get:
+      operationId: api_listings_list
+      description: |-
+        Handles all API requests related to Listings.
+
+        more info...
+
+        Attributes:
+            serializer_class (ListingSerializer): A serializer that validates and serializes listing data.
+            pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all listings into multiple pages.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedListingList'
+          description: ''
+    post:
+      operationId: api_listings_create
+      description: |-
+        Handles all API requests related to Listings.
+
+        more info...
+
+        Attributes:
+            serializer_class (ListingSerializer): A serializer that validates and serializes listing data.
+            pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all listings into multiple pages.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Listing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Listing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Listing'
+        required: true
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+          description: ''
+  /api/listings/{id}/:
+    get:
+      operationId: api_listings_retrieve
+      description: |-
+        Handles all API requests related to Listings.
+
+        more info...
+
+        Attributes:
+            serializer_class (ListingSerializer): A serializer that validates and serializes listing data.
+            pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all listings into multiple pages.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+          description: ''
+    patch:
+      operationId: api_listings_partial_update
+      description: |-
+        Handles all API requests related to Listings.
+
+        more info...
+
+        Attributes:
+            serializer_class (ListingSerializer): A serializer that validates and serializes listing data.
+            pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all listings into multiple pages.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedListing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedListing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedListing'
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+          description: ''
+    delete:
+      operationId: api_listings_destroy
+      description: |-
+        Handles all API requests related to Listings.
+
+        more info...
+
+        Attributes:
+            serializer_class (ListingSerializer): A serializer that validates and serializes listing data.
+            pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all listings into multiple pages.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/listings/{id}/dislike_listing/:
+    post:
+      operationId: api_listings_dislike_listing_create
+      description: |-
+        Handles all API requests related to Listings.
+
+        more info...
+
+        Attributes:
+            serializer_class (ListingSerializer): A serializer that validates and serializes listing data.
+            pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all listings into multiple pages.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Listing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Listing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Listing'
+        required: true
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+          description: ''
+  /api/listings/{id}/favorite_listing/:
+    post:
+      operationId: api_listings_favorite_listing_create
+      description: |-
+        Adds a listing to the user's saved/favorite listings list.
+
+        Args:
+            request (Request): DRF request object.
+            pk (int, optional): The id of the Listing. Defaults to None.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Listing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Listing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Listing'
+        required: true
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+          description: ''
+  /api/listings/{id}/like_listing/:
+    post:
+      operationId: api_listings_like_listing_create
+      description: |-
+        Handles all API requests related to Listings.
+
+        more info...
+
+        Attributes:
+            serializer_class (ListingSerializer): A serializer that validates and serializes listing data.
+            pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all listings into multiple pages.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Listing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Listing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Listing'
+        required: true
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+          description: ''
+  /api/listings/{id}/remove_favorite_listing/:
+    delete:
+      operationId: api_listings_remove_favorite_listing_destroy
+      description: |-
+        Removes a listing from the user's saved/favorite listings list.
+
+        Args:
+            request (Request): DRF request object.
+            pk (int, optional): The id of the Listing. Defaults to None.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/listings/list_favorite_listings/:
+    get:
+      operationId: api_listings_list_favorite_listings_retrieve
+      description: |-
+        Fetches all the user's saved/favorite listings.
+
+        Args:
+            request (Request): DRF request object.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+          description: ''
+  /api/messages/:
+    get:
+      operationId: api_messages_list
+      description: |-
+        Retrieves all messages received by the calling user.
+        Args:
+            request (Request): DRF request object
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+          description: ''
+    post:
+      operationId: api_messages_create
+      description: |-
+        Creates and sends a message from a sender to a receiver User.
+        Args:
+            request (Request): DRF request object, must have receiver(User Object) and content for message
+            pk (int, optional): The id of the recieving User.
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Message'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Message'
+        required: true
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+  /api/messages/{id}/:
+    get:
+      operationId: api_messages_retrieve
+      description: |-
+        Retrieves the specified Message.
+        Args:
+            request (request): DRF request object, must have message id
+            pk (int, optional): The id of the message
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+    delete:
+      operationId: api_messages_destroy
+      description: |-
+        Deletes the specified Message.
+
+        delete a message from a user(who retrieved it) given message id and user
+        Args:
+            request (Request): DRF request object, must have message id.
+            pk (int, optional): The id of the User.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/token/:
+    post:
+      operationId: api_token_create
+      description: |-
+        Handles API requests for logging in.
+
+        Attributes:
+            serializer_class (LoginSerializer): A serializer that validates and serializes login data.
+            permission_classes (BasePermission): A permission class that dictates what type of user can make login requests.
+            user_handler (UserHandler): A handler class that handles DB interactions related to users.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+          description: ''
+  /api/token/refresh/:
+    post:
+      operationId: api_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/users/:
+    get:
+      operationId: api_users_list
+      description: Retrieve a paginated list of all users.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserList'
+          description: ''
+    post:
+      operationId: api_users_create
+      description: 'Register a user with the given info. Note: To upload an image,
+        ensure the form is submitted as ''multipart/form-data''.'
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            examples:
+              CreateUserExample:
+                value:
+                  username: johndoe
+                  password: password123
+                  location: New York
+                  email: johndoe@example.com
+                  image: johndoe.jpg
+                summary: Create User Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - CustomJWTAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/users/{id}/:
+    get:
+      operationId: api_users_retrieve
+      description: Retrieve a specific user by ID.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: api_users_partial_update
+      description: Partially update a specific user by ID. Only the fields provided
+        in the request will be updated.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+            examples:
+              PartialUpdateExample:
+                value:
+                  username: john_doe_updated
+                summary: Partial Update Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: api_users_destroy
+      description: Deletes a specific user by ID.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/users/{id}/block_user/:
+    post:
+      operationId: api_users_block_user_create
+      description: Blocks the specified user. This action prevents the blocked user
+        from messaging the authenticated user.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/users/{id}/is_user_blocked/:
+    get:
+      operationId: api_users_is_user_blocked_retrieve
+      description: Checks if the authenticated user has been blocked by the specified
+        user.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/users/{id}/unblock_user/:
+    post:
+      operationId: api_users_unblock_user_create
+      description: Unblocks the specified user, allowing them to interact with the
+        authenticated user again.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /schema/:
+    get:
+      operationId: schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - schema
+      security:
+      - CustomJWTAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+components:
+  schemas:
+    ConditionEnum:
+      enum:
+      - Factory New
+      - Minimal Wear
+      - Fair
+      - Well Worn
+      - Refurbished
+      type: string
+      description: |-
+        * `Factory New` - Factory New
+        * `Minimal Wear` - Minimal Wear
+        * `Fair` - Fair
+        * `Well Worn` - Well Worn
+        * `Refurbished` - Refurbished
+    Listing:
+      type: object
+      description: |-
+        Serializer class for handling listing data representation and validation.
+
+        This serializer is responsible for validating and serializing listing data. It provides
+        a way to represent the listing model data for both reading and writing to the API.
+
+        Note:
+            When submitting an image, make sure the request is sent with the 'Content-Type' header as 'multipart/form-data'.
+
+        Fields:
+            id (IntegerField): The unique identifier of the listing. Read-only.
+            title (CharField): The title of the listing. Maximum length is 50 characters.
+            condition (ChoiceField): The condition of the item being listed.
+                                    Choices are: Factory New, Minimal Wear, Fair, Well Worn, Refurbished.
+            description (CharField): A description of the listing. Maximum length is 500 characters.
+            price (FloatField): The price of the item being listed.
+            image (ImageField): The image associated with the listing, represented as a URL.
+            likes (IntegerField): The number of likes the listing has received. Read-only.
+            dislikes (IntegerField): The number of dislikes the listing has received. Read-only.
+            tags (ListField): A list of tags associated with the listing. Allows null.
+            created_at (DateTimeField): The timestamp when the listing was created. Read-only.
+            author_id (IntegerField): The ID of the user who created the listing. Read-only.
+
+        Methods:
+            to_representation(instance):
+                Customizes the representation of the serialized data by converting the image field into a URL.
+                This method is called when fetching serialized data for a listing.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 50
+        condition:
+          $ref: '#/components/schemas/ConditionEnum'
+        description:
+          type: string
+          maxLength: 500
+        price:
+          type: number
+          format: double
+        image:
+          type: string
+          format: uri
+        likes:
+          type: integer
+          readOnly: true
+        dislikes:
+          type: integer
+          readOnly: true
+        tags:
+          type: array
+          items: {}
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        author_id:
+          type: integer
+          readOnly: true
+      required:
+      - author_id
+      - condition
+      - created_at
+      - description
+      - dislikes
+      - id
+      - image
+      - likes
+      - price
+      - tags
+      - title
+    Login:
+      type: object
+      description: |-
+        Serializer class for handling user login and token generation.
+
+        This serializer extends 'TokenObtainPairSerializer' and is responsible
+        for validating user credentials (username and password) and generating JWT tokens
+        for successful login. It ensures that the user provides valid credentials before
+        issuing a token. If the credentials are invalid, an 'AuthenticationFailed' error is raised.
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - password
+      - username
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sender_id:
+          type: integer
+          readOnly: true
+        receiver_id:
+          type: integer
+        content:
+          type: string
+          maxLength: 200
+      required:
+      - content
+      - id
+      - receiver_id
+      - sender_id
+    PaginatedListingList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Listing'
+    PaginatedUserList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+    PatchedListing:
+      type: object
+      description: |-
+        Serializer class for handling listing data representation and validation.
+
+        This serializer is responsible for validating and serializing listing data. It provides
+        a way to represent the listing model data for both reading and writing to the API.
+
+        Note:
+            When submitting an image, make sure the request is sent with the 'Content-Type' header as 'multipart/form-data'.
+
+        Fields:
+            id (IntegerField): The unique identifier of the listing. Read-only.
+            title (CharField): The title of the listing. Maximum length is 50 characters.
+            condition (ChoiceField): The condition of the item being listed.
+                                    Choices are: Factory New, Minimal Wear, Fair, Well Worn, Refurbished.
+            description (CharField): A description of the listing. Maximum length is 500 characters.
+            price (FloatField): The price of the item being listed.
+            image (ImageField): The image associated with the listing, represented as a URL.
+            likes (IntegerField): The number of likes the listing has received. Read-only.
+            dislikes (IntegerField): The number of dislikes the listing has received. Read-only.
+            tags (ListField): A list of tags associated with the listing. Allows null.
+            created_at (DateTimeField): The timestamp when the listing was created. Read-only.
+            author_id (IntegerField): The ID of the user who created the listing. Read-only.
+
+        Methods:
+            to_representation(instance):
+                Customizes the representation of the serialized data by converting the image field into a URL.
+                This method is called when fetching serialized data for a listing.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 50
+        condition:
+          $ref: '#/components/schemas/ConditionEnum'
+        description:
+          type: string
+          maxLength: 500
+        price:
+          type: number
+          format: double
+        image:
+          type: string
+          format: uri
+        likes:
+          type: integer
+          readOnly: true
+        dislikes:
+          type: integer
+          readOnly: true
+        tags:
+          type: array
+          items: {}
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        author_id:
+          type: integer
+          readOnly: true
+    PatchedUser:
+      type: object
+      description: |-
+        Serializer class for handling user data representation and validation.
+
+        This serializer is responsible for validating and serializing user data. It provides
+        a way to represent the user model data for both reading and writing to the API.
+
+        Note:
+            When submitting an image, make sure the request is sent with the 'Content-Type' header as 'multipart/form-data'.
+
+        Attributes:
+            id (IntegerField): The unique identifier of the user. Read-only.
+            username (CharField): The username of the user. Maximum length is 50 characters.
+            password (CharField): The password of the user. Write-only, not included in read operations.
+            location (CharField): The location of the user. Allows null. Defaults to empty string.
+            email (EmailField): The email address of the user. Allows null. Defaults to None.
+            image (ImageField): The image associated with the user. Allows null. Defaults to None.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          maxLength: 50
+        password:
+          type: string
+          writeOnly: true
+        location:
+          type: string
+          nullable: true
+          default: ''
+          maxLength: 50
+        email:
+          type: string
+          format: email
+          nullable: true
+        image:
+          type: string
+          format: uri
+          nullable: true
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    User:
+      type: object
+      description: |-
+        Serializer class for handling user data representation and validation.
+
+        This serializer is responsible for validating and serializing user data. It provides
+        a way to represent the user model data for both reading and writing to the API.
+
+        Note:
+            When submitting an image, make sure the request is sent with the 'Content-Type' header as 'multipart/form-data'.
+
+        Attributes:
+            id (IntegerField): The unique identifier of the user. Read-only.
+            username (CharField): The username of the user. Maximum length is 50 characters.
+            password (CharField): The password of the user. Write-only, not included in read operations.
+            location (CharField): The location of the user. Allows null. Defaults to empty string.
+            email (EmailField): The email address of the user. Allows null. Defaults to None.
+            image (ImageField): The image associated with the user. Allows null. Defaults to None.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          maxLength: 50
+        password:
+          type: string
+          writeOnly: true
+        location:
+          type: string
+          nullable: true
+          default: ''
+          maxLength: 50
+        email:
+          type: string
+          format: email
+          nullable: true
+        image:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - id
+      - password
+      - username
+  securitySchemes:
+    CustomJWTAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT-based authentication using a Bearer token.
