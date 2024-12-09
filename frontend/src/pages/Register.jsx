@@ -8,6 +8,7 @@ function Register() {
         <>
             <NavBar />
             <div className="registration-container">
+                
                 <RegistrationForm route="/api/users/"/>
             </div>
             
