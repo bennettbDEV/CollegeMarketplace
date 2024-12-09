@@ -1,9 +1,9 @@
+//FavoriteListings.jsx
+
 import React, { useState, useEffect } from "react";
 import NavBar from "../components/Navbar";
 import api from "../api";
-import ListingFeed from "../components/ListingFeed";
 import "./styles/FavoriteListings.css";
-
 function SavedListings() {
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -12,6 +12,7 @@ function SavedListings() {
         fetchFavoriteListings();
     }, []);
 
+    //Const: get all listings
     const fetchFavoriteListings = async () => {
         setLoading(true);
         try {
@@ -24,10 +25,25 @@ function SavedListings() {
         }
     };
 
-    return (
-        <><NavBar />
-            <div className="saved-listings-container">
+    //Const: remove from favorites
+    const handleRemoveFavorite = async (listingId) => {
+        try {
+            // Send a DELETE request to the backend
+            await api.delete(`/api/listings/${listingId}/remove_favorite_listing/`);
+            // Update the UI by filtering out the removed listing
+            setListings((prevListings) =>
+                prevListings.filter((listing) => listing.id !== listingId)
+            );
+        } catch (err) {
+            console.error("Error removing favorite listing:", err);
+        }
+    };
+    
 
+    return (
+        <>
+            <NavBar />
+            <div className="saved-listings-container">
                 <h1>Your Saved Listings</h1>
                 {loading ? (
                     <p>Loading...</p>
@@ -37,7 +53,22 @@ function SavedListings() {
                         <p>Browse the marketplace to save your favorite items!</p>
                     </div>
                 ) : (
-                    <ListingFeed listings={listings} />
+                    <div className="listings-grid">
+                        {listings.map((listing) => (
+                            <div key={listing.id} className="listing-card">
+                                <img src={listing.image} alt={listing.title} />
+                                <h2>{listing.title}</h2>
+                                <p>{listing.description}</p>
+                                <p>Price: ${listing.price}</p>
+                                <button
+                                    className="remove-favorite-button"
+                                    onClick={() => handleRemoveFavorite(listing.id)}
+                                >
+                                    &times;
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                 )}
             </div>
         </>
