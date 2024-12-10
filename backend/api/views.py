@@ -152,6 +152,7 @@ class StandardResultsSetPagination(PageNumberPagination):
         ],
     ),
 )
+
 class UserViewSet(viewsets.GenericViewSet):
     """Handles all API requests related to Users.
 
@@ -303,6 +304,8 @@ class UserViewSet(viewsets.GenericViewSet):
             ),
         },
     )
+
+
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def block_user(self, request, pk=None):
         """
@@ -329,7 +332,7 @@ class UserViewSet(viewsets.GenericViewSet):
         except Exception as e:
             print(f"Error blocking user: {e}")
             return Response({"error": "An unexpected error occurred while blocking the user."},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+    
     @extend_schema(
         description="Unblocks the specified user, allowing them to interact with the authenticated user again.",
         parameters=[
@@ -362,6 +365,7 @@ class UserViewSet(viewsets.GenericViewSet):
             ),
         },
     )
+    
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def unblock_user(self, request, pk=None):
         """
@@ -393,7 +397,7 @@ class UserViewSet(viewsets.GenericViewSet):
                 {"error": "An unexpected error occurred while unblocking the user."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
+        
     @extend_schema(
         description="Checks if the authenticated user has been blocked by the specified user.",
         parameters=[
@@ -428,6 +432,7 @@ class UserViewSet(viewsets.GenericViewSet):
             ),
         },
     )
+
     @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated])
     def is_user_blocked(self, request, pk=None):
         """
@@ -601,6 +606,7 @@ class ListingViewSet(viewsets.GenericViewSet):
     -Router will automatically create a url based on the method name and details in the @action line
     -The url for this method will be listings/{pk}/favorite_listing/
     '''
+
     #Function: add listing to favorites 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def favorite_listing(self, request, pk=None):
@@ -672,10 +678,10 @@ class ListingViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-
     '''
     Like/Dislike actions
     '''
+    
     #Function: "likes" the listing
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def like_listing(self, request, pk=None):
