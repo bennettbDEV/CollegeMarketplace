@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import api from "../api";
 import "./styles/Listing.css";
 
-
-function Listing({ listing }) {
-    const [imageError, setImageError] = useState(false);  // Track if the image fails to load
+function Listing({ listing, additionalAction }) {
+    const [imageError, setImageError] = useState(false); // Track if the image fails to load
     const formattedDate = new Date(listing.created_at).toLocaleDateString("en-US");
 
     // Image URL
     const imageUrl = listing.image ? `${api.defaults.baseURL}${listing.image}` : null;
-    const fallbackImage = "/default-image.jpg";  // Fallback image URL
+    const fallbackImage = "/default-image.jpg"; // Fallback image URL
 
     const handleImageError = () => {
         setImageError(true);
@@ -29,11 +28,11 @@ function Listing({ listing }) {
                         alt={listing.title}
                         className="listing-image-file"
                         style={{ width: "200px", height: "auto" }}
-                        onError={handleImageError}  // Trigger fallback on error
+                        onError={handleImageError} // Trigger fallback on error
                     />
                 ) : (
                     <img
-                        src={fallbackImage}  // Fallback image
+                        src={fallbackImage} // Fallback image
                         alt="Fallback"
                         className="listing-image-file"
                         style={{ width: "200px", height: "auto" }}
@@ -44,16 +43,12 @@ function Listing({ listing }) {
             <div className="listing-tags">
                 <strong>Tags: </strong>
                 {listing.tags.map((tag, index) => (
-                    <span key={index} className="listing-tag">{tag} </span>
+                    <span key={index} className="listing-tag">{tag}</span>
                 ))}
             </div>
+            {additionalAction && <div className="listing-action">{additionalAction}</div>}
         </div>
     );
-    //For image: {listing.image && <img src={listing.image} alt={listing.title} className="listing-image" />}
 }
-/*
-<button className="delete-button" onClick={() => onDelete(listing.id)}>
-                Delete
-            </button>
-*/
-export default Listing
+
+export default Listing;

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom"; // Import Link for navigation
 import NavBar from "../components/Navbar";
+import ListingFeed from "../components/ListingFeed";
 import api from "../api";
 import "./styles/FavoriteListings.css";
 
-function SavedListings() {
+function FavoritedListings() {
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -52,29 +53,15 @@ function SavedListings() {
                         <p>Browse the marketplace to save your favorite items!</p>
                     </div>
                 ) : (
-                    <div className="listings-grid">
-                        {listings.map((listing) => (
-                            <div key={listing.id} className="listing-card">
-                                {/* Link to the individual listing page */}
-                                <Link to={`/listings/${listing.id}`} className="listing-link">
-                                    <img src={listing.image} alt={listing.title} />
-                                    <h2>{listing.title}</h2>
-                                    <p>{listing.description}</p>
-                                    <p>Price: ${listing.price}</p>
-                                </Link>
-                                <button
-                                    className="remove-favorite-button"
-                                    onClick={() => handleRemoveFavorite(listing.id)}
-                                >
-                                    &times;
-                                </button>
-                            </div>
-                        ))}
-                    </div>
+                    <ListingFeed
+                        listings={listings}
+                        actionType="remove"
+                        onAction={(id) => handleRemoveFavorite(id)}
+                    />
                 )}
             </div>
         </>
     );
 }
 
-export default SavedListings;
+export default FavoritedListings;

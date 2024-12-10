@@ -39,8 +39,22 @@ function Home() {
 
   const getListings = (url) => {
     setLoading(true);
+
+    const [baseUrl, existingQuery] = url.split("?");
     const filterQuery = buildFilterQuery();
-    const fullUrl = filterQuery ? `${url}?${filterQuery}` : url;
+
+    // Merge filter query with existing query parameters
+    const mergedQuery = new URLSearchParams(existingQuery || "");
+
+    if (filterQuery) {
+      const newFilters = new URLSearchParams(filterQuery);
+      newFilters.forEach((value, key) => {
+        mergedQuery.set(key, value); // Avoid duplicate entries
+      });
+    }
+
+    // Construct the full URL
+    const fullUrl = `${baseUrl}?${mergedQuery.toString()}`;
     api
       .get(fullUrl)
       .then((response) => response.data)
@@ -63,9 +77,19 @@ function Home() {
       await api.post(`/api/listings/${listingId}/favorite_listing/`);
       alert("Listing saved to favorites!");
     } catch (err) {
-      if (err.response.data.error != 400) {
-        alert("ERROR: This listing is already in your favorites!");
-      } 
+      if (err.response) {
+        // Check the status code of the error response
+        if (err.response.status === 401) {
+          alert("ERROR: You need to be logged in to save a listing!");
+        } else if (err.response.status === 400) {
+          alert("ERROR: This listing is already in your favorites!");
+        } else {
+          alert(`ERROR: Something went wrong! Status code: ${err.response.status}`);
+        }
+      } else {
+        // Generic error if no response exists
+        alert("ERROR: Unable to save the listing. Please try again later.");
+      }
       console.error("Error saving listing:", err);
     }
   };
@@ -87,7 +111,11 @@ function Home() {
             <p>Loading...</p>
           ) : (
             <>
-              <ListingFeed listings={listings} onSaveListing={handleSaveListing} />
+              <ListingFeed
+                listings={listings}
+                actionType="save"
+                onAction={(id) => handleSaveListing(id)}
+              />
               <div className="pagination-controls">
                 <LinkedButton
                   url={previousPage}

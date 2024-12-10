@@ -7,7 +7,7 @@ import NotFound from "./pages/NotFound"
 import Profile from "./pages/Profile"
 import Messages from "./pages/Messages"
 import SingleListing from "./pages/SingleListing"
-import FavoriteListings from "./pages/FavoriteListings"
+import FavoritedListings from "./pages/FavoritedListings"
 import ProtectedRoute from "./components/ProtectedRoute"
 import CreateListing from "./pages/CreateListing"
 import Settings from "./pages/Settings"
@@ -40,7 +40,7 @@ function App() {
         <Route
           path="/saved" element={
             <ProtectedRoute>
-              <FavoriteListings />
+              <FavoritedListings />
             </ProtectedRoute>
           }
         />
