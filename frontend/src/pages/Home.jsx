@@ -80,15 +80,15 @@ function Home() {
       if (err.response) {
         // Check the status code of the error response
         if (err.response.status === 401) {
-          alert("ERROR: You need to be logged in to save a listing!");
-        } else if (err.response.status === 400) {
-          alert("ERROR: This listing is already in your favorites!");
+          alert("Error: You need to be logged in to save a listing!");
+        } else if (err.response.status === 409) {
+          alert("Alert: This listing is already in your favorites!");
         } else {
-          alert(`ERROR: Something went wrong! Status code: ${err.response.status}`);
+          alert(`Error: Something went wrong! Status code: ${err.response.status}`);
         }
       } else {
         // Generic error if no response exists
-        alert("ERROR: Unable to save the listing. Please try again later.");
+        alert("Error: Unable to save the listing. Please try again later.");
       }
       console.error("Error saving listing:", err);
     }

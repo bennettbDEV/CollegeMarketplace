@@ -34,16 +34,17 @@
 
 .listing-tag {
   display: inline-block;
-  background-color: #cc0000;
+  background-color: var(--reggie-red);
   color: #ffffff;
   padding: 4px 8px;
   border-radius: 4px;
   margin-right: 4px;
   margin-bottom: 2px;
   font-size: 14px;
+  transition: background-color 0.3s ease;
 }
 
 .listing-tag:hover {
-  background-color: #d74848;
+  background-color: var(--reggie-red-hover);
   color: #fff;
 }

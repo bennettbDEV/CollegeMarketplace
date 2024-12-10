@@ -349,7 +349,12 @@ class ListingHandler:
         listing = db_query.get_listing_by_id(listing_id)
         if not listing:
             return Response({"ERROR": "Listing not found."}, status=status.HTTP_404_NOT_FOUND)
+        fav_listings = db_query.retrieve_favorite_listings(user_id)
         
+        if any(
+            int(listing_id) == int(fav_listing.get("id", -1)) for fav_listing in fav_listings
+        ):
+            return Response({"error": "Listing is already favorited"}, status=status.HTTP_409_CONFLICT)
         db_query.add_favorite_listing(user_id, listing_id)
         return Response({"detail": "Listing favorited successfully."}, status=status.HTTP_204_NO_CONTENT)
 

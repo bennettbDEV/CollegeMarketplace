@@ -46,7 +46,7 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  background: red;
+  background: var(--reggie-red);
   color: white;
   border: none;
   border-radius: 50%;
@@ -60,5 +60,5 @@
 }
 
 .remove-favorite-button:hover {
-  background: darkred;
+  background: var(--reggie-red-hover);
 }

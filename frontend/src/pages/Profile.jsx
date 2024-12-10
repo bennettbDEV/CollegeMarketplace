@@ -42,7 +42,6 @@ function Profile() {
             try {
                 const response = await api.get(`/api/users/${id}/`);
                 const data = response.data;
-                console.log("User Data:", data);
                 setUserData(data);
                 // Exit the function if the API call succeeds
                 return; 

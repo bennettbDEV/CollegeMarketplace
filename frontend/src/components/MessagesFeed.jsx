@@ -13,7 +13,7 @@ function MessagesFeed({ messages }) {
   return (
     <div className="messages-feed">
       {messages.map((message, index) => ( 
-          <Message message={message} /> 
+          <Message key={index} message={message} /> 
       ))}
     </div>
   );

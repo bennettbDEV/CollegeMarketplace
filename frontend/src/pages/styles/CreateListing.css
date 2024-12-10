@@ -41,13 +41,14 @@
     font-size: 1rem;
     border: none;
     border-radius: 4px;
-    background-color:  #cc0000;
+    background-color: var(--reggie-red);
     color: #fff;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 .form-button:hover {
-    background-color: #ec3939;
+    background-color: var(--reggie-red-hover);
 }
 
 .tags-input-container {
@@ -56,7 +57,8 @@
     gap: 0.5rem; /* Space between the input and the button */
 }
 
-.tags-input-container .form-input {
+.tags-input-container 
+.form-input {
     flex: 1; /* Ensures the input field takes the remaining width */
 }
 
@@ -66,14 +68,14 @@
     font-size: 1rem;
     border: none;
     border-radius: 4px;
-    background-color:  #cc0000;
+    background-color:  var(--reggie-red);
     color: white;
     cursor: pointer;
     transition: background-color 0.3s;
 }
 
 .add-tag-button:hover {
-    background-color: #ec3939;
+    background-color: var(--reggie-red-hover);
 }
 
 .tags-container {
@@ -93,7 +95,7 @@
 
 .remove-tag {
     margin-left: 0.5rem;
-    color: #ff0000;
+    color: var(--reggie-red);
     cursor: pointer;
 }
 

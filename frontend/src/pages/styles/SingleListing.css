@@ -63,16 +63,16 @@
 
 /* Toggle Block button */
 .block-button {
-  background-color: #ff4d4d; /* Red (Block default) */
-}
-
-.block-button.blocked {
-  background-color: #4d79ff; /* Blue (Unblock default) */
+  background-color: var(--reggie-red); /* Red (Block default) */
 }
 
 .block-button:hover {
   transform: scale(1.05);
-  background-color: #e60000; /* Dark red for Block */
+  background-color: var(--reggie-red-hover);
+}
+
+.block-button.blocked {
+  background-color: #4d79ff; /* Blue (Unblock default) */
 }
 
 .block-button.blocked:hover {

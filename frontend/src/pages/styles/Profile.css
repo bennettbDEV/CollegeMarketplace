@@ -4,7 +4,7 @@
 }
 
 .delete-account-button {
-    background-color: red; 
+    background-color: var(--reggie-red); 
     color: white; 
     border-radius: 5px;
 }

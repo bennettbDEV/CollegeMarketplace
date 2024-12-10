@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react";
 function Messages() {
     const [loading, setLoading] = useState(false);
     const [messages, setMessages] = useState([]);
-    const [isInboxExpanded, setIsInboxExpanded] = useState(false); 
+    const [isInboxExpanded, setIsInboxExpanded] = useState(true); 
 
     useEffect(() => {
         fetchMessages();
