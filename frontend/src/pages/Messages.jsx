@@ -1,14 +1,13 @@
 import NavBar from "../components/Navbar.jsx";
-import RegistrationForm from "../components/RegistrationForm";
-//import "./styles/Register.css";
 import MessagesFeed from "../components/MessagesFeed.jsx";
 import api from "../api";
 import React, { useState, useEffect } from "react";
 
 function Messages() {
-
     const [loading, setLoading] = useState(false);
     const [messages, setMessages] = useState([]);
+    const [isInboxExpanded, setIsInboxExpanded] = useState(false); 
+    const [formData, setFormData] = useState({ recipient: "", content: "" }); 
 
     useEffect(() => {
         fetchMessages();
@@ -26,21 +25,20 @@ function Messages() {
         }
     };
 
-    const getMessages = (url) => {
-        setLoading(true);
-        api
-            .get(url)
-            .then((response) => response.data)
-            .then((data) => {
-                console.log("API Response:", data);
-                setMessages(data.results);
-            })
-            .catch((err) => {
-                console.error("Error fetching listings:", err);
-            })
-            .finally(() => {
-                setLoading(false);
-            });
+    const toggleInbox = () => {
+        setIsInboxExpanded((prev) => !prev);
+    };
+
+    const handleFormChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleFormSubmit = (e) => {
+        e.preventDefault();
+        console.log("Form submitted:", formData);
+        
+        setFormData({ recipient: "", content: "" }); 
     };
 
     return (
@@ -48,18 +46,67 @@ function Messages() {
             <NavBar />
             <div className="container">
                 <h1>Messages</h1>
-               <h2>Inbox:</h2>
-               {loading ? (
-                    <p>Loading...</p>
-                ) : (
-                    <>
+                <h2>
+                    Inbox:
+                    <button 
+                        onClick={toggleInbox} 
+                        style={{
+                            marginLeft: "10px",
+                            padding: "5px 10px",
+                            cursor: "pointer",
+                        }}
+                    >
+                        {isInboxExpanded ? "Collapse" : "Expand"}
+                    </button>
+                </h2>
+                {isInboxExpanded && (
+                    loading ? (
+                        <p>Loading...</p>
+                    ) : (
                         <MessagesFeed messages={messages} />
-
-                       
-                    </>
+                    )
                 )}
+
+                {/* Message Form */}
+                <div className="message-form">
+                    <h2>Send a Message</h2>
+                    <form onSubmit={handleFormSubmit}>
+                        <div style={{ marginBottom: "10px" }}>
+                            <label htmlFor="recipient" style={{ display: "block", marginBottom: "5px" }}>
+                                Recipient:
+                            </label>
+                            <input
+                                type="text"
+                                id="recipient"
+                                name="recipient"
+                                value={formData.recipient}
+                                onChange={handleFormChange}
+                                style={{ width: "100%", padding: "8px" }}
+                                required
+                            />
+                        </div>
+                        <div style={{ marginBottom: "10px" }}>
+                            <label htmlFor="content" style={{ display: "block", marginBottom: "5px" }}>
+                                Message Content:
+                            </label>
+                            <textarea
+                                id="content"
+                                name="content"
+                                value={formData.content}
+                                onChange={handleFormChange}
+                                style={{ width: "100%", padding: "8px" }}
+                                rows="5"
+                                required
+                            ></textarea>
+                        </div>
+                        <button
+                            type="submit"
+                        >
+                            Send Message
+                        </button>
+                    </form>
+                </div>
             </div>
-            
         </>
     );
 }

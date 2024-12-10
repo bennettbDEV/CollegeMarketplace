@@ -1,28 +1,31 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import api from "../api";
 import "./styles/Message.css";
-import Messages from "../pages/Messages";
-
 
 function Message({ message }) {
+    const [sender, setSender] = useState(null);
+
+    useEffect(() => {
+        const fetchSenderDetails = async () => {
+            try {
+                const response = await api.get(`/api/users/${message.sender_id}/`);
+                setSender(response.data);
+            } catch (error) {
+                console.error("Error fetching sender details:", error);
+            }
+        };
+
+        fetchSenderDetails();
+    }, [message.sender_id]);
 
     return (
-
         <div className="message-container">
-            <h3>From: </h3>
-            <p>person</p>
-            <h3>Content: </h3>
-            <p>Sick, twisted and politically incorrect, the animated series features the adventures of the Griffin family. Endearingly ignorant Peter and stay-at-home wife Lois reside in Quahog, R.I., and have three kids.</p>
+            <h3>From:</h3>
+            <p>{sender ? sender.username : "Loading..."}</p>
+            <h3>Content:</h3>
+            <p>{message.content}</p>
         </div>
-
-
-        
     );
-    //For image: {message.image && <img src={message.image} alt={message.title} className="message-image" />}
 }
-/*
-<button className="delete-button" onClick={() => onDelete(message.id)}>
-                Delete
-            </button>
-*/
-export default Message
+
+export default Message;
