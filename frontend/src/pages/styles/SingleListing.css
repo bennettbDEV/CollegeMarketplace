@@ -12,11 +12,56 @@
 .author-details {
     margin-top: 20px;
     padding: 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
     background-color: #f9f9f9;
-}
-
-.author-details h3 {
+  }
+  
+  .author-image img {
+    display: block;
+    margin: 0 auto;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .author-details h3 {
+    text-align: center;
     margin-bottom: 10px;
-}
+    color: #555;
+  }
+  
+  .author-details p {
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+  }
+
+.block-button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 14px;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .block-button.blocked {
+    background-color: #dc3545; /* Red for blocked state */
+  }
+  
+  .block-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+  }
+  
+  .block-button.blocked:hover {
+    background-color: #c82339; /* Darker red on hover */
+  }
+  
+  .block-button:active {
+    transform: scale(0.98); /* Slightly smaller when clicked */
+  }
+  

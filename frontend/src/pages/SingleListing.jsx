@@ -1,3 +1,4 @@
+//SingleListing.jsx
 import React, { useEffect, useState } from "react";
 import api from "../api";
 import { useParams } from "react-router-dom";
@@ -10,6 +11,7 @@ const SingleListing = () => {
     const [listing, setListing] = useState(null);
     const [author, setAuthor] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isBlocked, setIsBlocked] = useState(false); // Local block state
     const [imageError, setImageError] = useState(false); // Track image loading error
 
     const fallbackImage = "/fallback-author-image.png"; 
@@ -20,21 +22,46 @@ const SingleListing = () => {
                 // Fetch the listing data
                 const listingResponse = await api.get(`/api/listings/${listingId}/`);
                 setListing(listingResponse.data);
-                console.log("Listing data", listingResponse.data);
-
+    
                 // Fetch the author data using the listing's author_id
                 const authorResponse = await api.get(`/api/users/${listingResponse.data.author_id}/`);
                 setAuthor(authorResponse.data);
-                console.log("User data", authorResponse.data);
+    
+                // Fetch block status
+                const blockStatusResponse = await api.get(
+                    `/api/users/${listingResponse.data.author_id}/is_user_blocked/`
+                );
+                
+                // Determine block status from the "detail" field
+                const isBlockedStatus = blockStatusResponse.data.detail === "User is blocked.";
+                setIsBlocked(isBlockedStatus);
             } catch (error) {
                 console.error("Error fetching listing or author data:", error);
             } finally {
                 setLoading(false);
             }
         };
-
+    
         fetchListingAndAuthor();
     }, [listingId]);
+
+    //Const: block user logic
+    const toggleBlockUser = async () => {
+        try {
+            if (isBlocked) {
+                await api.post(`/api/users/${author.id}/unblock_user/`);
+                setIsBlocked(false); // Optimistically update the state
+                alert("User unblocked successfully!");
+            } else {
+                await api.post(`/api/users/${author.id}/block_user/`);
+                setIsBlocked(true); // Optimistically update the state
+                alert("User blocked successfully!");
+            }
+        } catch (error) {
+            console.error("Error toggling block status:", error);
+            alert("An error occurred while trying to block/unblock the user.");
+        }
+    };
 
     const handleImageError = () => {
         setImageError(true);
@@ -69,6 +96,12 @@ const SingleListing = () => {
                         </div>
                         <p><strong>Name:</strong> {author.username}</p>
                         <p><strong>Location:</strong> {author.location || "Not given"}</p>
+                        <button
+                            className={`block-button ${isBlocked ? "blocked" : ""}`}
+                            onClick={toggleBlockUser}
+                        >
+                            {isBlocked ? "Unblock User" : "Block User"}
+                        </button>
                     </div>
                 ) : (
                     <p>Author details not available.</p>
