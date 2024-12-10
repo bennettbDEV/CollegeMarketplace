@@ -13,6 +13,7 @@ const SingleListing = () => {
     const [loading, setLoading] = useState(true);
     const [isBlocked, setIsBlocked] = useState(false); // Local block state
     const [imageError, setImageError] = useState(false); // Track image loading error
+    const [formData, setFormData] = useState({content: "" }); 
 
     const fallbackImage = "/fallback-author-image.png"; 
 
@@ -75,6 +76,27 @@ const SingleListing = () => {
         return <p>Listing not found!</p>;
     }
 
+    const handleFormChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleFormSubmit = async (e) => {
+        e.preventDefault();
+        console.log("Form submitted:", formData);
+        try {
+            await api.post("/api/messages/", {
+                receiver_id: author.id, 
+                content: formData.content,
+            });
+            setFormData({ content: "" }); 
+            alert("Message sent successfully");
+        } catch (error) {
+            console.error("Error sending message:", error);
+            alert("Failed to send message.");
+        }
+    };
+
     return (
         <div>
             <NavBar />
@@ -96,6 +118,35 @@ const SingleListing = () => {
                         </div>
                         <p><strong>Name:</strong> {author.username}</p>
                         <p><strong>Location:</strong> {author.location || "Not given"}</p>
+
+                                        {/* Message Form */}
+                <div className="message-form">
+                    <h2>Send a Message</h2>
+                    <form onSubmit={handleFormSubmit}>
+                        <div style={{ marginBottom: "10px" }}>
+                        </div>
+                        <div style={{ marginBottom: "10px" }}>
+                            <label htmlFor="content" style={{ display: "block", marginBottom: "5px" }}>
+                                Message Content:
+                            </label>
+                            <textarea
+                                id="content"
+                                name="content"
+                                value={formData.content}
+                                onChange={handleFormChange}
+                                style={{ width: "100%", padding: "8px" }}
+                                rows="5"
+                                required
+                            ></textarea>
+                        </div>
+                        <button
+                            type="submit"
+                        >
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+
                         <button
                             className={`block-button ${isBlocked ? "blocked" : ""}`}
                             onClick={toggleBlockUser}
