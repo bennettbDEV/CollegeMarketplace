@@ -1,4 +1,4 @@
-//SingleListing.jsx
+// SingleListing.jsx
 import React, { useEffect, useState } from "react";
 import api from "../api";
 import { useParams } from "react-router-dom";
@@ -11,7 +11,7 @@ const SingleListing = () => {
     const [listing, setListing] = useState(null);
     const [author, setAuthor] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [isBlocked, setIsBlocked] = useState(false); // Default to false
+    const [isBlocked, setIsBlocked] = useState(null); // Local block state
     const [imageError, setImageError] = useState(false); // Track image loading error
     const [formData, setFormData] = useState({ content: "" });
 
@@ -35,15 +35,8 @@ const SingleListing = () => {
                     `/api/users/${listingData.author_id}/is_user_blocked/`
                 );
 
-                // Check the detail field to determine block status
-                const detail = blockStatusResponse.data.detail;
-                if (detail === "User is blocked.") {
-                    setIsBlocked(true);
-                } else if (detail === "User is not blocked.") {
-                    setIsBlocked(false);
-                } else {
-                    console.error("Unexpected block status detail:", detail);
-                }
+                // Determine block status
+                setIsBlocked(blockStatusResponse.data.is_blocked || false);
             } catch (error) {
                 console.error("Error fetching listing or author data:", error);
             } finally {
@@ -162,7 +155,6 @@ const SingleListing = () => {
                             </form>
                         </div>
 
-                        {/* Block/Unblock Button */}
                         <button
                             className={`block-button ${isBlocked ? "blocked" : ""}`}
                             onClick={toggleBlockUser}
