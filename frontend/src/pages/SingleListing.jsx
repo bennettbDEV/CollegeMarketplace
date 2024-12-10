@@ -1,4 +1,4 @@
-// SingleListing.jsx
+//SingleListing.jsx
 import React, { useEffect, useState } from "react";
 import api from "../api";
 import { useParams } from "react-router-dom";
