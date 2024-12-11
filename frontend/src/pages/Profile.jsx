@@ -70,16 +70,20 @@ function Profile() {
 
     const handleLogout = () => {
         localStorage.clear()
-        //navigate("/login", { replace: true });
         window.location.reload();
     };
 
-    const handleResetPassword = () => {
-
-    };
-
-    const handleDeleteAccount = () => {
-
+    const handleDeleteListing = async (listingId) => {
+        try {
+            // Send a DELETE request to the backend
+            await api.delete(`/api/listings/${listingId}/`);
+            // Update the UI by filtering out the removed listing
+            setListings((prevListings) =>
+                prevListings.filter((listing) => listing.id !== listingId)
+            );
+        } catch (err) {
+            console.error("Error deleting listing:", err);
+        }
     };
 
     return (
@@ -105,7 +109,10 @@ function Profile() {
                     <p>Loading...</p>
                 ) : (
                     <>
-                        <ListingFeed listings={listings} />
+                        <ListingFeed
+                            listings={listings}
+                            actionType="remove"
+                            onAction={(id) => handleDeleteListing(id)} />
 
                         <div className="pagination-controls">
                             <LinkedButton
