@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-pac%s(yreueunj1fv-hkslf)2d&-7xx)ca__uz4ow)zmfrk3ml' # Dont worry that this is exposed, we will generate a new key to be used for production and use env vars
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
