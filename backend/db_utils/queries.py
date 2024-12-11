@@ -606,6 +606,37 @@ class SQLiteDBQuery(DBQuery):
             result = db.execute_query(query, params)
             return bool(result)
 
+    def retrieve_blocked_users(self, user_id):
+        """
+        Retrieves all blocked users for a given user.
+
+        Args:
+            user_id (int): The ID of the user.
+
+        Returns:
+            list: A list of dictionaries containing details of the user's blocked users.
+        """
+
+        query = """
+            SELECT u.id, u.username, u.location, u.image
+            FROM UserBlock ub
+            INNER JOIN User u ON ub.blocked_id = u.id
+            WHERE ub.blocker_id = ?;
+        """
+        params = (user_id,)
+        
+        with self.db_connection as db:
+            rows = db.execute_query(query, params)
+
+        blocked_users = []
+        # Turn data from rows into a list of dicts
+        for row in rows:
+            user = {column: row[column] for column in row.keys()}
+            if user["image"]:
+                user["image"] = f"{settings.MEDIA_URL}{user['image']}"
+            blocked_users.append(user)
+        return blocked_users
+
     # Message functions ----------------------------------------------------------------------------------------------------------------------------------------------------------------
     #create message creates a message given sender, receiver, and content, then returns message id
     def create_message(self, sender_id, receiver_id, content):

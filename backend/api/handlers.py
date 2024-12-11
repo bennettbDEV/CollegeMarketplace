@@ -235,6 +235,25 @@ class UserHandler:
             print(str(e))
             return Response({"error": "An unexpected error occurred while checking block status."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    def list_blocked_users(self, user_id):
+        """
+        Retrieves all users blocked by the current user.
+
+        Args:
+            user_id (int): The ID of the user whose blocked list is being fetched.
+
+        Returns:
+            Response: A DRF Response object with the list of favorite listings and an HTTP status.
+        """
+        # fetch all blocked users for the user
+        blocked_users = db_query.retrieve_blocked_users(user_id)
+
+        # if empty
+        if not blocked_users:
+            return Response({"blocked": []},status=status.HTTP_200_OK)
+        # return
+        return Response({"blocked": blocked_users},status=status.HTTP_200_OK)
+
 
 '''
 CLASS: ListingHandler

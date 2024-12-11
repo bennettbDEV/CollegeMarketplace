@@ -19,9 +19,19 @@ db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
 
 class CustomJWTAuthentication(JWTAuthentication):
     def get_user(self, user_token):
+        """ Override get_user to retrieve user from custom database instead of Django's ORM.
+
+        Args:
+            user_token (JWTToken): A JWT token with data about the associated user.
+
+        Raises:
+            InvalidTokenError: Occurs when the token doesn't contain the identifying info.
+            AuthenticationFailed: The token is invalid in some way.
+
+        Returns:
+            User: The authenticated user.
         """
-        Override get_user to retrieve user from custom database instead of Django's ORM.
-        """
+
         try:
             user_id = user_token["user_id"]
         except KeyError:
@@ -35,6 +45,9 @@ class CustomJWTAuthentication(JWTAuthentication):
 
     @staticmethod
     def validate_user_credentials(username, password):
+        """ Validate username and password.
+        """
+
         # get user from db
         try:
             user_data = db_query.get_user_by_username(username)

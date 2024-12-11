@@ -304,8 +304,6 @@ class UserViewSet(viewsets.GenericViewSet):
             ),
         },
     )
-
-
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def block_user(self, request, pk=None):
         """
@@ -365,7 +363,6 @@ class UserViewSet(viewsets.GenericViewSet):
             ),
         },
     )
-    
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def unblock_user(self, request, pk=None):
         """
@@ -432,7 +429,6 @@ class UserViewSet(viewsets.GenericViewSet):
             ),
         },
     )
-
     @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated])
     def is_user_blocked(self, request, pk=None):
         """
@@ -459,6 +455,33 @@ class UserViewSet(viewsets.GenericViewSet):
         except Exception as e:
             print(f"Error checking block status: {e}")
             return Response({"error": "An unexpected error occurred while checking block status."},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, permission_classes=[IsAuthenticated])
+    def list_blocked_users(self, request):
+        """
+        Fetches all the user's blocked users.
+
+        Args:
+            request (Request): DRF request object.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+        """
+        
+        try:
+            user_id = request.user.id
+            #Call the handler function to retrieve blocked users
+            response = self.user_handler.list_blocked_users(user_id)
+            #Return the list of blocked users
+            return response
+        except Exception as e:
+            # Log the error for debugging
+            print(f"Error in list_blocked_users: {e}")
+            # Return a generic server error response
+            return Response(
+                {"error": "An unexpected error occurred while fetching blocked users."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 '''

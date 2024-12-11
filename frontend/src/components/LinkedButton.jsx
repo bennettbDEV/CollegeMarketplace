@@ -1,5 +1,5 @@
 import React from "react";
-//import "./styles/PaginationButton.css";
+import "./styles/LinkedButton.css";
 
 function PaginationButton({ url, onClick, label }) {
     const handleClick = () => {

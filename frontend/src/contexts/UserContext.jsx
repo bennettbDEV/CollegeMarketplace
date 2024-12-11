@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import api from "../api";
 import { jwtDecode } from "jwt-decode";
+import { retryWithExponentialBackoff } from "../utils/retryWithExponentialBackoff";
 import { ACCESS_TOKEN } from "../constants";
 
 const UserContext = createContext();
@@ -26,7 +27,8 @@ export const UserProvider = ({ children }) => {
 
     const fetchUserData = async (userId) => {
         try {
-            const response = await api.get(`/api/users/${userId}/`);
+            const response = await retryWithExponentialBackoff(() =>
+                api.get(`/api/users/${userId}/`));
             setUserData(response.data);
         } catch (err) {
             console.error("Error fetching user data:", err);

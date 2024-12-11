@@ -7,6 +7,7 @@ import LinkedButton from "../components/LinkedButton.jsx";
 import "./styles/Profile.css";
 import { ACCESS_TOKEN } from "../constants";
 import testImg from "../assets/usericon.png";
+import { retryWithExponentialBackoff } from "../utils/retryWithExponentialBackoff";
 
 function Profile() {
     const [listings, setListings] = useState([]);
@@ -37,32 +38,21 @@ function Profile() {
         }
     }, [userId]);
 
-    const fetchUserData = async (id, retries = 3, delay = 1000) => {
-        for (let attempt = 1; attempt <= retries; attempt++) {
-            try {
-                const response = await api.get(`/api/users/${id}/`);
-                const data = response.data;
-                setUserData(data);
-                // Exit the function if the API call succeeds
-                return; 
-            } catch (err) {
-                console.error(`Attempt ${attempt} failed:`, err);
-
-                if (attempt < retries) {
-                    console.log(`Retrying in ${delay}ms...`);
-                    // Wait before retrying
-                    await new Promise((resolve) => setTimeout(resolve, delay)); 
-                } else {
-                    console.error("All attempts to fetch user data failed.");
-                }
-            }
+    const fetchUserData = async (userId) => {
+        try {
+            const response = await retryWithExponentialBackoff(() =>
+                api.get(`/api/users/${userId}/`));
+            setUserData(response.data);
+        } catch (err) {
+            console.error("Error fetching user data:", err);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const getListings = (url) => {
         setLoading(true);
-        api
-            .get(url)
+        retryWithExponentialBackoff(() => api.get(url))
             .then((response) => response.data)
             .then((data) => {
                 console.log("API Response:", data);
@@ -85,11 +75,11 @@ function Profile() {
     };
 
     const handleResetPassword = () => {
-        
+
     };
 
     const handleDeleteAccount = () => {
-        
+
     };
 
     return (

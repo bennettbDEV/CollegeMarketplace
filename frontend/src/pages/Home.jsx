@@ -6,6 +6,7 @@ import NavBar from "../components/Navbar.jsx";
 import Filters from "../components/Filters.jsx";
 import SearchBar from "../components/SearchBar.jsx";
 import LinkedButton from "../components/LinkedButton.jsx";
+import { retryWithExponentialBackoff } from "../utils/retryWithExponentialBackoff";
 import "./styles/Home.css";
 
 function Home() {
@@ -55,8 +56,7 @@ function Home() {
 
     // Construct the full URL
     const fullUrl = `${baseUrl}?${mergedQuery.toString()}`;
-    api
-      .get(fullUrl)
+    retryWithExponentialBackoff(() => api.get(fullUrl))
       .then((response) => response.data)
       .then((data) => {
         setListings(data.results);

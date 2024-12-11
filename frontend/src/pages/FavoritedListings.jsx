@@ -4,6 +4,7 @@ import NavBar from "../components/Navbar";
 import ListingFeed from "../components/ListingFeed";
 import api from "../api";
 import "./styles/FavoriteListings.css";
+import { retryWithExponentialBackoff } from "../utils/retryWithExponentialBackoff";
 
 function FavoritedListings() {
     const [listings, setListings] = useState([]);
@@ -17,7 +18,8 @@ function FavoritedListings() {
     const fetchFavoriteListings = async () => {
         setLoading(true);
         try {
-            const response = await api.get("/api/listings/list_favorite_listings/");
+            const response = await retryWithExponentialBackoff(() =>
+                api.get("/api/listings/list_favorite_listings/"));
             setListings(response.data.favorites || []);
         } catch (err) {
             console.error("Error fetching favorite listings:", err);

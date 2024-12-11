@@ -19,10 +19,6 @@
   transition: box-shadow 0.4s ease, transform 0.3s ease;
 }
 
-.listing-wrapper:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
 /* Save Button */
 .save-button {
   position: absolute;
