@@ -3,13 +3,16 @@
 With the abundance of irrelevant and distant listings on classified advertising platforms such as Facebook Marketplace and Craigslist, our team decided to develop an open-source marketplace platform tailored to students.
 To achieve this goal and learn as much as possible about critical tools in the software industry, we chose to develop the platform using Django Rest Framework (Python) for the backend API and React + Vite (JavaScript/JSX) for the frontend.
 
-### Work In Progress
+## Documentation
+To access our REST API documentation you can download the schema from [backend/schema.yaml](backend/schema.yaml) or run the backend server (Follow the **Try Our Code** section) and open a browser to "http://localhost:8000/" or "http://localhost:8000/api/"
+
+## Work In Progress
 We are still testing, finishing up features, and optimizing our code, but we are well on the way to the completed project.
 
 More info will be added here as we finish things up!
 
 
-## Run the Code
+## Try our code!
 To install the dependencies and run the project as it is now, follow these simple steps in your terminal:
 
 1. Clone the repo (into the currect directory)
@@ -52,6 +55,7 @@ npm install
 ```sh
 echo VITE_API_URL="http://localhost:8000/" > .env
 ```
+**Run the servers** <br/>
 9. Start the frontend
 ```sh
 npm run dev
