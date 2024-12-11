@@ -1,6 +1,7 @@
 .single-listing-page {
   max-width: 800px;
   margin: 0 auto;
+  margin-bottom: 50px;
   padding: 20px;
 }
 
@@ -37,7 +38,7 @@
 }
 
 /* Shared button styles (Message and Toggle Block) */
-.message-button,
+form button,
 .block-button {
   display: inline-block;
   margin: 10px 5px; /* Consistent spacing */
@@ -53,16 +54,24 @@
 }
 
 /* Message button */
-.message-button {
+form button{
   background-color: #4caf50; /* Green */
 }
 
-.message-button:hover {
+form button:hover {
+  transform: scale(1.05);
   background-color: #45a049;
+}
+
+.button-wrapper {
+  position: relative;
 }
 
 /* Toggle Block button */
 .block-button {
+  position: absolute;
+  bottom: 0px;
+  right: 5px;
   background-color: var(--reggie-red); /* Red (Block default) */
 }
 
@@ -79,8 +88,3 @@
   background-color: #3366ff; /* Dark blue for Unblock */
 }
 
-/* Button container for alignment */
-.button-container {
-  text-align: center; /* Center align both buttons */
-  margin-top: 15px;
-}

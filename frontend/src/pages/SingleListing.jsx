@@ -146,21 +146,24 @@ const SingleListing = () => {
                                         name="content"
                                         value={formData.content}
                                         onChange={handleFormChange}
-                                        style={{ width: "100%", padding: "8px" }}
+                                        style={{ width: "95%", padding: "8px" }}
                                         rows="5"
                                         required
                                     ></textarea>
                                 </div>
-                                <button type="submit">Send Message</button>
-                            </form>
-                        </div>
 
-                        <button
-                            className={`block-button ${isBlocked ? "blocked" : ""}`}
-                            onClick={toggleBlockUser}
-                        >
-                            {isBlocked ? "Unblock User" : "Block User"}
-                        </button>
+                                <button type="submit" classname="message-button">Send Message</button>
+                            </form>
+
+                            <div class="button-wrapper">
+                                <button
+                                    className={`block-button ${isBlocked ? "blocked" : ""}`}
+                                    onClick={toggleBlockUser}
+                                >
+                                    {isBlocked ? "Unblock User" : "Block User"}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 ) : (
                     <p>Author details not available.</p>

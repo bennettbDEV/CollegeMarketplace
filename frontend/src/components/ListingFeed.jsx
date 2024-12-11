@@ -1,7 +1,6 @@
 // ListingFeed.jsx
 import React from 'react';
 import Listing from "./Listing";
-import { Link } from "react-router-dom";
 import "./styles/ListingFeed.css";
 
 // A function that returns a listing feed
@@ -15,34 +14,33 @@ function ListingFeed({ listings, actionType, onAction }) {
   return (
     <div className="listing-feed">
       {listings.map((listing, index) => (
-        <Link key={index} to={`/listings/${listing.id}`} className="listing-link">
-          <Listing
-            listing={listing}
-            additionalAction={
-              actionType === "save" ? (
-                <button
-                  className="save-button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onAction(listing.id);
-                  }}
-                >
-                  Save
-                </button>
-              ) : actionType === "remove" ? (
-                <button
-                  className="remove-favorite-button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onAction(listing.id);
-                  }}
-                >
-                  &times;
-                </button>
-              ) : null
-            }
-          />
-        </Link>
+
+        <Listing key={index}
+          listing={listing}
+          additionalAction={
+            actionType === "save" ? (
+              <button
+                className="save-button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onAction(listing.id);
+                }}
+              >
+                Save
+              </button>
+            ) : actionType === "remove" ? (
+              <button
+                className="remove-favorite-button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onAction(listing.id);
+                }}
+              >
+                &times;
+              </button>
+            ) : null
+          }
+        />
       ))}
     </div>
   );

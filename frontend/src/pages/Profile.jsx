@@ -94,7 +94,7 @@ function Profile() {
                 {userData ? (
                     <>
                         <p>Username: {userData.username}</p>
-                        <p>Location: {userData.location}</p>
+                        <p>Location: {userData.location || "Not given"}</p>
                         <img src={imageUrl} width="150" alt="Profile" />
                         <br></br>
                         <button onClick={handleLogout}>Logout</button>

@@ -31,6 +31,7 @@ function Messages() {
     return (
         <>
             <NavBar />
+
             <div className="container">
                 <h1>Messages</h1>
                 <h2>
@@ -46,9 +47,12 @@ function Messages() {
                         {isInboxExpanded ? "Collapse" : "Expand"}
                     </button>
                 </h2>
+
                 {isInboxExpanded && (
                     loading ? (
                         <p>Loading...</p>
+                    ) : messages.length === 0 ? (
+                        <p>Inbox empty. Search the marketplace for a listing you like, and send the owner a message!</p>
                     ) : (
                         <MessagesFeed messages={messages} />
                     )
