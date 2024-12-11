@@ -1,0 +1,61 @@
+/* SettingsForm.css */
+.settings-form {
+    max-width: 400px;
+    padding: 20px;
+    padding-top: 0px;
+    margin-left: 0px;
+    margin-right: auto;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.settings-form input,
+.settings-form label {
+    display: block;
+    width: 100%;
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+.settings-form input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.settings-form input:focus {
+    outline: none;
+    border-color: grey;
+}
+
+.settings-form img {
+    display: block;
+    max-width: 100%;
+    margin: 10px 0;
+    border-radius: 5px;
+}
+
+.settings-form button {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    background-color: var(--reggie-red);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.settings-form button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.settings-form button:hover:not(:disabled) {
+    background-color: var(--reggie-red-hover);
+}

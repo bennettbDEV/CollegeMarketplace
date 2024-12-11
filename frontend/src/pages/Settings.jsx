@@ -3,20 +3,23 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from '../contexts/UserContext.jsx';
 import NavBar from "../components/Navbar.jsx";
 import UserFeed from "../components/UserFeed";
+import SettingsForm from "../components/SettingsForm";
 import api from "../api";
 import { retryWithExponentialBackoff } from "../utils/retryWithExponentialBackoff";
 import "./styles/Settings.css";
 
 function Settings() {
     const { userData, isLoading } = useUser();
-    const navigate = useNavigate();
-    const [blockedUsers, setBlocked] = useState([]);
+    const [newUserData, setNewUserData] = useState(null);
     const [loading, setLoading] = useState(false);
-    const userId = userData? userData.id : -1;
+    const [blockedUsers, setBlocked] = useState([]);
+
+    const navigate = useNavigate();
+    const userId = userData ? userData.id : -1;
 
     useEffect(() => {
-            fetchBlockedUsers();
-        }, []);
+        fetchBlockedUsers();
+    }, []);
 
     const handleLogout = () => {
         localStorage.clear()
@@ -41,7 +44,7 @@ function Settings() {
     const handleUnblock = async (userId) => {
         try {
             // Send a DELETE request to the backend
-            await api.delete(`/api/users/${userId}/unblock_user/`);
+            await api.post(`/api/users/${userId}/unblock_user/`);
             // Update the UI by filtering out the unblocked user
             setBlocked((prevBlocked) =>
                 prevBlocked.filter((user) => user.id !== userId)
@@ -57,7 +60,7 @@ function Settings() {
         );
         if (confirmDelete) {
             try {
-                //await api.delete("/api/users/");
+                await api.delete(`/api/users/${userId}/`);
                 localStorage.clear();
                 navigate("/login", { replace: true });
             } catch (err) {
@@ -67,18 +70,23 @@ function Settings() {
         }
     };
 
-
     return (
         <>
             <NavBar />
-            <div className="container">
+            <div className="settings-page">
                 <h2>Settings</h2>
                 <button className="logout-button" onClick={handleLogout}>Logout</button>
                 <br></br>
                 <h3>Blocked users:</h3>
                 <UserFeed users={blockedUsers} onUnblock={handleUnblock} />
-                <button>Reset Password</button>
-                <br></br>
+                <h3>Edit & Delete:</h3>
+                <div className="editing-form-container">
+                    {userData ? (
+                        <SettingsForm userData={userData} userId={userId} />
+                    ) : (
+                        <p>Error loading user data.</p>
+                    )}
+                </div>
                 <br></br>
                 <button className="delete-account-button"
                     onClick={handleDeleteAccount}>Delete Account</button>
