@@ -109,7 +109,11 @@ function Home() {
 
           {loading ? (
             <p>Loading...</p>
-          ) : (
+          ) : listings.length === 0 ? (
+            <div className="empty-listings-message">
+                <p>No Listings found.</p>
+            </div>
+        ) : (
             <>
               <ListingFeed
                 listings={listings}

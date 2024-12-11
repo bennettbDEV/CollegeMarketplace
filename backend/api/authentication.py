@@ -1,4 +1,4 @@
-#api/authentication.py
+# api/authentication.py
 from db_utils.db_factory import DBFactory, DBType
 from db_utils.queries import SQLiteDBQuery
 from django.contrib.auth.hashers import check_password
@@ -8,10 +8,10 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from api.models import User
 
-'''
+"""
 CLASSES: 
 CustomJWTAuthentication, 
-'''
+"""
 
 # Initialize specific query object
 db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
@@ -19,7 +19,7 @@ db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
 
 class CustomJWTAuthentication(JWTAuthentication):
     def get_user(self, user_token):
-        """ Override get_user to retrieve user from custom database instead of Django's ORM.
+        """Override get_user to retrieve user from custom database instead of Django's ORM.
 
         Args:
             user_token (JWTToken): A JWT token with data about the associated user.
@@ -35,8 +35,10 @@ class CustomJWTAuthentication(JWTAuthentication):
         try:
             user_id = user_token["user_id"]
         except KeyError:
-            raise InvalidTokenError(_("Token contained no recognizable user identification"))
-        
+            raise InvalidTokenError(
+                _("Token contained no recognizable user identification")
+            )
+
         user_data = db_query.get_user_by_id(user_id)
 
         if user_data is None:
@@ -45,8 +47,7 @@ class CustomJWTAuthentication(JWTAuthentication):
 
     @staticmethod
     def validate_user_credentials(username, password):
-        """ Validate username and password.
-        """
+        """Validates username and password."""
 
         # get user from db
         try:
@@ -61,6 +62,8 @@ class CustomJWTAuthentication(JWTAuthentication):
 
 
 class CustomJWTAuthenticationExtension(OpenApiAuthenticationExtension):
+    """Exstention class that is used purely for documentation using the drf_spectacular library.
+    """
     target_class = "api.authentication.CustomJWTAuthentication"
     name = "CustomJWTAuth"
 

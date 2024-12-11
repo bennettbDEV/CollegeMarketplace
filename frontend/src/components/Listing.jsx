@@ -32,7 +32,7 @@ function Listing({ listing, additionalAction }) {
             <Link to={`/listings/${listing.id}`} className="listing-link">
                 <h2 className="listing-title">{listing.title}</h2>
                 <p className="listing-condition">Condition: {listing.condition}</p>
-                <p className="listing-description">Desc: {listing.description}</p>
+                <p className="listing-description">Description: {listing.description}</p>
                 <p className="listing-price">Price: ${listing.price}</p>
 
                 <div className="listing-image">

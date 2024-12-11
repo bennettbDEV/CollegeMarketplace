@@ -115,6 +115,10 @@ class DBQuery(ABC):
     def is_user_blocked(self, sender_id, receiver_id):
         pass
 
+    @abstractmethod
+    def retrieve_blocked_users(self, user_id):
+        pass
+
     # Messaging queries --------------------------------------------------------------------------------
     @abstractmethod
     def create_message(self, sender_id, receiver_id, content):
@@ -439,6 +443,8 @@ class SQLiteDBQuery(DBQuery):
         for row in rows:
             listing = {column: row[column] for column in row.keys() if column != "tags"}
             listing["tags"] = row["tags"].split(",") if row["tags"] else []
+            listing["image"] = f"{settings.MEDIA_URL}{listing['image']}"
+            
             favorite_listings.append(listing)
 
         return favorite_listings
@@ -539,8 +545,6 @@ class SQLiteDBQuery(DBQuery):
     '''
     Block / Unblock Content
     '''
-    # TODO - ensure this is checked within message 
-    #Function: block a user 
     def block_user(self, blocker_id, blocked_id):
         """
         Adds a user to the blocker's block list.
@@ -561,7 +565,6 @@ class SQLiteDBQuery(DBQuery):
         with self.db_connection as db:
             db.execute_query(query, params)
 
-    #Function: unblock a user  
     def unblock_user(self, blocker_id, blocked_id):
         """
         Removes a user from the blocker's block list.
@@ -583,7 +586,6 @@ class SQLiteDBQuery(DBQuery):
             num_affected_rows = db.execute_query(query, params)
             return num_affected_rows
 
-    #Function: check if user is blocked
     def is_user_blocked(self, sender_id, receiver_id):
         """
         Checks if the sender is blocked by the receiver.
@@ -638,8 +640,10 @@ class SQLiteDBQuery(DBQuery):
         return blocked_users
 
     # Message functions ----------------------------------------------------------------------------------------------------------------------------------------------------------------
-    #create message creates a message given sender, receiver, and content, then returns message id
     def create_message(self, sender_id, receiver_id, content):
+        """#create message creates a message given sender, receiver, and content, then returns message id
+        """
+        
         #create query and parameters
         query = """
         INSERT INTO Message (sender_id, receiver_id, content) 
@@ -652,7 +656,6 @@ class SQLiteDBQuery(DBQuery):
             message_id = db.execute_query(query, params)
             return message_id
     
-    #delete message using message_id and receiver_id
     def delete_message(self, message_id, receiver_id):
         #query and param initialization
         query = "DELETE FROM Message WHERE receiver_id = ? AND id = ?"
@@ -662,7 +665,6 @@ class SQLiteDBQuery(DBQuery):
             result = db.execute_query(query, params)
             return bool(result)
 
-    #get message from message_id and receiver_id
     def get_message(self, message_id, receiver_id):
         #make query and parameters
         query = "SELECT * FROM Message WHERE receiver_id = ? and id = ? LIMIT 1"
@@ -677,7 +679,6 @@ class SQLiteDBQuery(DBQuery):
             message = message[0]
         return message
     
-    #gets all messages received by the user
     def get_all_messages(self, user_id):
         #make query and parameters
         query = "SELECT * FROM message WHERE receiver_id = ?"

@@ -1,16 +1,16 @@
 # api/serializers.py
-'''
-CLASSES: 
+"""
+CLASSES:
 LoginSerializer, UserSerializer, ListingSerializer
-'''
+"""
+
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
 from api.authentication import CustomJWTAuthentication
 
 
-# Authentication serializer - CustomTokenObtainPairSerializer
+# Authentication serializer
 class LoginSerializer(TokenObtainPairSerializer):
     """Serializer class for handling user login and token generation.
 
@@ -72,13 +72,12 @@ class UserSerializer(serializers.Serializer):
     email = serializers.EmailField(allow_null=True, default=None)
     image = serializers.ImageField(use_url=True, allow_null=True, default=None)
 
-    # Override default to_representation
     def to_representation(self, instance):
         """Override the default representation method to include the image URL in the serialized data.
 
         Args:
             instance (User): The instance of the user model to serialize.
-        
+
         Returns:
             dict: The serialized representation of the user, including the image URL if present.
         """
@@ -103,7 +102,7 @@ class ListingSerializer(serializers.Serializer):
     Fields:
         id (IntegerField): The unique identifier of the listing. Read-only.
         title (CharField): The title of the listing. Maximum length is 50 characters.
-        condition (ChoiceField): The condition of the item being listed. 
+        condition (ChoiceField): The condition of the item being listed.
                                 Choices are: Factory New, Minimal Wear, Fair, Well Worn, Refurbished.
         description (CharField): A description of the listing. Maximum length is 500 characters.
         price (FloatField): The price of the item being listed.
@@ -134,13 +133,12 @@ class ListingSerializer(serializers.Serializer):
     created_at = serializers.DateTimeField(read_only=True)
     author_id = serializers.IntegerField(read_only=True)
 
-    # When fetching serialized data - turn image field into url reference
     def to_representation(self, instance):
         """Override the default representation method to include the image URL in the serialized data.
 
         Args:
             instance (Listing): The instance of the listing model to serialize.
-        
+
         Returns:
             dict: The serialized representation of the listing, including the image URL.
         """

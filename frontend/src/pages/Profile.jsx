@@ -4,10 +4,10 @@ import { jwtDecode } from "jwt-decode";
 import { useState, useEffect } from "react";
 import api from "../api";
 import LinkedButton from "../components/LinkedButton.jsx";
-import "./styles/Profile.css";
 import { ACCESS_TOKEN } from "../constants";
 import testImg from "../assets/usericon.png";
 import { retryWithExponentialBackoff } from "../utils/retryWithExponentialBackoff";
+import "./styles/Profile.css";
 
 function Profile() {
     const [listings, setListings] = useState([]);
@@ -46,7 +46,7 @@ function Profile() {
         } catch (err) {
             console.error("Error fetching user data:", err);
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
@@ -97,13 +97,12 @@ function Profile() {
                         <p>Location: {userData.location || "Not given"}</p>
                         <img src={imageUrl} width="150" alt="Profile" />
                         <br></br>
-                        <button onClick={handleLogout}>Logout</button>
-                        <br></br>
+                        
                     </>
                 ) : (
                     <p>Loading user data...</p>
                 )}
-
+                <button className="logout-button" onClick={handleLogout}>Logout</button>
                 <h2>Your Listings:</h2>
                 {loading ? (
                     <p>Loading...</p>

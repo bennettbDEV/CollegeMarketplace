@@ -14,16 +14,15 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from api.serializers import ListingSerializer, UserSerializer
-from .models import User, Listing
-
+from .models import Listing, User
 
 # Initialize specific query object
 db_query = SQLiteDBQuery(DBFactory.get_db_connection(DBType.SQLITE))
 
-'''
-CLASS: UserHandler
-'''
+
 class UserHandler:
+    """A handler class that handles all DB interactions related to user objects.
+    """
     def login(self, user_data):
         if user_data:
             # Get users id
@@ -156,7 +155,6 @@ class UserHandler:
     '''
     Block / Unblock Content
     '''
-    #Function: block
     def block_user(self, blocker_id, blocked_id):
         """
         Blocks a user by adding an entry to the UserBlock table.
@@ -184,7 +182,6 @@ class UserHandler:
             print(str(e))
             return Response({"error": "An unexpected error occurred while blocking the user."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    #Function: unblock
     def unblock_user(self, blocker_id, blocked_id):
         """
         Unblocks a user by removing the block relationship from the UserBlock table.
@@ -213,7 +210,6 @@ class UserHandler:
             print(str(e))
             return Response({"error": "An unexpected error occurred while checking block status."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-    #Function: check if blocked
     def is_user_blocked(self, sender_id, receiver_id):
         """
         Checks if a user is blocked by another user.
@@ -254,11 +250,9 @@ class UserHandler:
         # return
         return Response({"blocked": blocked_users},status=status.HTTP_200_OK)
 
-
-'''
-CLASS: ListingHandler
-'''
 class ListingHandler:
+    """A handler class that handles all DB interactions related to listing objects.
+    """
     def list_listings(self):
         # Public info so no checks needed, just retrieve listings from db
         return db_query.get_all_listings()
@@ -285,7 +279,6 @@ class ListingHandler:
             print(str(e))
             return Response({"error": "Server error occured."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    #Function: get listing
     def get_listing(self, id):
         listing_data = db_query.get_listing_by_id(id)
         if not listing_data:
@@ -335,8 +328,6 @@ class ListingHandler:
         else:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
 
-
-    #Function: handler logic for deleting a listing
     def delete_listing(self, request, id):
         listing = db_query.get_listing_by_id(id)
         if not listing:
@@ -363,7 +354,6 @@ class ListingHandler:
     '''
     Favorite/Save Listing actions:
     '''
-    #Function: handler logic for adding a favorite listing 
     def add_favorite_listing(self, user_id, listing_id):
         listing = db_query.get_listing_by_id(listing_id)
         if not listing:
@@ -375,10 +365,8 @@ class ListingHandler:
         ):
             return Response({"error": "Listing is already favorited"}, status=status.HTTP_409_CONFLICT)
         db_query.add_favorite_listing(user_id, listing_id)
-        return Response({"detail": "Listing favorited successfully."}, status=status.HTTP_204_NO_CONTENT)
+        return Response({"detail": "Listing favorited successfully."}, status=status.HTTP_201_CREATED)
 
-
-    # Function: handler logic for removing a listing from 'favorites'
     def remove_favorite_listing(self, user_id, listing_id):
         """Removes a listing from the user's favorites.
         
@@ -389,6 +377,7 @@ class ListingHandler:
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
+
         #check if listing exists 
         listing = db_query.get_listing_by_id(listing_id)
         #check if listing exists 
@@ -407,7 +396,6 @@ class ListingHandler:
             status=status.HTTP_204_NO_CONTENT
         )
 
-    # Function: handler logic listing all a user's 'favorites'
     def list_favorite_listings(self, user_id):
         """
         Retrieves all listings favorited by the user.
@@ -418,6 +406,7 @@ class ListingHandler:
         Returns:
             Response: A DRF Response object with the list of favorite listings and an HTTP status.
         """
+
         #fetch all favorite listings for the user
         favorite_listings = db_query.retrieve_favorite_listings(user_id)
 
@@ -431,7 +420,6 @@ class ListingHandler:
     '''
     Like/Dislike Listing actions:
     '''
-    # Like and dislike listing
     def like_listing(self, listing_id, likes):
         try:
             db_query.like_listing(listing_id, likes)
