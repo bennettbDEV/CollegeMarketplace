@@ -1,67 +1,90 @@
 .single-listing-page {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  margin-bottom: 50px;
+  padding: 20px;
 }
 
 .single-listing-page h1 {
-    text-align: center;
-    margin-bottom: 20px;
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 .author-details {
-    margin-top: 20px;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-  }
-  
-  .author-image img {
-    display: block;
-    margin: 0 auto;
-    border-radius: 50%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .author-details h3 {
-    text-align: center;
-    margin-bottom: 10px;
-    color: #555;
-  }
-  
-  .author-details p {
-    font-size: 14px;
-    color: #666;
-    text-align: center;
-  }
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
 
+.author-image img {
+  display: block;
+  margin: 0 auto;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.author-details h3 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.author-details p {
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+}
+
+/* Shared button styles (Message and Toggle Block) */
+form button,
 .block-button {
-    display: block;
-    margin: 20px auto;
-    padding: 10px 20px;
-    font-size: 14px;
-    color: #fff;
-    background-color: #007bff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-  }
-  
-  .block-button.blocked {
-    background-color: #dc3545; /* Red for blocked state */
-  }
-  
-  .block-button:hover {
-    background-color: #0056b3; /* Darker blue on hover */
-  }
-  
-  .block-button.blocked:hover {
-    background-color: #c82339; /* Darker red on hover */
-  }
-  
-  .block-button:active {
-    transform: scale(0.98); /* Slightly smaller when clicked */
-  }
-  
+  display: inline-block;
+  margin: 10px 5px; /* Consistent spacing */
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  text-align: center;
+}
+
+/* Message button */
+form button{
+  background-color: #4caf50; /* Green */
+}
+
+form button:hover {
+  transform: scale(1.05);
+  background-color: #45a049;
+}
+
+.button-wrapper {
+  position: relative;
+}
+
+/* Toggle Block button */
+.block-button {
+  position: absolute;
+  bottom: 0px;
+  right: 5px;
+  background-color: var(--reggie-red); /* Red (Block default) */
+}
+
+.block-button:hover {
+  transform: scale(1.05);
+  background-color: var(--reggie-red-hover);
+}
+
+.block-button.blocked {
+  background-color: #4d79ff; /* Blue (Unblock default) */
+}
+
+.block-button.blocked:hover {
+  background-color: #3366ff; /* Dark blue for Unblock */
+}
+

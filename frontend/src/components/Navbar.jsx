@@ -1,16 +1,25 @@
 //Navbar.jsx
 import React from 'react';
 import './styles/Navbar.css';
+import api from "../api";
+import { useUser } from '../contexts/UserContext.jsx';
 import userIcon from '../assets/usericon.png';
 import settingsIcon from '../assets/settingsicon.png';
 import homeIcon from '../assets/homeicon.png'; // Import the home icon
 
 const Navbar = () => {
+  const { userData, isLoading } = useUser(); // Access user data from context
+  const userImage = userData?.image
+    ? `${api.defaults.baseURL}${userData.image}`
+    : userIcon; // Set fallback image if user image is not available
+
   return (
     <nav className="navbar">
       <div className="navbar-left">
         <a href="/" className="logo">
-          <img src={homeIcon} alt="Home" className="home-icon" /> {/* Home Icon */}
+          <img src={homeIcon}
+            //alt="Home" 
+            className="home-icon" /> {/* Home Icon */}
           ISU Marketplace
         </a>
       </div>
@@ -29,7 +38,13 @@ const Navbar = () => {
       </div>
       <div className="navbar-right">
         <a href="/profile" className="profile-icon">
-          <img src={userIcon} alt="Profile" />
+          <img
+            src={userImage}
+            //alt="Profile"
+            onError={(e) => {
+              e.target.src = userIcon;
+            }}
+          />
         </a>
         <a href="/settings" className="settings">
           <img src={settingsIcon} alt="Settings" />

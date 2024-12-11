@@ -6,6 +6,7 @@ import NavBar from "../components/Navbar.jsx";
 import Filters from "../components/Filters.jsx";
 import SearchBar from "../components/SearchBar.jsx";
 import LinkedButton from "../components/LinkedButton.jsx";
+import { retryWithExponentialBackoff } from "../utils/retryWithExponentialBackoff";
 import "./styles/Home.css";
 
 function Home() {
@@ -39,10 +40,23 @@ function Home() {
 
   const getListings = (url) => {
     setLoading(true);
+
+    const [baseUrl, existingQuery] = url.split("?");
     const filterQuery = buildFilterQuery();
-    const fullUrl = filterQuery ? `${url}?${filterQuery}` : url;
-    api
-      .get(fullUrl)
+
+    // Merge filter query with existing query parameters
+    const mergedQuery = new URLSearchParams(existingQuery || "");
+
+    if (filterQuery) {
+      const newFilters = new URLSearchParams(filterQuery);
+      newFilters.forEach((value, key) => {
+        mergedQuery.set(key, value); // Avoid duplicate entries
+      });
+    }
+
+    // Construct the full URL
+    const fullUrl = `${baseUrl}?${mergedQuery.toString()}`;
+    retryWithExponentialBackoff(() => api.get(fullUrl))
       .then((response) => response.data)
       .then((data) => {
         setListings(data.results);
@@ -63,9 +77,19 @@ function Home() {
       await api.post(`/api/listings/${listingId}/favorite_listing/`);
       alert("Listing saved to favorites!");
     } catch (err) {
-      if (err.response.data.error != 400) {
-        alert("ERROR: This listing is already in your favorites!");
-      } 
+      if (err.response) {
+        // Check the status code of the error response
+        if (err.response.status === 401) {
+          alert("Error: You need to be logged in to save a listing!");
+        } else if (err.response.status === 409) {
+          alert("Alert: This listing is already in your favorites!");
+        } else {
+          alert(`Error: Something went wrong! Status code: ${err.response.status}`);
+        }
+      } else {
+        // Generic error if no response exists
+        alert("Error: Unable to save the listing. Please try again later.");
+      }
       console.error("Error saving listing:", err);
     }
   };
@@ -85,9 +109,17 @@ function Home() {
 
           {loading ? (
             <p>Loading...</p>
-          ) : (
+          ) : listings.length === 0 ? (
+            <div className="empty-listings-message">
+                <p>No Listings found.</p>
+            </div>
+        ) : (
             <>
-              <ListingFeed listings={listings} onSaveListing={handleSaveListing} />
+              <ListingFeed
+                listings={listings}
+                actionType="save"
+                onAction={(id) => handleSaveListing(id)}
+              />
               <div className="pagination-controls">
                 <LinkedButton
                   url={previousPage}

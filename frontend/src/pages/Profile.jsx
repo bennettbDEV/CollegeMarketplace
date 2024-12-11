@@ -4,9 +4,10 @@ import { jwtDecode } from "jwt-decode";
 import { useState, useEffect } from "react";
 import api from "../api";
 import LinkedButton from "../components/LinkedButton.jsx";
-import "./styles/Profile.css";
 import { ACCESS_TOKEN } from "../constants";
 import testImg from "../assets/usericon.png";
+import { retryWithExponentialBackoff } from "../utils/retryWithExponentialBackoff";
+import "./styles/Profile.css";
 
 function Profile() {
     const [listings, setListings] = useState([]);
@@ -37,33 +38,21 @@ function Profile() {
         }
     }, [userId]);
 
-    const fetchUserData = async (id, retries = 3, delay = 1000) => {
-        for (let attempt = 1; attempt <= retries; attempt++) {
-            try {
-                const response = await api.get(`/api/users/${id}/`);
-                const data = response.data;
-                console.log("User Data:", data);
-                setUserData(data);
-                // Exit the function if the API call succeeds
-                return; 
-            } catch (err) {
-                console.error(`Attempt ${attempt} failed:`, err);
-
-                if (attempt < retries) {
-                    console.log(`Retrying in ${delay}ms...`);
-                    // Wait before retrying
-                    await new Promise((resolve) => setTimeout(resolve, delay)); 
-                } else {
-                    console.error("All attempts to fetch user data failed.");
-                }
-            }
+    const fetchUserData = async (userId) => {
+        try {
+            const response = await retryWithExponentialBackoff(() =>
+                api.get(`/api/users/${userId}/`));
+            setUserData(response.data);
+        } catch (err) {
+            console.error("Error fetching user data:", err);
+        } finally {
+            setLoading(false);
         }
     };
 
     const getListings = (url) => {
         setLoading(true);
-        api
-            .get(url)
+        retryWithExponentialBackoff(() => api.get(url))
             .then((response) => response.data)
             .then((data) => {
                 console.log("API Response:", data);
@@ -81,16 +70,20 @@ function Profile() {
 
     const handleLogout = () => {
         localStorage.clear()
-        //navigate("/login", { replace: true });
         window.location.reload();
     };
 
-    const handleResetPassword = () => {
-        
-    };
-
-    const handleDeleteAccount = () => {
-        
+    const handleDeleteListing = async (listingId) => {
+        try {
+            // Send a DELETE request to the backend
+            await api.delete(`/api/listings/${listingId}/`);
+            // Update the UI by filtering out the removed listing
+            setListings((prevListings) =>
+                prevListings.filter((listing) => listing.id !== listingId)
+            );
+        } catch (err) {
+            console.error("Error deleting listing:", err);
+        }
     };
 
     return (
@@ -101,22 +94,24 @@ function Profile() {
                 {userData ? (
                     <>
                         <p>Username: {userData.username}</p>
-                        <p>Location: {userData.location}</p>
+                        <p>Location: {userData.location || "Not given"}</p>
                         <img src={imageUrl} width="150" alt="Profile" />
                         <br></br>
-                        <button onClick={handleLogout}>Logout</button>
-                        <br></br>
+                        
                     </>
                 ) : (
                     <p>Loading user data...</p>
                 )}
-
+                <button className="logout-button" onClick={handleLogout}>Logout</button>
                 <h2>Your Listings:</h2>
                 {loading ? (
                     <p>Loading...</p>
                 ) : (
                     <>
-                        <ListingFeed listings={listings} />
+                        <ListingFeed
+                            listings={listings}
+                            actionType="remove"
+                            onAction={(id) => handleDeleteListing(id)} />
 
                         <div className="pagination-controls">
                             <LinkedButton

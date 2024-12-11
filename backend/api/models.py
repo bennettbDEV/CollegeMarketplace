@@ -1,16 +1,16 @@
-#api/models
+# api/models
 from django.contrib.auth.hashers import check_password
-'''
-CLASSES: 
-User, Listing
-'''
 
 """
-CLASS: User
+CLASSES: 
+User, Listing
 """
+
+
 class User:
-    # Functions
-    def __init__(self, id, username, password=None, location=None, email=None, image=None):
+    def __init__(
+        self, id, username, password=None, location=None, email=None, image=None
+    ):
         self.id = id
         self.username = username
         self.password = password  # Store hashed password directly
@@ -23,14 +23,14 @@ class User:
 
     @property
     def is_authenticated(self):
+        # This method is needed for our custom authentication to work properly
         return True
 
     def check_password(self, password):
+        # Check hashed password
         return check_password(password, self.password)
 
-"""
-CLASS: Listing
-"""
+
 class Listing:
     def __init__(
         self,

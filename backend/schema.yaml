@@ -3,17 +3,156 @@ info:
   title: ''
   version: 0.0.0
 paths:
+  /api/:
+    get:
+      operationId: api_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
   /api/listings/:
     get:
       operationId: api_listings_list
-      description: |-
-        Handles all API requests related to Listings.
-
-        more info...
-
-        Attributes:
-            serializer_class (ListingSerializer): A serializer that validates and serializes listing data.
-            pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all listings into multiple pages.
+      description: Retrieve a paginated list of listings with optional filters, search,
+        and ordering.
       parameters:
       - name: page
         required: false
@@ -38,24 +177,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedListingList'
+              examples:
+                ListListingsExample:
+                  value:
+                    count: 123
+                    next: http://api.example.org/accounts/?page=4
+                    previous: http://api.example.org/accounts/?page=2
+                    results:
+                    - links:
+                        next: null
+                        previous: null
+                      count: 2
+                      results:
+                      - id: 1
+                        title: Programming Textbook
+                        condition: Well Worn
+                        description: Modern Programming Languages 2nd Edition.
+                        price: 49.99
+                        image: /media/listings/6544f1c8-f439-4502-9t3a-cb9428df139q
+                        likes: 10
+                        dislikes: 2
+                        tags:
+                        - programming
+                        - textbook
+                        created_at: '2024-12-11 03:55:02'
+                        author_id: 5
+                      - id: 2
+                        title: Gaming Chair
+                        condition: Minimal Wear
+                        description: Ergonomic gaming chair with adjustable height.
+                        price: 150.0
+                        image: /media/listings/4314f1c8-f469-4522-9fa6-cb9428df177e
+                        likes: 25
+                        dislikes: 1
+                        tags:
+                        - furniture
+                        - gaming
+                        created_at: '2024-12-12 05:30:35'
+                        author_id: 3
+                  summary: List Listings Example
           description: ''
     post:
       operationId: api_listings_create
-      description: |-
-        Handles all API requests related to Listings.
-
-        more info...
-
-        Attributes:
-            serializer_class (ListingSerializer): A serializer that validates and serializes listing data.
-            pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all listings into multiple pages.
+      description: 'Update a specific listing partially by its ID. Requires authentication.
+        Note: To upload an image, ensure the form is submitted as ''multipart/form-data''.'
       tags:
       - api
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/Listing'
             examples:
               CreateListingExample:
                 value:
@@ -68,14 +240,14 @@ paths:
                   - example
                   - sample
                   - listing
-                  image: /media/listings/textbook.jpg
+                  image: textbook.jpg
                 summary: Create Listing Example
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/Listing'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/Listing'
         required: true
       security:
       - CustomJWTAuth: []
@@ -89,14 +261,7 @@ paths:
   /api/listings/{id}/:
     get:
       operationId: api_listings_retrieve
-      description: |-
-        Handles all API requests related to Listings.
-
-        more info...
-
-        Attributes:
-            serializer_class (ListingSerializer): A serializer that validates and serializes listing data.
-            pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all listings into multiple pages.
+      description: Retrieve the details of a specific listing by its ID.
       parameters:
       - in: path
         name: id
@@ -114,17 +279,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Listing'
+              examples:
+                RetrieveListingExample:
+                  value:
+                    id: 1
+                    title: Programming Textbook
+                    condition: Well Worn
+                    description: Modern Programming Languages 2nd Edition.
+                    price: 49.99
+                    image: /media/listings/6544f1c8-f439-4502-9t3a-cb9428df139q
+                    likes: 10
+                    dislikes: 2
+                    tags:
+                    - programming
+                    - textbook
+                    created_at: '2024-12-11 03:55:02'
+                    author_id: 5
+                  summary: Retrieve Listing Example
           description: ''
     patch:
       operationId: api_listings_partial_update
-      description: |-
-        Handles all API requests related to Listings.
-
-        more info...
-
-        Attributes:
-            serializer_class (ListingSerializer): A serializer that validates and serializes listing data.
-            pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all listings into multiple pages.
+      description: Partially update a specific listing by ID. Only the fields provided
+        in the request will be updated.
       parameters:
       - in: path
         name: id
@@ -138,6 +314,14 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PatchedListing'
+            examples:
+              PartialUpdateListingExample:
+                value:
+                  price: 45.99
+                  tags:
+                  - updated
+                  - new_price
+                summary: Partial Update Listing Example
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/PatchedListing'
@@ -152,17 +336,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Listing'
+              examples:
+                PartialUpdateResponseExample:
+                  value:
+                    id: 1
+                    title: Programming Textbook
+                    condition: Well Worn
+                    description: Modern Programming Languages 2nd Edition.
+                    price: 45.99
+                    image: textbook.jpg
+                    likes: 10
+                    dislikes: 2
+                    tags:
+                    - updated
+                    - new_price
+                    created_at: '2024-12-11 03:55:02'
+                    author_id: 5
+                  summary: Partial Update Response Example
           description: ''
     delete:
       operationId: api_listings_destroy
-      description: |-
-        Handles all API requests related to Listings.
-
-        more info...
-
-        Attributes:
-            serializer_class (ListingSerializer): A serializer that validates and serializes listing data.
-            pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all listings into multiple pages.
+      description: Delete a specific listing by its ID. Requires authentication.
       parameters:
       - in: path
         name: id
@@ -179,136 +373,7 @@ paths:
   /api/listings/{id}/dislike_listing/:
     post:
       operationId: api_listings_dislike_listing_create
-      description: |-
-        Handles all API requests related to Listings.
-
-        more info...
-
-        Attributes:
-            serializer_class (ListingSerializer): A serializer that validates and serializes listing data.
-            pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all listings into multiple pages.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Listing'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Listing'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Listing'
-        required: true
-      security:
-      - CustomJWTAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Listing'
-          description: ''
-  /api/listings/{id}/favorite_listing/:
-    post:
-      operationId: api_listings_favorite_listing_create
-      description: |-
-        Adds a listing to the user's saved/favorite listings list.
-
-        Args:
-            request (Request): DRF request object.
-            pk (int, optional): The id of the Listing. Defaults to None.
-
-        Returns:
-            Response: A DRF Response object with an HTTP status.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Listing'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Listing'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Listing'
-        required: true
-      security:
-      - CustomJWTAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Listing'
-          description: ''
-  /api/listings/{id}/like_listing/:
-    post:
-      operationId: api_listings_like_listing_create
-      description: |-
-        Handles all API requests related to Listings.
-
-        more info...
-
-        Attributes:
-            serializer_class (ListingSerializer): A serializer that validates and serializes listing data.
-            pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all listings into multiple pages.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Listing'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Listing'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Listing'
-        required: true
-      security:
-      - CustomJWTAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Listing'
-          description: ''
-  /api/listings/{id}/remove_favorite_listing/:
-    delete:
-      operationId: api_listings_remove_favorite_listing_destroy
-      description: |-
-        Removes a listing from the user's saved/favorite listings list.
-
-        Args:
-            request (Request): DRF request object.
-            pk (int, optional): The id of the Listing. Defaults to None.
-
-        Returns:
-            Response: A DRF Response object with an HTTP status.
+      description: Increments the dislike count for a specific listing.
       parameters:
       - in: path
         name: id
@@ -321,18 +386,160 @@ paths:
       - CustomJWTAuth: []
       responses:
         '204':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/listings/{id}/favorite_listing/:
+    post:
+      operationId: api_listings_favorite_listing_create
+      description: Adds a specific listing to the authenticated user's list of favorite
+        listings.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/listings/{id}/like_listing/:
+    post:
+      operationId: api_listings_like_listing_create
+      description: Increments the like count for a specific listing.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/listings/{id}/remove_favorite_listing/:
+    delete:
+      operationId: api_listings_remove_favorite_listing_destroy
+      description: Removes a specific listing from the authenticated user's list of
+        favorite listings.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
   /api/listings/list_favorite_listings/:
     get:
       operationId: api_listings_list_favorite_listings_retrieve
-      description: |-
-        Fetches all the user's saved/favorite listings.
-
-        Args:
-            request (Request): DRF request object.
-
-        Returns:
-            Response: A DRF Response object with an HTTP status.
+      description: Lists all of the user's favorite listings.
       tags:
       - api
       security:
@@ -342,7 +549,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Listing'
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
           description: ''
   /api/messages/:
     get:
@@ -673,7 +890,7 @@ paths:
       security:
       - CustomJWTAuth: []
       responses:
-        '200':
+        '204':
           content:
             application/json:
               schema:
@@ -753,7 +970,7 @@ paths:
       security:
       - CustomJWTAuth: []
       responses:
-        '200':
+        '204':
           content:
             application/json:
               schema:
@@ -776,6 +993,28 @@ paths:
                 type: object
                 additionalProperties: {}
                 description: Unspecified response body
+          description: ''
+  /api/users/list_blocked_users/:
+    get:
+      operationId: api_users_list_blocked_users_retrieve
+      description: |-
+        Fetches all the user's blocked users.
+
+        Args:
+            request (Request): DRF request object.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+      tags:
+      - api
+      security:
+      - CustomJWTAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
           description: ''
   /schema/:
     get:

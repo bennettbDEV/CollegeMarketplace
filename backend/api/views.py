@@ -6,10 +6,8 @@ ServeImageView,
 '''
 import mimetypes
 import os
-
 from django.conf import settings
 from django.http import FileResponse
-from django.shortcuts import render
 from django.views import View
 from drf_spectacular.utils import OpenApiExample, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
@@ -18,13 +16,10 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
-
 from .handlers import ListingHandler, UserHandler
 from .serializers import ListingSerializer, LoginSerializer, UserSerializer
 
-'''
-CLASS: LoginView
-'''
+
 class LoginView(TokenObtainPairView):
     """Handles API requests for logging in.
 
@@ -53,11 +48,19 @@ class LoginView(TokenObtainPairView):
         # If the serializer is invalid, return errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-'''
-CLASS: StandardResultsSetPagination
-'''
+
 class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 10
+    """Pagination class that paginates responses into distinct page numbers.
+
+    Extends PageNumberPagination- which handles the actual pagination logic.
+
+    Attributes:
+        page_size (int): The number of objects on each page.
+        page_size_query_param (String): The query string that is used to choose the page size.
+        max_page_size (int): The maximum number of objects per page.
+    """
+
+    page_size = 12
     page_size_query_param = "page_size"
     max_page_size = 50
 
@@ -152,13 +155,13 @@ class StandardResultsSetPagination(PageNumberPagination):
         ],
     ),
 )
-
 class UserViewSet(viewsets.GenericViewSet):
     """Handles all API requests related to Users.
 
     Attributes:
         serializer_class (UserSerializer): A serializer that validates and serializes user data.
         pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all users into multiple pages.
+        user_handler (UserHandler): A handler class that handles DB interactions related to users.
     """
 
     serializer_class = UserSerializer
@@ -169,7 +172,7 @@ class UserViewSet(viewsets.GenericViewSet):
         self.user_handler = UserHandler()
 
     def get_permissions(self):
-        # User must be authenticated if performing any action other than create/retrieve
+        # User must be authenticated if performing any action other than create/retrieve/list
         self.permission_classes = ([AllowAny] if (self.action in ["create", "retrieve", "list"]) else [IsAuthenticated])
         return super().get_permissions()
 
@@ -188,6 +191,7 @@ class UserViewSet(viewsets.GenericViewSet):
         Returns:
             Response: An object containing a list of all user objects.
         """
+
         queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)
 
@@ -285,7 +289,7 @@ class UserViewSet(viewsets.GenericViewSet):
         ],
         request=None,  # No request body needed for this POST request
         responses={
-            200: OpenApiExample(
+            204: OpenApiExample(
                 "Successful Block",
                 value={"message": "User blocked successfully."},
                 response_only=True,
@@ -304,8 +308,6 @@ class UserViewSet(viewsets.GenericViewSet):
             ),
         },
     )
-
-
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def block_user(self, request, pk=None):
         """
@@ -318,6 +320,7 @@ class UserViewSet(viewsets.GenericViewSet):
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
+
         try:
             blocker_id = request.user.id
             blocked_id = int(pk)
@@ -346,7 +349,7 @@ class UserViewSet(viewsets.GenericViewSet):
         ],
         request=None,  # No request body needed for this POST request
         responses={
-            200: OpenApiExample(
+            204: OpenApiExample(
                 "Successful Unblock",
                 value={"message": "User unblocked successfully."},
                 response_only=True,
@@ -365,7 +368,6 @@ class UserViewSet(viewsets.GenericViewSet):
             ),
         },
     )
-    
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def unblock_user(self, request, pk=None):
         """
@@ -378,6 +380,7 @@ class UserViewSet(viewsets.GenericViewSet):
         Returns:
             Response: A DRF Response object with an HTTP status.
         """
+
         try:
             blocker_id = request.user.id
             blocked_id = int(pk)
@@ -432,7 +435,6 @@ class UserViewSet(viewsets.GenericViewSet):
             ),
         },
     )
-
     @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated])
     def is_user_blocked(self, request, pk=None):
         """
@@ -460,14 +462,76 @@ class UserViewSet(viewsets.GenericViewSet):
             print(f"Error checking block status: {e}")
             return Response({"error": "An unexpected error occurred while checking block status."},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @action(detail=False, permission_classes=[IsAuthenticated])
+    def list_blocked_users(self, request):
+        """
+        Fetches all the user's blocked users.
 
-'''
-CLASS: ListingViewSet
-'''
+        Args:
+            request (Request): DRF request object.
+
+        Returns:
+            Response: A DRF Response object with an HTTP status.
+        """
+        
+        try:
+            user_id = request.user.id
+            #Call the handler function to retrieve blocked users
+            response = self.user_handler.list_blocked_users(user_id)
+            #Return the list of blocked users
+            return response
+        except Exception as e:
+            # Log the error for debugging
+            print(f"Error in list_blocked_users: {e}")
+            # Return a generic server error response
+            return Response(
+                {"error": "An unexpected error occurred while fetching blocked users."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
 # Listing controller/handler
 @extend_schema_view(
+    list=extend_schema(
+        description="Retrieve a paginated list of listings with optional filters, search, and ordering.",
+        examples=[
+            OpenApiExample(
+                "List Listings Example",
+                value=[
+                    {
+                        "id": 1,
+                        "title": "Programming Textbook",
+                        "condition": "Well Worn",
+                        "description": "Modern Programming Languages 2nd Edition.",
+                        "price": 49.99,
+                        "image": "/media/listings/6544f1c8-f439-4502-9t3a-cb9428df139q",
+                        "likes": 10,
+                        "dislikes": 2,
+                        "tags": ["programming", "textbook"],
+                        "created_at": "2024-12-11 03:55:02",
+                        "author_id": 5,
+                    },
+                    {
+                        "id": 2,
+                        "title": "Gaming Chair",
+                        "condition": "Minimal Wear",
+                        "description": "Ergonomic gaming chair with adjustable height.",
+                        "price": 150.00,
+                        "image": "/media/listings/4314f1c8-f469-4522-9fa6-cb9428df177e",
+                        "likes": 25,
+                        "dislikes": 1,
+                        "tags": ["furniture", "gaming"],
+                        "created_at": "2024-12-12 05:30:35",
+                        "author_id": 3,
+                    },
+                ],
+                response_only=True,
+            )
+        ],
+    ),
     create=extend_schema(
-        request=UserSerializer,
+        description="Update a specific listing partially by its ID. Requires authentication. Note: To upload an image, ensure the form is submitted as 'multipart/form-data'.",
+        request=ListingSerializer,
         examples=[
             OpenApiExample(
                 "Create Listing Example",
@@ -477,9 +541,76 @@ CLASS: ListingViewSet
                     "price": 49.99,
                     "condition": "Well Worn",
                     "tags": ["example", "sample", "listing"],
-                    "image": "/media/listings/textbook.jpg",  # Representing the relative url of the image on the server
+                    "image": "textbook.jpg",
                 },
-                request_only=True,  # Applies only to requests
+                request_only=True,
+            )
+        ],
+    ),
+    retrieve=extend_schema(
+        description="Retrieve the details of a specific listing by its ID.",
+        responses={200: ListingSerializer},
+        examples=[
+            OpenApiExample(
+                "Retrieve Listing Example",
+                value={
+                    "id": 1,
+                    "title": "Programming Textbook",
+                    "condition": "Well Worn",
+                    "description": "Modern Programming Languages 2nd Edition.",
+                    "price": 49.99,
+                    "image": "/media/listings/6544f1c8-f439-4502-9t3a-cb9428df139q",
+                    "likes": 10,
+                    "dislikes": 2,
+                    "tags": ["programming", "textbook"],
+                    "created_at": "2024-12-11 03:55:02",
+                    "author_id": 5,
+                },
+                response_only=True,
+            )
+        ],
+    ),
+    partial_update=extend_schema(
+        description="Partially update a specific listing by ID. Only the fields provided in the request will be updated.",
+        request=ListingSerializer,
+        responses={
+            200: ListingSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                "Partial Update Listing Example",
+                value={
+                    "price": 45.99,
+                    "tags": ["updated", "new_price"],
+                },
+                request_only=True,
+            ),
+            OpenApiExample(
+                "Partial Update Response Example",
+                value={
+                    "id": 1,
+                    "title": "Programming Textbook",
+                    "condition": "Well Worn",
+                    "description": "Modern Programming Languages 2nd Edition.",
+                    "price": 45.99,
+                    "image": "textbook.jpg",
+                    "likes": 10,
+                    "dislikes": 2,
+                    "tags": ["updated", "new_price"],
+                    "created_at": "2024-12-11 03:55:02",
+                    "author_id": 5,
+                },
+                response_only=True,
+            ),
+        ],
+    ),
+    destroy=extend_schema(
+        description="Delete a specific listing by its ID. Requires authentication.",
+        examples=[
+            OpenApiExample(
+                "Delete Listing Example",
+                value={"message": "Listing deleted successfully."},
+                response_only=True,
             )
         ],
     ),
@@ -487,11 +618,10 @@ CLASS: ListingViewSet
 class ListingViewSet(viewsets.GenericViewSet):
     """Handles all API requests related to Listings.
 
-    more info...
-
     Attributes:
         serializer_class (ListingSerializer): A serializer that validates and serializes listing data.
         pagination_class (StandardResultsSetPagination): A pagination class that splits requests for all listings into multiple pages.
+        listing_handler (ListingHandler): A handler class that handles DB interactions related to listings.
     """
 
     serializer_class = ListingSerializer
@@ -523,9 +653,7 @@ class ListingViewSet(viewsets.GenericViewSet):
         # Return listings as Listing instances
         return listings
 
-    '''
-    CRUD actions for ListingViewSet
-    '''
+    # CRUD actions for ListingViewSet
     def list(self, request):
         valid_params = [
             "search",
@@ -607,7 +735,17 @@ class ListingViewSet(viewsets.GenericViewSet):
     -The url for this method will be listings/{pk}/favorite_listing/
     '''
 
-    #Function: add listing to favorites 
+    #Function: add listing to favorites
+    @extend_schema(
+        description="Adds a specific listing to the authenticated user's list of favorite listings.",
+        request=None,
+        responses={
+            201: "Listing favorited successfully.",
+            404: "Listing not found.",
+            409: "Listing is already favorited",
+            500: "Unexpected error occurred.",
+        },
+    )
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def favorite_listing(self, request, pk=None):
         """
@@ -627,9 +765,18 @@ class ListingViewSet(viewsets.GenericViewSet):
             return response
         except Exception as e:
             print(e)
-            return Response({"ERROR: unexpected error while adding the listing to favorites"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"ERROR: Unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-    #Function: remove listing from favorites 
+    #Function: remove listing from favorites
+    @extend_schema(
+        description="Removes a specific listing from the authenticated user's list of favorite listings.",
+        request=None,
+        responses={
+            204: "Listing removed from favorites successfully.",
+            404: "Listing not found.",
+            500: "Unexpected error occurred.",
+        },
+    )
     @action(detail=True, methods=['delete'], permission_classes=[IsAuthenticated])
     def remove_favorite_listing(self, request, pk=None):
         """Removes a listing from the user's saved/favorite listings list.
@@ -648,9 +795,17 @@ class ListingViewSet(viewsets.GenericViewSet):
             return response
         except Exception as e:
             print(e)
-            return Response({"ERROR: unexpected error while removing the listing from favorites"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-    #Function: lists all the listings that have been 'favorited' by the user 
+            return Response({"ERROR: Unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    #Function: lists all the listings that have been 'favorited' by the user
+    @extend_schema(
+        description="Lists all of the user's favorite listings.",
+        request=None,
+        responses={
+            200: "A list of favorite listings.",
+            500: "Unexpected error occurred.",
+        },
+    )
     @action(detail=False, permission_classes=[IsAuthenticated])
     def list_favorite_listings(self, request):
         """
@@ -674,15 +829,22 @@ class ListingViewSet(viewsets.GenericViewSet):
             print(f"Error in list_favorite_listings: {e}")
             # Return a generic server error response
             return Response(
-                {"error": "An unexpected error occurred while fetching favorite listings."},
+                {"error": "Unexpected error occurred."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
     '''
     Like/Dislike actions
     '''
-    
-    #Function: "likes" the listing
+    @extend_schema(
+        description="Increments the like count for a specific listing.",
+        request=None,
+        responses={
+            204: "Listing liked successfully.",
+            404: "Listing not found.",
+            500: "Unexpected error occurred.",
+        },
+    )
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def like_listing(self, request, pk=None):
         listing = self.listing_handler.get_listing(pk)
@@ -692,7 +854,15 @@ class ListingViewSet(viewsets.GenericViewSet):
             return response
         return Response({"error": "Listing with that id not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    #Function: "dislikes" the listing
+    @extend_schema(
+        description="Increments the dislike count for a specific listing.",
+        request=None,
+        responses={
+            204: "Listing disliked successfully.",
+            404: "Listing not found.",
+            500: "Unexpected error occurred.",
+        },
+    )
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def dislike_listing(self, request, pk=None):
         listing = self.listing_handler.get_listing(pk)
@@ -702,9 +872,6 @@ class ListingViewSet(viewsets.GenericViewSet):
         return Response({"error": "Listing with that id not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
-'''
-CLASS: ServeImageView
-'''
 class ServeImageView(View):
     """Serve images with correct Content type.
     """
@@ -723,11 +890,3 @@ class ServeImageView(View):
 
         # Return file with the guessed Content type
         return FileResponse(open(full_path, "rb"), content_type=mime_type)
-
-
-'''
-Non-class Related Functions 
-'''
-# Function to return to the generate the homepage
-def to_backend(request):
-    return render(request, 'api/backend.html')

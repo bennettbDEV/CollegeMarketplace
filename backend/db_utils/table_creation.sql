@@ -65,8 +65,10 @@ CREATE TABLE IF NOT EXISTS Message (
     FOREIGN KEY (receiver_id) REFERENCES User(id) ON DELETE CASCADE
 );
 
-
-DROP TABLE Listing
-DROP TABLE Tag
-DROP TABLE ListingTag
-DROP TABLE Message
+DROP TABLE User;
+DROP TABLE Listing;
+DROP TABLE Tag;
+DROP TABLE ListingTag;
+DROP TABLE UserFavoriteListing;
+DROP TABLE UserBlock;
+DROP TABLE Message;

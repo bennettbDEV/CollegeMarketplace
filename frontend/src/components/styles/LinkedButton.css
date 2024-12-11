@@ -1,21 +1,25 @@
-.profile-container {
-    padding-left: 200px;
-    padding-right: 200px;
-}
-
-.logout-button {
+.pagination-button {
     display: inline-block;
     padding: 10px 20px;
+    margin: 5px;
+    margin-top: 15px;
+    margin-bottom: 50px;
     background-color: var(--reggie-red);
     color: white;
     border: none;
-    border-radius: 4px;
-    font-size: 14px;
     font-weight: bold;
+    border-radius: 4px;
+    font-size: 12px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
-.logout-button:hover {
+.pagination-button:hover {
     background-color: var(--reggie-red-hover);
+}
+
+.pagination-button:disabled {
+    background-color: #d6d6d6;
+    color: #a8a8a8;
+    cursor: not-allowed;
 }

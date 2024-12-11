@@ -17,7 +17,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from api.views import LoginView, ServeImageView, to_backend
+from api.views import LoginView, ServeImageView
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
@@ -46,7 +46,7 @@ urlpatterns = [
     path("api/", include("api.urls")),
     # Media urls - this will provide images for any objects such as listings or users
     path('media/<path:image_path>/', ServeImageView.as_view(), name='serve_image'),
-    path('', to_backend, name="home"),  # Root URL for the homepage
+    path('', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),  # Root URL routes to API documentation
 ] 
 
 #+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

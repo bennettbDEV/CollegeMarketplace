@@ -1,26 +1,29 @@
 # api/tests.py
 import os
 from io import BytesIO
-
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase, override_settings
+from django.test import override_settings
 from django.urls import reverse
 from PIL import Image
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-
 from api.handlers import ListingHandler, UserHandler
 from api.models import Listing, User
 from api.serializers import ListingSerializer, LoginSerializer, UserSerializer
 from api.views import ListingViewSet
 from backend.settings import BASE_DIR
 
-"""
-Functions/Classes to help setup Tests
-"""
 
-
+# Functions/Classes to help setup Tests
 class AuthenticatedAPITestCase(APITestCase):
+    """Helper class that is used to turn the APIClient into an authenicated client for testing purposes.
+
+    Extends APITestCase from Django Rest Framework which includes helpful logic used for HTTP requests.
+
+    Attributes:
+        client (APIClient): The client object that is used to perform HTTP methods to the test server.
+    """
+
     def setUp(self):
         self.user_handler = UserHandler()
 
@@ -67,8 +70,14 @@ class AuthenticatedAPITestCase(APITestCase):
 class AuthenticatedListingAPITestCase(AuthenticatedAPITestCase):
     """Class with helper methods for listing creation and deletion for testing purposes.
 
-    Args:
-        AuthenticatedAPITestCase (APITestCase): Parent class that creates and deletes an authenticated user for use in testing - using the setUp() and tearDown() methods.
+    Extends AuthenticatedAPITestCase (APITestCase) which creates and deletes an authenticated
+    user for use in testing - using the setUp() and tearDown() methods.
+
+    Attributes:
+        listing_handler (ListingHandler): A handler class that handles DB interactions related to listings.
+        listing_list_url (String): The string representation of the URL path to list and create listings.
+        listing_ids (List): The current list of created test listing ids. This is used for testing and during cleanup.
+        client (APIClient): The authenticated client object that is used to perform HTTP methods to the test server.
     """
 
     def _generate_test_image(self):
@@ -154,14 +163,15 @@ class AuthenticatedListingAPITestCase(AuthenticatedAPITestCase):
 Create Tests Here
 """
 
+
 # Bennett test case 1:
 # python manage.py test api.tests.ListListingsAPITestCase
 @override_settings(MEDIA_ROOT=os.path.join(BASE_DIR, "tmp/test_media/"))
 class ListListingsAPITestCase(AuthenticatedListingAPITestCase):
     """Unit tests for listing-list requests. Includes tests for Use case: Retrieve Listings.
 
-    Args:
-        AuthenticatedListingAPITestCase (AuthenticatedAPITestCase): Parent class with helper methods for listing creation and deletion for testing purposes.
+    Extends AuthenticatedListingAPITestCase (AuthenticatedAPITestCase): which includes helper
+    methods for listing creation and deletion for testing purposes.
     """
 
     # Before
@@ -320,14 +330,15 @@ class ListListingsAPITestCase(AuthenticatedListingAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data.get("error"), "Invalid ordering parameter.")
 
+
 # Bennett test case 2a:
 # python manage.py test api.tests.SearchListingsAPITestCase
 @override_settings(MEDIA_ROOT=os.path.join(BASE_DIR, "tmp/test_media/"))
 class SearchListingsAPITestCase(AuthenticatedListingAPITestCase):
     """Unit tests for searching listing-list requests. Includes tests for Use case: Search for Listings
 
-    Args:
-        AuthenticatedListingAPITestCase (AuthenticatedAPITestCase): Parent class with helper methods for listing creation and deletion for testing purposes.
+    Extends AuthenticatedListingAPITestCase (AuthenticatedAPITestCase): which includes helper
+    methods for listing creation and deletion for testing purposes.
     """
 
     # Before
@@ -373,14 +384,15 @@ class SearchListingsAPITestCase(AuthenticatedListingAPITestCase):
         # Assert that no listings have the given search term
         self.assertEqual(len(response.data.get("results")), 0)
 
+
 # Bennett test case 2b:
 # python manage.py test api.tests.FilterListingsAPITestCase
 @override_settings(MEDIA_ROOT=os.path.join(BASE_DIR, "tmp/test_media/"))
 class FilterListingsAPITestCase(AuthenticatedListingAPITestCase):
     """Unit tests for filtered listing-list requests. Includes tests for Use case: Filter Search Results
 
-    Args:
-        AuthenticatedListingAPITestCase (AuthenticatedAPITestCase): Parent class with helper methods for listing creation and deletion for testing purposes.
+    Extends AuthenticatedListingAPITestCase (AuthenticatedAPITestCase): which includes helper
+    methods for listing creation and deletion for testing purposes.
     """
 
     # Before

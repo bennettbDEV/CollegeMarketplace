@@ -36,7 +36,7 @@
   .apply-filters {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #cc0000;
+    background-color: var(--reggie-red);
     color: white;
     border: none;
     border-radius: 4px;
@@ -47,5 +47,5 @@
   }
   
   .apply-filters:hover {
-    background-color: #ec3939;
+    background-color: var(--reggie-red-hover);
   }

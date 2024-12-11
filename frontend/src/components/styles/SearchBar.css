@@ -16,15 +16,16 @@
 
 .search-button {
     padding: 10px 15px;
-    background-color:  #cc0000;
+    background-color: var(--reggie-red);
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .search-button:hover {
-    background-color: #ec3939;
+    background-color: var(--reggie-red-hover);
 }
 
 .sort-dropdown {
