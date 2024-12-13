@@ -8,19 +8,19 @@
 With the abundance of irrelevant and distant listings on classified advertising platforms such as Facebook Marketplace and Craigslist, our team decided to develop an open-source marketplace platform tailored to students.
 To achieve this goal and learn as much as possible about critical tools in the software industry, we chose to develop the platform using Django Rest Framework (Python) for the backend API, and React + Vite (JavaScript/JSX) for the frontend.
 
-<br/>
+<br/><br/>
 
 **Image Showcase**
 <br/>
 Here are some screenshots showing different pages from our frontend:
-<div align="center">
+<div>
   <a>
-    <img src="README_Images/Create_listing_page.png" alt="Create Listing Page">
-    <img src="README_Images/Saved_listings_page.png" alt="Saved Listings Page">
-    <img src="README_Images/Profile_page.png" alt="Profile Page">
-    <img src="README_Images/messages_page.png" alt="Messages Page">
-    <img src="README_Images/Settings_page.png" alt="Settings Page pt.1">
-    <img src="README_Images/Settings_page2.png" alt="Settings Page pt.2">
+    <img src="README_Images/Saved_listings_page.png" alt="Saved Listings Page" width="800" height="400">
+    <img src="README_Images/Create_listing_page.png" alt="Create Listing Page" width="400" height="400">
+    <img src="README_Images/Profile_page.png" alt="Profile Page" width="400" height="400">
+    <img src="README_Images/Settings_page.png" alt="Settings Page pt.1" width="400" height="400">
+    <img src="README_Images/Settings_page2.png" alt="Settings Page pt.2" width="400" height="400">
+    <img src="README_Images/messages_page.png" alt="Messages Page" width="800" height="400">
   </a>
 </div>
 
