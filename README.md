@@ -1,7 +1,29 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
+<div align="center">
+  <a href="https://github.com/bennettbDEV/CollegeMarketplace">
+    <img src="README_Images/Home_page_example.png" alt="Home Page">
+  </a>
+</div>
 With the abundance of irrelevant and distant listings on classified advertising platforms such as Facebook Marketplace and Craigslist, our team decided to develop an open-source marketplace platform tailored to students.
-To achieve this goal and learn as much as possible about critical tools in the software industry, we chose to develop the platform using Django Rest Framework (Python) for the backend API and React + Vite (JavaScript/JSX) for the frontend.
+To achieve this goal and learn as much as possible about critical tools in the software industry, we chose to develop the platform using Django Rest Framework (Python) for the backend API, and React + Vite (JavaScript/JSX) for the frontend.
+
+<br/>
+
+**Image Showcase**
+<br/>
+Here are some screenshots showing different pages from our frontend:
+<div align="center">
+  <a>
+    <img src="README_Images/Create_listing_page.png" alt="Create Listing Page">
+    <img src="README_Images/Saved_listings_page.png" alt="Saved Listings Page">
+    <img src="README_Images/Profile_page.png" alt="Profile Page">
+    <img src="README_Images/messages_page.png" alt="Messages Page">
+    <img src="README_Images/Settings_page.png" alt="Settings Page pt.1">
+    <img src="README_Images/Settings_page2.png" alt="Settings Page pt.2">
+  </a>
+</div>
+
 
 ## Documentation
 To access our REST API documentation you can download the schema from [backend/schema.yaml](backend/schema.yaml) or run the backend server (Follow the **Try Our Code** section) and open a browser to "http://localhost:8000/" or "http://localhost:8000/api/"

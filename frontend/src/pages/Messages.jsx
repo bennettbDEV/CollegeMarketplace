@@ -2,6 +2,7 @@ import NavBar from "../components/Navbar.jsx";
 import MessagesFeed from "../components/MessagesFeed.jsx";
 import api from "../api";
 import React, { useState, useEffect } from "react";
+import "./styles/Messages.css";
 
 function Messages() {
     const [loading, setLoading] = useState(false);
@@ -32,7 +33,7 @@ function Messages() {
         <>
             <NavBar />
 
-            <div className="container">
+            <div className="messages-container">
                 <h1>Messages</h1>
                 <h2>
                     Inbox:
