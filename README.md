@@ -24,19 +24,22 @@ Here are some screenshots showing different pages from our frontend:
   </a>
 </div>
 
-
 ## Documentation
 To access our REST API documentation you can download the schema from [backend/schema.yaml](backend/schema.yaml) or run the backend server (Follow the **Try Our Code** section) and open a browser to "http://localhost:8000/" or "http://localhost:8000/api/"
 
-## Work In Progress
-We are still testing, finishing up features, and optimizing our code, but we are well on the way to the completed project.
-
-More info will be added here as we finish things up!
-
+## Features
+Our project includes all the vital features of an online marketplace, and more! Some of our notable features are below:
+- Secure authentication using JSON Web Tokens (JWT)
+- Comprehensive account management: creation, retrieval, updates, and deletion
+- Listing management with filtering, searching, sorting, and saving for later access
+- Messaging capabilities: sending, retrieving, and deleting messages
+- User interaction features: liking/disliking listings and blocking/unblocking other users
 
 ## Try our code!
 To install the dependencies and run the project as it is now, follow these simple steps in your terminal:
 
+0. Prerequisites:
+Install [Node.js](https://nodejs.org/en/download/package-manager)(version 20 or newer) and [Python](https://www.python.org/downloads/)(version 3.10 or newer)
 1. Clone the repo (into the currect directory)
 ```sh
 git clone https://github.com/bennettbDEV/CollegeMarketplace.git .
