@@ -7,6 +7,11 @@
 </div>
 With the abundance of irrelevant and distant listings on classified advertising platforms such as Facebook Marketplace and Craigslist, our team decided to develop an open-source marketplace platform tailored to students.
 To achieve this goal and learn as much as possible about critical tools in the software industry, we chose to develop the platform using Django Rest Framework (Python) for the backend API, and React + Vite (JavaScript/JSX) for the frontend.
+<br/><br/>
+
+**Implementation Information**
+<br/>
+Although unconventional, our professor (project advisor) suggested that we avoid using Django's Object Relational Mapper (ORM) to gain hands-on experience with raw SQL. While this made the project more challenging, it gave us valuable experience in creating and managing the database ourselves. It also pushed us to spend more time exploring Django and Django Rest Framework’s documentation, helping us better understand how they work.
 
 <br/><br/>
 
