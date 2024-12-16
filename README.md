@@ -7,11 +7,13 @@
 </div>
 With the abundance of irrelevant and distant listings on classified advertising platforms such as Facebook Marketplace and Craigslist, our team decided to develop an open-source marketplace platform tailored to students.
 To achieve this goal and learn as much as possible about critical tools in the software industry, we chose to develop the platform using Django Rest Framework (Python) for the backend API, and React + Vite (JavaScript/JSX) for the frontend.
-<br/><br/>
-
-**Implementation Information**
 <br/>
-Although unconventional, our professor (project advisor) suggested that we avoid using Django's Object Relational Mapper (ORM) to gain hands-on experience with raw SQL. While this made the project more challenging, it gave us valuable experience in creating and managing the database ourselves. It also pushed us to spend more time exploring Django and Django Rest Framework’s documentation, helping us better understand how they work.
+
+<h4>Implementation Information</h4>
+The project followed a structure loosely based on the MVC (Model-View-Controller) architecture. The ViewSets and View classes served as the "Views," handling user interactions through HTTP requests and exposing URL endpoints. The handler classes acted as "Controllers," containing the core business logic and connecting the views to the database layer "Models".
+Additionally, despite it being unconventional, our professor (project advisor) suggested that we avoid using Django's Object Relational Mapper (ORM) to gain hands-on experience with raw SQL. While this made the project more challenging, it gave us valuable experience in creating and managing the database ourselves. It also pushed us to spend more time exploring Django and Django Rest Framework’s documentation, helping us better understand how they work.
+
+
 
 <br/><br/>
 
@@ -33,12 +35,17 @@ Here are some screenshots showing different pages from our frontend:
 To access our REST API documentation you can download the schema from [backend/schema.yaml](backend/schema.yaml) or run the backend server (Follow the **Try Our Code** section) and open a browser to "http://localhost:8000/" or "http://localhost:8000/api/"
 
 ## Features
-Our project includes all the vital features of an online marketplace, and more! Some of our notable features are below:
+Our project includes all the vital features of an online marketplace, and more! Some of our notable features & details are below:
 - Secure authentication using JSON Web Tokens (JWT)
 - Comprehensive account management: creation, retrieval, updates, and deletion
 - Listing management with filtering, searching, sorting, and saving for later access
 - Messaging capabilities: sending, retrieving, and deleting messages
 - User interaction features: liking/disliking listings and blocking/unblocking other users
+<h4>Details</h4>
+
+- Each endpoint was designed with robust error handling, with specific and detailed responses for various different issues
+- Critical use cases were thoroughly tested with comprehensive unit tests and integration tests to ensure both reliability and security
+
 
 ## Try our code!
 To install the dependencies and run the project as it is now, follow these simple steps in your terminal:
